@@ -1,9 +1,7 @@
 ## purpose
 
-simple docs for Ganesha
-to help in the process of 
-information sourcing, learning,
-and incremental development of program.
+simple docs for Ganesha to help in the process of 
+information sourcing, learning and incremental development of program.
 
 ## Zweck - wozu das do isch
 Eifachi Dokumäntation für Ganesha –
