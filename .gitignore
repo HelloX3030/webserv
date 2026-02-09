@@ -39,3 +39,8 @@
 
 # debug information files
 *.dwo
+
+# Custom
+*.pdf
+webserv
+obj/
