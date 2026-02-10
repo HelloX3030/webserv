@@ -1,4 +1,0 @@
-invariant to enforce:
-main can compile & execute
-
-run `make test` before every merge to main
