@@ -1,5 +1,6 @@
 ## purpose
 
+Asynchronous communication of structured feedback on specific code locations.
 
 
 ## Qs: G > L
