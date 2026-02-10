@@ -26,7 +26,8 @@ Essence: A synchronization buffer for items requiring mutual understanding befor
 code review Qs (per branch)
 upcoming design decisions
 potential conflicts
-blockers
+critical issues (blocking merge)
+minor, e.g. style (naming of files...)
 
 updated as I work
 
