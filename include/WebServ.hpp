@@ -1,19 +1,6 @@
 #pragma once
 
-#include <iostream>
-#include <stdexcept>
+#include "ServerConfig.hpp"
+#include "base.hpp"
 
-class WebServ
-{
-  private:
-    // Settings
-
-  public:
-    WebServ();
-    WebServ(const WebServ &other);
-    WebServ &operator=(const WebServ &other);
-    ~WebServ();
-
-    // Funcs
-    void parse(int argc, char **argv);
-};
+extern ServerConfig server_config;
