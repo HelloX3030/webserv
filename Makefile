@@ -3,24 +3,25 @@ CXX := c++
 CXXFLAGS := -Wall -Wextra -Werror -std=c++17
 NAME := webserv
 
-# vpath for header files
-vpath %.hpp include/
-
-# vpath for source files
-vpath %.cpp src/
-
-# .h and .hpp files
-H_FILES := base.hpp format.hpp log.hpp Server.hpp ServerConfig.hpp WebServ.hpp
-
-# .cpp source files
-SRC_FILES := format.cpp log.cpp main.cpp ServerConfig.cpp WebServ.cpp
-
-# Object directory and object files
+# Directories
+SRC_DIR := src
+INC_DIR := include
 OBJ_DIR := obj
-OBJ_FILES := $(addprefix $(OBJ_DIR)/, $(SRC_FILES:.cpp=.o))
 
-# includes
-INCLUDES := -I include
+# vpath for header and source files
+vpath %.hpp $(INC_DIR)
+vpath %.h   $(INC_DIR)
+vpath %.cpp $(SRC_DIR)
+
+# Automatically collect files
+H_FILES   := $(wildcard $(INC_DIR)/*.hpp) $(wildcard $(INC_DIR)/*.h)
+SRC_FILES := $(wildcard $(SRC_DIR)/*.cpp)
+
+# Object files
+OBJ_FILES := $(addprefix $(OBJ_DIR)/, $(notdir $(SRC_FILES:.cpp=.o)))
+
+# Includes
+INCLUDES := -I $(INC_DIR)
 
 # Default target
 all: $(NAME)
@@ -30,7 +31,7 @@ $(NAME): $(OBJ_FILES)
 	$(CXX) $(OBJ_FILES) -o $(NAME)
 
 # Compile object files
-$(OBJ_DIR)/%.o: src/%.cpp $(H_FILES) | $(OBJ_DIR)
+$(OBJ_DIR)/%.o: %.cpp $(H_FILES) | $(OBJ_DIR)
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
 
 # Create object directory if it doesn't exist
