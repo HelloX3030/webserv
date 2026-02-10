@@ -1,36 +1,28 @@
-#include "Server.hpp"
+#include <csignal>
+#include <cstring>
+#include <iostream>
 
-Server::Server()
-    : server_fd(-1)
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <unistd.h>
+
+static volatile sig_atomic_t g_running = 1;
+
+void handle_sigint(int)
 {
+    g_running = 0;
 }
 
-Server::Server(const Server &other)
+int main()
 {
-    *this = other;
-}
+    signal(SIGINT, handle_sigint);
 
-Server &Server::operator=(const Server &other)
-{
-    if (this != &other)
-    {
-    }
-    return *this;
-}
-
-Server::~Server()
-{
-}
-
-void Server::start()
-{
-    log::log("Server", "Start");
-
-    server_fd = socket(AF_INET, SOCK_STREAM, 0);
+    int server_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (server_fd < 0)
     {
         perror("socket");
-        throw std::system_error(errno, std::system_category(), "Failed to create Socket");
+        return 1;
     }
 
     sockaddr_in addr;
@@ -41,30 +33,19 @@ void Server::start()
 
     if (bind(server_fd, (sockaddr *)&addr, sizeof(addr)) < 0)
     {
-        int error = errno;
         perror("bind");
         close(server_fd);
-        throw std::system_error(error, std::system_category(), "Failed to bind to adress");
+        return 1;
     }
 
     if (listen(server_fd, 10) < 0)
     {
-        int error = errno;
         perror("listen");
         close(server_fd);
-        throw std::system_error(error, std::system_category(), "Failed to listen");
+        return 1;
     }
-}
 
-void Server::stop()
-{
-    log::log("Server", "Stop");
-    close(server_fd);
-}
-
-void Server::run()
-{
-    start();
+    std::cout << "Listening on port 8080 (Ctrl-C to stop)\n";
 
     while (g_running)
     {
@@ -96,5 +77,7 @@ void Server::run()
         close(client_fd);
     }
 
-    stop();
+    std::cout << "\nShutting down...\n";
+    close(server_fd);
+    return 0;
 }

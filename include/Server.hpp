@@ -1,11 +1,18 @@
 #pragma once
 
-#include "ServerConfig.hpp"
+#include "base.hpp"
 
 class Server
 {
   private:
-    ServerConfig config;
+    // Server Config
+
+    // Server Vars
+    int server_fd;
+
+    // Functions
+    void start();
+    void stop();
 
   public:
     Server();
@@ -13,5 +20,8 @@ class Server
     Server &operator=(const Server &other);
     ~Server();
 
-    // Funcs
+    // Special Constructors
+    void parse(const std::string &file_path);
+    void parse_args(int argc, char **argv);
+    void run();
 };

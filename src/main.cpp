@@ -2,16 +2,20 @@
 
 int main(int argc, char **argv)
 {
-    ServerConfig server_config;
+    Server server;
+
+    // Signals Handling
+    signal(SIGINT, handle_sigint);
+
     try
     {
-        server_config.parse_args(argc, argv);
+        server.parse_args(argc, argv);
     }
     catch (const std::exception &e)
     {
-        log::log("Parse ServerConfig", e.what(), log::LogType::ERROR);
+        log::log("Parse Server Config", e.what(), log::LogType::ERROR);
     }
 
-    // Run Server
+    server.run();
     return 0;
 }
