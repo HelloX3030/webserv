@@ -10,10 +10,10 @@ vpath %.hpp include/
 vpath %.cpp src/
 
 # .h and .hpp files
-H_FILES := WebServ.hpp
+H_FILES := base.hpp format.hpp log.hpp Server.hpp ServerConfig.hpp WebServ.hpp
 
 # .cpp source files
-SRC_FILES := main.cpp parsing.cpp webserv.cpp
+SRC_FILES := format.cpp log.cpp main.cpp ServerConfig.cpp WebServ.cpp
 
 # Object directory and object files
 OBJ_DIR := obj

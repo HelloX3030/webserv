@@ -1,8 +1,7 @@
 #include "ServerConfig.hpp"
 
-ServerConfig::ServerConfig(std::string file_path)
+ServerConfig::ServerConfig()
 {
-    std::cout << "Parse ServerConfig" << file_path << std::endl;
 }
 
 ServerConfig::ServerConfig(const ServerConfig &other)
@@ -20,4 +19,29 @@ ServerConfig &ServerConfig::operator=(const ServerConfig &other)
 
 ServerConfig::~ServerConfig()
 {
+}
+
+void ServerConfig::parse(const std::string &path)
+{
+    log::log("Parse ServerConfig", path);
+}
+
+void ServerConfig::parse_args(int argc, char **argv)
+{
+    ServerConfig server_config;
+
+    std::string config_path;
+    if (argc == 1)
+    {
+        config_path = "default/path";
+    }
+    else if (argc == 2)
+    {
+        config_path = argv[1];
+    }
+    else
+    {
+        throw std::runtime_error("To many args!");
+    }
+    server_config.parse(config_path);
 }
