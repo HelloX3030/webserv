@@ -163,26 +163,6 @@ Excellent for file descriptor and process management details.
 ## Tier 2
 
 
-
-### MDN Web Docs (Mozilla Developer Network)
-
-**Main resource**: https://developer.mozilla.org/en-US/docs/Web
-
-**HTTP Documentation**: https://developer.mozilla.org/en-US/docs/Web/HTTP
-- HTTP messages structure (visual diagrams)
-- Request methods explained
-- Status codes with use cases
-- Headers reference
-
-**Web Glossary**: https://developer.mozilla.org/en-US/docs/Glossary
-- Clear definitions of terms
-- Cross-referenced concepts
-
-**Why MDN**: Clear, visual, accessible. 
-Good for building mental models before formal study.
-
-
-
 ### Julia Evans: Technical Zines
 
 **Author site**: https://jvns.ca/
@@ -208,7 +188,6 @@ but doesn't speak to me. Not intuitive enough, not enough semantic depth.
 Feels like dumbed down, but still dry & technical.
 
 
-
 ### HTTP Made Really Easy
 
 https://www.jmarshall.com/easy/http/
@@ -220,6 +199,26 @@ https://www.jmarshall.com/easy/http/
 - Very practical, hands-on
 
 **Why this**: Shows HTTP in action. Bridge between theory and practice.
+
+
+
+
+### MDN Web Docs (Mozilla Developer Network)
+
+**Main resource**: https://developer.mozilla.org/en-US/docs/Web
+
+**HTTP Documentation**: https://developer.mozilla.org/en-US/docs/Web/HTTP
+- HTTP messages structure (visual diagrams)
+- Request methods explained
+- Status codes with use cases
+- Headers reference
+
+**Web Glossary**: https://developer.mozilla.org/en-US/docs/Glossary
+- Clear definitions of terms
+- Cross-referenced concepts
+
+**Why MDN**: Clear, visual, accessible. 
+Good for building mental models before formal study.
 
 
 
@@ -253,7 +252,11 @@ https://beej.us/guide/bgnet/
 **Why this book**: More pedagogical than Stevens. Better diagrams. 
 Good conceptual overview.
 
+
+
 ---
+
+
 
 ## Tier 3
 
@@ -280,6 +283,8 @@ Usage: Study architecture and design decisions. See theory applied.
 - `src/http/ngx_http_parse.c` - parsing state machine
 - `src/core/ngx_connection.c` - connection management
 
+
+
 ### Apache HTTP Server
 
 **Source**: https://github.com/apache/httpd
@@ -292,6 +297,8 @@ Usage: Study architecture and design decisions. See theory applied.
 - Multi-processing models (prefork, worker, event)
 
 **Note**: More complex than NGINX. Use selectively.
+
+
 
 ### GNU Libmicrohttpd
 
@@ -306,7 +313,13 @@ Usage: Study architecture and design decisions. See theory applied.
 
 **Best for**: Understanding minimal viable HTTP server architecture.
 
+
+
+
 ---
+
+
+
 
 ## Tier 4
 
@@ -339,6 +352,8 @@ echo "GET / HTTP/1.0\r\n\r\n" | nc localhost 8080
 ```
 Purpose: Raw socket communication. Good for testing edge cases.
 
+
+
 ### Network Analysis Tools
 
 **tcpdump** - Packet capture (command-line)
@@ -355,6 +370,8 @@ Purpose: Visual packet inspection. Follow TCP streams. See HTTP at packet level.
 - Headers inspection
 - Timing analysis
 Purpose: Understand how real browsers use HTTP.
+
+
 
 ### Stress Testing Tools
 
@@ -376,6 +393,8 @@ siege -c 100 -r 10 http://localhost:8080/
 ```
 Purpose: Simulate multiple users. Test concurrent connections.
 
+
+
 ### Verification Strategy
 
 Compare your server against NGINX:
@@ -383,7 +402,13 @@ Compare your server against NGINX:
 2. Responses should match (status codes, headers, body)
 3. Any difference = potential bug or RFC violation
 
+
+
+
 ---
+
+
+
 
 ## Tier 5
 
@@ -403,9 +428,11 @@ Compare your server against NGINX:
   - Why layered system
   - Constraints and their rationale
 
-**Why read this**: Understand HTTP's telos. Not "how" but "why". Design principles from first principles.
+**Why read this**: Understand HTTP's telos. Not "how" but "why". 
+Design from first principles.
 
-**When to read**: Optional given time constraints. Use if questioning fundamental HTTP design decisions. Otherwise, focus on implementation first.
+**When to read**: Optional given time constraints. 
+Use if questioning fundamental HTTP design decisions. Otherwise, focus on implementation first.
 
 ### Tim Berners-Lee: Original Vision
 

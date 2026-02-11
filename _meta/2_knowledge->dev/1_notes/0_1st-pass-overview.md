@@ -32,7 +32,9 @@ Think of it as a multilingual receptionist at a busy hotel:
 - Never gets stuck waiting for one guest while others need help (non-blocking I/O)
 
 
-## The Three Core Challenges
+
+## The 3 Core Challenges
+
 
 ### Challenge 1: Multiple Simultaneous Clients
 
@@ -67,6 +69,7 @@ Don't stare at one pot waiting for it to boil - check other dishes, prep ingredi
 plate finished orders. When that pot boils, you'll hear the timer.
 
 `poll()` is your timer system - tells you when each client is ready for attention.
+
 
 ### Challenge 2: Partial Data Arrival
 
@@ -259,9 +262,11 @@ Request: `GET /cgi-bin/script.py`
 - If yes, execute script; if no, serve as static file
 
 
+
 ## CGI: External Program Execution
 
-CGI (Common Gateway Interface) allows server to execute programs that generate responses dynamically.
+CGI (Common Gateway Interface) allows server 
+to execute programs that generate responses dynamically.
 
 **How it works**:
 
