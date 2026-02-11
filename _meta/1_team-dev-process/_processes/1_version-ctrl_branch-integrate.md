@@ -33,8 +33,8 @@ Every commit in main must compile, pass tests, and be deployable.
 <developer>/<feature-name>
 
 Examples:
-ganesha/http-parser
-ganesha/socket-mgmt
+ghr/http-parser
+ghr/socket-mgmt
 lukas/config-parser
 lukas/cgi-executor
 ```
