@@ -132,9 +132,9 @@ git rebase --abort  # Start over
 ## Preconditions
 
 This workflow assumes:
-1. Both developers check communication channel regularly (at least daily)
-2. Both developers check GitHub Projects to see what other is working on
-3. Both developers understand that main is sacred (never push directly without this workflow)
+1. Both developers check communication channel regularly (at least daily) (for this project: SimpleX)
+2. Both developers know what other is working on (for this project: GitHub Projects)
+3. Both developers understand that main is sacred
 4. Both developers have tested locally before attempting merge
 
 ## What This Achieves

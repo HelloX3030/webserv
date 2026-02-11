@@ -1,9 +1,12 @@
 # Daily Git Operations
 
+
 ## Law
 
 Stay synchronized with main. 
 Never let your feature branch drift far from latest valid state.
+
+
 
 ## Branch Navigation
 
@@ -27,12 +30,14 @@ git status           # what's changed locally
 git log --oneline -5 # recent commits
 ```
 
+
+
 ## Mid-Development Sync
 
-**When to sync**: Lukas merged to main, you're still developing your feature.
+**When to sync**: other team member merged to main, you're still developing your feature.
 
-**Why sync**: Get his changes into your branch.
-Prevents massive conflicts later. Enables using his code in your feature.
+**Why sync**: Get their changes into your branch.
+Prevents massive conflicts later. Enables using their code in your feature.
 
 ### Workflow
 ```bash
@@ -75,6 +80,8 @@ git push --force-with-lease origin <yourname>/<feature>
 `--force-with-lease` = safer than `--force`.
 Aborts if remote has commits you don't have locally.
 
+
+
 ## Temporary Work Saving
 
 Need to switch branches but have uncommitted changes?
@@ -90,13 +97,14 @@ git stash pop
 ```
 
 **When to use**:
-- Quick context switch to help Lukas
+- Quick context switch to help teammate
 - Pull main while you have uncommitted work
 - Experiment with approach, want to revert quickly
 
 **When NOT to use**:
 - Long-term work-in-progress (use commits instead)
 - As backup mechanism (commit and push instead)
+
 
 ## Viewing Changes
 
@@ -113,6 +121,8 @@ git log --oneline -10       # recent commits
 git log --oneline main..    # commits in your branch not in main
 git show <commit-hash>      # specific commit details
 ```
+
+
 
 ## Common Patterns
 
@@ -132,7 +142,7 @@ git commit -m "descriptive message"
 git push                    # backup + visibility
 ```
 
-### Lukas just merged something
+### Teammate just merged something
 ```bash
 git checkout main
 git pull
@@ -153,12 +163,12 @@ git rebase -i HEAD~3        # interactive rebase last 3 commits
 - Understand rebase changes history (requires force push to remote)
 - Never rebase commits that exist on main (only rebase feature branches)
 - Always test after rebase (conflicts may break code subtly)
-- Communication protocol followed (you know what Lukas merged)
+- Communication protocol followed (you know what teammate merged)
 
 ## What This Achieves
 
 - Feature branches stay current with main
 - Conflicts caught early (small, manageable)
-- Can use Lukas's code immediately after merge
+- Can use teammate's code immediately after merge
 - Less painful final integration
 - Shared understanding of project state

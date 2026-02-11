@@ -1,10 +1,21 @@
 # Communication Protocol
 
+
+## Webserv setup
+
+GitHub Projects for overview over tasks & their status.
+SimpleX as communication channel for asynchronous communication.
+In-person meetings ~2-3 times / week
+
+
+
 ## Law
 
 **Coordinate intent before action. Notify completion after action.**
 
 Prevents duplicate work, conflicting changes, and integration surprises.
+
+
 
 ## Principles
 
@@ -27,6 +38,8 @@ Prevents duplicate work, conflicting changes, and integration surprises.
    - What you're working on
    - What you changed
    - What broke
+
+
 
 ## Information Flow
 
@@ -52,7 +65,9 @@ Approach: State machine for parsing, std::string_view for zero-copy
 Duration: ~2 days
 ```
 
-**Why this matters**: Lukas knows not to start HTTP parser. Lukas knows to avoid modifying http.hpp.
+**Why this matters**: Teammate knows not to start HTTP parser. 
+Teammate knows to avoid modifying http.hpp.
+
 
 ### 2. Work-in-Progress Status (during work)
 
@@ -77,6 +92,7 @@ Question: should we support Transfer-Encoding: gzip?
 
 **Why this matters**: Keeps other person informed. Allows help with blockers. Enables course correction.
 
+
 ### 3. Integration Notification (after merge to main)
 
 **What to communicate**:
@@ -93,14 +109,16 @@ Question: should we support Transfer-Encoding: gzip?
 
 **Example**:
 ```
-Merged ganesha/http-parser to main.
+Merged ghr/http-parser to main.
 - Added HTTPRequest class
 - Supports GET, POST methods
 - Test: ./webserv test.conf, curl localhost:8080/test.html
 Breaking: HTTPRequest constructor signature changed
 ```
 
-**Why this matters**: Other person must pull and rebase ASAP. Knows what to test. Aware of breaking changes.
+**Why this matters**: Other person must pull and rebase ASAP. 
+Knows what to test. Aware of breaking changes.
+
 
 ### 4. Design Discussion (architecture decisions)
 
@@ -128,6 +146,7 @@ Need to discuss trade-offs. Sync tomorrow 14:00?
 
 **Why this matters**: Prevents wasted work implementing wrong approach. Ensures mutual understanding.
 
+
 ### 5. Code Review (quality/correctness)
 
 **What to communicate**:
@@ -146,9 +165,9 @@ Need to discuss trade-offs. Sync tomorrow 14:00?
 ```
 In meta/_pending.md:
 
-## Code Review: lukas/config-parser
+## Code Review: Teammate/config-parser
 
-Branch: lukas/config-parser
+Branch: Teammate/config-parser
 Commit: abc123f
 
 ### Line 142: Buffer overflow risk
@@ -159,6 +178,9 @@ Parser allocated but never freed in error path.
 ```
 
 **Why this matters**: Catches bugs before they enter main. Improves code quality. Knowledge transfer.
+
+
+
 
 ## Communication Etiquette
 

@@ -1,4 +1,5 @@
 ## main principle:
+
 Each commit represents exactly one logical change.
 
 
@@ -13,9 +14,12 @@ Atomicity: A commit does one thing and does it completely
 
 Clarity: Commit message answers "what" and "why", code shows "how"
 
-  Subject line: imperative mood, <50 chars: "Fix buffer overflow in HTTP parser"
+  Subject line: imperative mood, <50 chars:
+    "Fix buffer overflow in HTTP parser"
+  
   Body: explain reasoning, not mechanics: 
-  "strcpy allows unbounded input, risking overflow. strncpy with explicit bounds enforces safety."
+    "strcpy allows unbounded input, risking overflow. 
+    strncpy with explicit bounds enforces safety."
 
 
 Reviewability: Changes are understandable to others (including future you)
