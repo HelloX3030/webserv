@@ -1,5 +1,7 @@
 #include "WebServ.hpp"
 
+WebServ web_serv;
+
 WebServ::WebServ()
 {
 }

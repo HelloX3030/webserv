@@ -18,3 +18,5 @@ class WebServ
     void parse(int argc, char **argv);
     void start();
 };
+
+extern WebServ web_serv;

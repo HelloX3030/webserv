@@ -2,8 +2,6 @@
 
 int main(int argc, char **argv)
 {
-    WebServ web_serv;
-
     // Signals Handling
     signal(SIGINT, handle_sigint);
 
