@@ -1,22 +1,46 @@
-1. RFC 1945
-
-Focus on
-Section 4 (HTTP Message), Section 5 (Request), Section 6 (Response). 
-These define the grammar to implement.
-
-Qs, e.g.:
-What are the valid characters in each field?
-What are the size limits?
-What happens if client violates the grammar?
-Which parts are optional vs required?
+## Accessible Learning Resources (Bridge to RFCs)
+Before diving into Stevens, get intuition:
 
 
-2. Stevens Chapter 6 Critical Points
+MDN Web Docs: HTTP - https://developer.mozilla.org/en-US/docs/Web/HTTP
 
-Focus on:
+    Clear explanations with examples
+    HTTP message structure visualized
+    Status codes, headers explained
 
-    Why select() and poll() exist (the blocking problem proof)
-    The exact semantics of poll() return values
-    What POLLIN, POLLOUT, POLLERR, POLLHUP mean
-    How to handle EAGAIN/EWOULDBLOCK
-    The descriptor set management
+
+
+Julia Evans' Networking Zines - https://wizardzines.com/
+
+    "Networking! ACK!" and "HTTP: Learn your browser's language"
+    Comic format, very accessible
+    Demystifies concepts brilliantly
+
+
+
+HTTP Made Really Easy - https://www.jmarshall.com/easy/http/
+
+    Simple tutorial format
+    Shows actual telnet sessions
+    Good for hands-on understanding
+
+
+
+Computer Networking: A Top-Down Approach (Kurose & Ross)
+
+    Chapter 2: Application Layer (covers HTTP)
+    More pedagogical than Stevens
+    Good diagrams and examples
+
+
+
+Beej's Guide to Network Programming - https://beej.us/guide/bgnet/
+
+    Free online
+    C socket programming tutorial
+    Explains poll(), non-blocking I/O
+    More readable than Stevens for first pass
+
+
+Sequence: Read these first for intuition,
+then Stevens for depth, then RFCs for specification.
