@@ -10,11 +10,12 @@ Different machines, different operating systems, different memory spaces. How do
 **HTTP's solution**: A universal protocol - a shared language that any computer can speak,
 regardless of implementation details.
 
-Think of HTTP like postal service rules: 
+
+Like postal service rules: 
 Any post office worldwide can handle a letter if it follows standard address format. 
 Similarly, any HTTP server can handle a request if it follows the HTTP message format.
 
-Your webserv implements this universal protocol in C++.
+Webserv implements this universal protocol in C++.
 
 
 ## What IS an HTTP Server?
@@ -25,7 +26,7 @@ At its essence, an HTTP server is a **translator and coordinator**:
 2. **It coordinates** multiple simultaneous conversations with different clients
 3. **It responds** with properly formatted messages the client understands
 
-Think of it as a multilingual receptionist at a busy hotel:
+Like a multilingual receptionist at a busy hotel:
 - Speaks the guest's language (HTTP protocol)
 - Knows the hotel layout (filesystem, resources)
 - Handles many guests simultaneously (concurrent connections)
@@ -97,6 +98,8 @@ When `bytes_received == bytes_expected`, request is complete.
 Don't throw away earlier pages while waiting for the rest. 
 Stack them up until you have the complete document.
 
+
+
 ### Challenge 3: Parsing HTTP Messages
 
 HTTP has specific structure (from RFC 1945):
@@ -125,6 +128,7 @@ Invalid input → ERROR state → return 400 Bad Request.
 **Analogy**: Following assembly instructions step-by-step. 
 Each instruction (character) tells you what to do next. 
 Skip a step or do them out of order = broken product.
+
 
 
 ## The Event Loop: Heart of the Server
@@ -163,6 +167,7 @@ When it wakes up, do available work quickly, then back to `poll()`.
 Planes (clients) moving at different speeds. 
 Controller gives instructions to each when needed, 
 never focuses on one plane so long that others crash.
+
 
 
 ## HTTP Message Structure (The Grammar)
