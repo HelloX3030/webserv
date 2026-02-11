@@ -1,20 +1,23 @@
 ## Accessible Learning Resources (Bridge to RFCs)
 Before diving into Stevens, get intuition:
 
+### MDN Web Docs: 
+Web technology for developers - https://developer.mozilla.org/en-US/docs/Web
 
-MDN Web Docs: HTTP - https://developer.mozilla.org/en-US/docs/Web/HTTP
+    HTTP: Hypertext Transfer Protocol - https://developer.mozilla.org/en-US/docs/Web/HTTP
 
-    Clear explanations with examples
-    HTTP message structure visualized
-    Status codes, headers explained
+    Glossary of web terms - https://developer.mozilla.org/en-US/docs/Glossary
 
 
+### Julia Evans
+https://jvns.ca/
 
-Julia Evans' Networking Zines - https://wizardzines.com/
+Zines - https://wizardzines.com/
 
-    "Networking! ACK!" and "HTTP: Learn your browser's language"
-    Comic format, very accessible
-    Demystifies concepts brilliantly
+    Networking! ACK! - https://wizardzines.com/zines/networking/
+
+    HTTP: Learn your browser's language
+
 
 
 

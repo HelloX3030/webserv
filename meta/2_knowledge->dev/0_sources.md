@@ -2,32 +2,40 @@
 
 ### RFC 1945: HTTP/1.0 specification
 
-https://www.rfc-editor.org/rfc/rfc1945.html
-https://datatracker.ietf.org/doc/html/rfc1945#autoid-21
+Sources:
 
-Section 4: HTTP Message - priority
-Section 5: Request - GET/POST/DELETE semantics
-Section 6: Response - status codes
-Section 8: Connections - persistent vs non-persistent
+    https://www.rfc-editor.org/rfc/rfc1945
+
+    https://roy.gbiv.com/protocols/http/rfc1945.html
+
+    https://datatracker.ietf.org/doc/html/rfc1945#autoid-21
+
+
+Focus areas now:
+
+    Section 4: HTTP Message - priority
+    Section 5: Request - GET/POST/DELETE semantics
+    Section 6: Response - status codes
+    Section 8: Connections - persistent vs non-persistent
 
 
 ### RFC 3875: CGI specification
 
 https://www.rfc-editor.org/rfc/rfc3875.html
 
-Defines external program execution protocol
-Environment variables for server-CGI communication
-Request handling (including chunked requests)
-Response processing
+    Defines external program execution protocol
+    Environment variables for server-CGI communication
+    Request handling (including chunked requests)
+    Response processing
 
 
 ### RFC 3986: URI Generic Syntax
 
 https://www.rfc-editor.org/rfc/rfc3986.html
 
-Defines what URLs/URIs actually are
-Parsing rules
-Component structure (scheme, authority, path, query, fragment)
+    Defines what URLs/URIs actually are
+    Parsing rules
+    Component structure (scheme, authority, path, query, fragment)
 
 
 
