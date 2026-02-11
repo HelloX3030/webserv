@@ -2,16 +2,19 @@
 
 #include "base.hpp"
 
+#include "Listener.hpp"
+
 class Server
 {
   private:
     // Server Config
 
     // Server Vars
-    int server_fd;
+    std::vector<Listener> listener;
 
     // Functions
     void start();
+    void respond();
     void stop();
 
   public:
@@ -20,8 +23,7 @@ class Server
     Server &operator=(const Server &other);
     ~Server();
 
-    // Special Constructors
+    // Public Functions
     void parse(const std::string &file_path);
-    void parse_args(int argc, char **argv);
     void run();
 };

@@ -2,20 +2,21 @@
 
 int main(int argc, char **argv)
 {
-    Server server;
+    WebServ web_serv;
 
     // Signals Handling
     signal(SIGINT, handle_sigint);
 
     try
     {
-        server.parse_args(argc, argv);
+        web_serv.parse(argc, argv);
     }
     catch (const std::exception &e)
     {
         log::log(PARSE_SERVER_CONFIG, e.what(), log::LogType::ERROR);
+        return 1;
     }
 
-    server.run();
+    web_serv.start();
     return 0;
 }

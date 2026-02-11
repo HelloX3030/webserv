@@ -10,11 +10,11 @@ void handle_sigint(int)
     if (g_sigint_count == 1)
     {
         log::log(SHUTDOWN, "Starting Graceful Shutdown...");
-        g_running = 0; // graceful shutdown
+        g_running = 0;
     }
     else
     {
         log::log(SHUTDOWN, "Forcing shutdown...");
-        std::_Exit(1); // immediate, async-signal-safe exit
+        std::_Exit(1);
     }
 }
