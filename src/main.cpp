@@ -13,7 +13,7 @@ int main(int argc, char **argv)
     }
     catch (const std::exception &e)
     {
-        log::log("Parse Server Config", e.what(), log::LogType::ERROR);
+        log::log(PARSE_SERVER_CONFIG, e.what(), log::LogType::ERROR);
     }
 
     server.run();

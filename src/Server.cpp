@@ -24,7 +24,7 @@ Server::~Server()
 
 void Server::start()
 {
-    log::log("Server", "Start");
+    log::log(SERVER, START);
 
     server_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (server_fd < 0)
@@ -58,7 +58,7 @@ void Server::start()
 
 void Server::stop()
 {
-    log::log("Server", "Stop");
+    log::log(SERVER, STOP);
     close(server_fd);
 }
 

@@ -2,7 +2,7 @@
 
 void Server::parse(const std::string &path)
 {
-    log::log("Parse ServerConfig", path);
+    log::log(PARSE_SERVER_CONFIG, path);
 }
 
 void Server::parse_args(int argc, char **argv)
