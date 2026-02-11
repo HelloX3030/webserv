@@ -67,7 +67,12 @@ git checkout -b <yourname>/<feature-name>
 git commit -m "implement X"
 
 # Push to remote daily (minimum)
+
+# 1st time pushing to new remote branch (`-u` means `--set-upstream`):
 git push -u origin <yourname>/<feature-name>
+
+# after remote branch has been set as the upstream (tracking branch) & assuming contined connection to it:
+git push
 ```
 
 **Why push daily**: Backup + visibility. Other person can see your progress.
