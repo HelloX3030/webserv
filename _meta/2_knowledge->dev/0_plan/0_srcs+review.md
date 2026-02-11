@@ -76,6 +76,9 @@ https://www.rfc-editor.org/rfc/rfc3986.html
 
 ---
 
+
+
+
 ## Tier 1
 
 
@@ -104,6 +107,9 @@ https://www.rfc-editor.org/rfc/rfc3986.html
 **Why Stevens**: Explains *why* systems designed this way.
 Proves necessity from first principles. Mathematical rigor meets practical clarity.
 
+
+
+
 ### W. Richard Stevens: TCP/IP Illustrated Vol 1
 
 **Essential chapters:**
@@ -121,6 +127,9 @@ Proves necessity from first principles. Mathematical rigor meets practical clari
 
 **Why this book**: Understand the layer below HTTP.
 Know what TCP provides so you understand what HTTP doesn't need to handle.
+
+
+
 
 ### Michael Kerrisk: The Linux Programming Interface
 
@@ -144,6 +153,8 @@ Know what TCP provides so you understand what HTTP doesn't need to handle.
 
 **Why Kerrisk**: More modern than Stevens. Covers Linux-specific APIs.
 Excellent for file descriptor and process management details.
+
+
 
 ---
 
@@ -193,8 +204,9 @@ Removes intimidation factor. Good for intuition.
 Review:
 [20260211]
 kinda cute, helpful to see some basic images,
-but doesn't speak to me. Not intuitive enough, not enough semantic hooks.
-Feels like dumbed down & still dry & technical.
+but doesn't speak to me. Not intuitive enough, not enough semantic depth.
+Feels like dumbed down, but still dry & technical.
+
 
 
 ### HTTP Made Really Easy
@@ -209,7 +221,13 @@ https://www.jmarshall.com/easy/http/
 
 **Why this**: Shows HTTP in action. Bridge between theory and practice.
 
+
+
+
 ### Beej's Guide to Network Programming
+
+Beej's Home Page - https://beej.us/
+Guides - https://beej.us/guide/
 
 https://beej.us/guide/bgnet/
 
@@ -220,6 +238,9 @@ https://beej.us/guide/bgnet/
 - More accessible than Stevens for first encounter
 
 **Why Beej**: Free, online, clear. Good first introduction before deep dive into Stevens.
+
+
+
 
 ### Computer Networking: A Top-Down Approach (Kurose & Ross)
 
