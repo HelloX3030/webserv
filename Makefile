@@ -3,49 +3,89 @@ CXX := c++
 CXXFLAGS := -Wall -Wextra -Werror -std=c++17
 NAME := webserv
 
-# vpath for header files
-vpath %.hpp include/
+# Debug flags
+DEBUG_FLAGS := -DDEBUG=1 -g
+DEBUG_NAME  := webserv_debug
 
-# vpath for source files
-vpath %.cpp src/
-
-# .h and .hpp files
-H_FILES := WebServ.hpp
-
-# .cpp source files
-SRC_FILES := main.cpp parsing.cpp webserv.cpp
-
-# Object directory and object files
+# Directories
+SRC_DIR := src
+INC_DIR := include
 OBJ_DIR := obj
-OBJ_FILES := $(addprefix $(OBJ_DIR)/, $(SRC_FILES:.cpp=.o))
+DBG_OBJ_DIR := obj_debug
 
-# includes
-INCLUDES := -I include
+# Recursive wildcard function
+rwildcard = $(foreach d,$(wildcard $1*), \
+              $(call rwildcard,$d/,$2) \
+              $(filter $(subst *,%,$2),$d))
 
-# Default target
+# Automatically collect files (recursive)
+SRC_FILES := $(call rwildcard,$(SRC_DIR)/,*.cpp)
+H_FILES   := $(call rwildcard,$(INC_DIR)/,*.hpp) \
+             $(call rwildcard,$(INC_DIR)/,*.h)
+
+# Object files
+OBJ_FILES := $(patsubst $(SRC_DIR)/%.cpp,$(OBJ_DIR)/%.o,$(SRC_FILES))
+DBG_OBJ_FILES := $(patsubst $(SRC_DIR)/%.cpp,$(DBG_OBJ_DIR)/%.o,$(SRC_FILES))
+
+# Includes
+INCLUDES := -I$(INC_DIR)
+
+# =====================
+# Normal build
+# =====================
+
 all: $(NAME)
 
-# Link the executable
 $(NAME): $(OBJ_FILES)
-	$(CXX) $(OBJ_FILES) -o $(NAME)
+	$(CXX) $(OBJ_FILES) -o $@
 
-# Compile object files
-$(OBJ_DIR)/%.o: src/%.cpp $(H_FILES) | $(OBJ_DIR)
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp $(H_FILES)
+	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
 
-# Create object directory if it doesn't exist
-$(OBJ_DIR):
-	mkdir -p $@
+# =====================
+# Debug build
+# =====================
 
-# Clean object files
+debug: $(DEBUG_NAME)
+
+$(DEBUG_NAME): $(DBG_OBJ_FILES)
+	$(CXX) $(DBG_OBJ_FILES) -o $@
+
+$(DBG_OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp $(H_FILES)
+	@mkdir -p $(dir $@)
+	$(CXX) $(CXXFLAGS) $(DEBUG_FLAGS) $(INCLUDES) -c $< -o $@
+
+# =====================
+# Cleaning
+# =====================
+
 clean:
-	$(RM) -r $(OBJ_DIR)
+	$(RM) -r $(OBJ_DIR) $(DBG_OBJ_DIR)
 
-# Clean all
 fclean: clean
-	$(RM) -f $(NAME)
+	$(RM) -f $(NAME) $(DEBUG_NAME)
 
-# Rebuild
 re: fclean all
 
-.PHONY: all clean fclean re
+# =====================
+# Debug-only helpers
+# =====================
+
+debugclean:
+	$(RM) -r $(DBG_OBJ_DIR)
+	$(RM) -f $(DEBUG_NAME)
+
+debugre: debugclean debug
+
+# =====================
+# Run helpers
+# =====================
+
+run: $(NAME)
+	./$(NAME)
+
+debugrun: $(DEBUG_NAME)
+	./$(DEBUG_NAME)
+
+.PHONY: all debug clean fclean re debugclean debugre run debugrun

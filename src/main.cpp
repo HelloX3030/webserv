@@ -1,23 +1,23 @@
 #include "WebServ.hpp"
-#include <exception>
-#include <iostream>
 
 int main(int argc, char **argv)
 {
-    WebServ server;
+#ifdef DEBUG
+    std::cout << "Test" << std::endl;
+#endif
+    // Signals Handling
+    signal(SIGINT, handle_sigint);
 
-    // Parsing
     try
     {
-        server.parse(argc, argv);
+        WebServ::parse(argc, argv);
     }
     catch (const std::exception &e)
     {
-        std::cerr << "Error: " << e.what() << std::endl;
+        log::log(WEB_SERV, e.what(), log::LogType::ERROR);
         return 1;
     }
 
-    // Run Server
-
+    WebServ::run();
     return 0;
 }

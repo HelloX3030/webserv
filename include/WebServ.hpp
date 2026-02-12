@@ -1,19 +1,15 @@
 #pragma once
 
-#include <iostream>
-#include <stdexcept>
+#include "base/base.hpp"
+#include "classes/Server.hpp"
 
-class WebServ
+namespace WebServ
 {
-  private:
-    // Settings
 
-  public:
-    WebServ();
-    WebServ(const WebServ &other);
-    WebServ &operator=(const WebServ &other);
-    ~WebServ();
+extern std::vector<Server> servers;
 
-    // Funcs
-    void parse(int argc, char **argv);
-};
+// Functions
+void parse(int argc, char **argv);
+void run();
+
+} // namespace WebServ
