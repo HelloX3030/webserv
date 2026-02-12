@@ -14,21 +14,10 @@ NAME, all, clean, fclean, re
 [A configuration file]
 
 ### External Functions
-All functionality must be implemented in C++ 98.
-execve, pipe, strerror, gai_strerror, errno, dup,
-dup2, fork, socketpair, htons, htonl, ntohs, ntohl,
-select, poll, epoll (epoll_create, epoll_ctl,
-epoll_wait), kqueue (kqueue, kevent), socket,
-accept, listen, send, recv, chdir, bind, connect,
-getaddrinfo, freeaddrinfo, setsockopt, getsockname,
-getprotobyname, fcntl, close, read, write, waitpid,
-kill, signal, access, stat, open, opendir, readdir
-and closedir.
+fns...wip`
 
 ### Description
-An HTTP server in C++ 98
-
-You must write an HTTP server in C++ 98.
+You must implement an HTTP server in C++ 98.
 
 Your executable should be executed as follows:
 ./webserv [configuration file]
@@ -95,7 +84,7 @@ You can take inspiration from the ’server’ section of the NGINX
 configuration file.
 
 In the configuration file, you should be able to:
-. Define all the interface:port pairs on which your server will listen to 
+. Define all the interface:port pairs on which your server will listen to
 (defining multiple websites served by your program).
 . Set up default error pages.
 . Set the maximum allowed size for client request bodies.
@@ -103,14 +92,14 @@ In the configuration file, you should be able to:
 website, among the following:
   . List of accepted HTTP methods for the route.
   . HTTP redirection.
-  . Directory where the requested file should be located 
-  (e.g., if URL /kapouet is rooted to /tmp/www, 
+  . Directory where the requested file should be located
+  (e.g., if URL /kapouet is rooted to /tmp/www,
   URL /kapouet/pouic/toto/pouet will search for /tmp/www/pouic/toto/pouet).
   . Enabling or disabling directory listing.
   . Default file to serve when the requested resource is a directory.
-  . Uploading files from the clients to the server is authorized, 
+  . Uploading files from the clients to the server is authorized,
   and storage location is provided.
-  . Execution of CGI, based on file extension (for example .php). 
+  . Execution of CGI, based on file extension (for example .php).
   Here are some specific remarks regarding CGIs:
     . Do you wonder what a CGI is?
     . Have a careful look at the environment variables involved in the web
