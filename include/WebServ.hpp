@@ -3,20 +3,13 @@
 #include "Server.hpp"
 #include "base.hpp"
 
-class WebServ
+namespace WebServ
 {
-  private:
-    std::vector<Server> servers;
 
-  public:
-    WebServ();
-    WebServ(const WebServ &other);
-    WebServ &operator=(const WebServ &other);
-    ~WebServ();
+extern std::vector<Server> servers;
 
-    // Functions
-    void parse(int argc, char **argv);
-    void start();
-};
+// Functions
+void parse(int argc, char **argv);
+void start();
 
-extern WebServ web_serv;
+} // namespace WebServ

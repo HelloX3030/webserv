@@ -3,7 +3,7 @@
 namespace log
 {
 
-void log(const std::string &title, const std::string &msg, LogType type)
+void log(std::string title, std::string msg, std::string value, LogType type)
 {
 #ifdef DEBUG
     if (title.length() > log_title_width - 2)
@@ -18,27 +18,23 @@ void log(const std::string &title, const std::string &msg, LogType type)
 
     if (type == LogType::NONE)
     {
-        std::cout << "[" << std::string(left, ' ') << title << std::string(right, ' ') << "] " << msg << std::endl;
+        if (value == "")
+            std::cout << "[" << std::string(left, ' ') << title << std::string(right, ' ') << "] " << msg << std::endl;
+        else
+            std::cout << "[" << std::string(left, ' ') << title << std::string(right, ' ') << "] " << msg << ": " << value << std::endl;
     }
     else
     {
-        std::cerr << "[" << std::string(left, ' ') << title << std::string(right, ' ') << "] " << "ERROR: " << msg << std::endl;
+        if (value == "")
+            std::cerr << "[" << std::string(left, ' ') << title << std::string(right, ' ') << "] " << "ERROR: " << msg << std::endl;
+        else
+            std::cerr << "[" << std::string(left, ' ') << title << std::string(right, ' ') << "] " << "ERROR: " << msg << ":" << value << std::endl;
     }
 }
 
-void log(const char *title, const char *msg, LogType type)
+void log(std::string title, std::string msg, LogType type)
 {
-    log(std::string(title), std::string(msg), type);
-}
-
-void log(const std::string &title, const char *msg, LogType type)
-{
-    log(title, std::string(msg), type);
-}
-
-void log(const char *title, const std::string &msg, LogType type)
-{
-    log(std::string(title), msg, type);
+    log(title, msg, "", type);
 }
 
 } // namespace log

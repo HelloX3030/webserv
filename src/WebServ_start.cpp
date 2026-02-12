@@ -3,6 +3,8 @@
 namespace WebServ
 {
 
-std::vector<Server> servers;
+void start()
+{
+}
 
 } // namespace WebServ

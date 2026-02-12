@@ -13,9 +13,7 @@ enum class LogType
     ERROR,
 };
 
-void log(const char *title, const char *msg, LogType type = LogType::NONE);
-void log(const std::string &title, const char *msg, LogType type = LogType::NONE);
-void log(const char *title, const std::string &msg, LogType type = LogType::NONE);
-void log(const std::string &title, const std::string &msg, LogType type = LogType::NONE);
+void log(std::string title, std::string msg, std::string value, LogType type = LogType::NONE);
+void log(std::string title, std::string msg, LogType type = LogType::NONE);
 
 } // namespace log

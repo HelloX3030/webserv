@@ -3,5 +3,5 @@
 void Server::stop()
 {
     log::log(SERVER, STOP);
-    close(server_fd);
+    // close(server_fd);
 }

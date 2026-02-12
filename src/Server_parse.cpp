@@ -2,5 +2,5 @@
 
 void Server::parse(const std::string &path)
 {
-    log::log(PARSE_SERVER_CONFIG, path);
+    log::log(SERVER, PARSE_SERVER_CONFIG, path);
 }

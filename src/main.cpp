@@ -7,14 +7,14 @@ int main(int argc, char **argv)
 
     try
     {
-        web_serv.parse(argc, argv);
+        WebServ::parse(argc, argv);
     }
     catch (const std::exception &e)
     {
-        log::log(PARSE_SERVER_CONFIG, e.what(), log::LogType::ERROR);
+        log::log(WEB_SERV, e.what(), log::LogType::ERROR);
         return 1;
     }
 
-    web_serv.start();
+    WebServ::start();
     return 0;
 }
