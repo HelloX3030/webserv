@@ -40,7 +40,8 @@ HEAD → commit object (directly)
 
 HEAD no longer points to a branch reference—it points directly to a commit object.
 
-**Critical insight:** The commit graph is immutable. You're not changing history; you're moving your working directory's view through the graph. The tree structure remains unchanged.
+**Critical insight:** The commit graph is immutable. You're not changing history;
+you're moving your working directory's view through the graph. The tree structure remains unchanged.
 
 ## Full Power Commands
 

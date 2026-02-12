@@ -24,6 +24,7 @@ categorised by fundamental capability domain
 - write
 - send
 - recv
+- bind
 
 ## namespace & address resolution
 - stat
@@ -36,7 +37,6 @@ categorised by fundamental capability domain
 - freeaddrinfo
 - getprotobyname
 - getsockname
-- bind
 
 ## event coordination
 - select
@@ -59,3 +59,6 @@ categorised by fundamental capability domain
 - errno
 - strerror
 - gai_strerror
+
+
+see knowledge notes for more info
