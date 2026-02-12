@@ -118,6 +118,8 @@ git push
 git branch -d <yourname>/<feature-name>
 git push origin --delete <yourname>/<feature-name>
 ```
+    GANESHA: see thread 20260212-0 for ctx here
+    
 
 **Why rebase before merge**:
 - Moves your changes on top of latest main
@@ -128,6 +130,9 @@ git push origin --delete <yourname>/<feature-name>
 - Enforces that rebase happened
 - Prevents merge commits
 - If it fails, you forgot to rebase
+
+
+
 
 ## Conflict Resolution
 
@@ -147,6 +152,9 @@ git rebase --abort  # Start over
 
 **Prevention**: Communicate which files you're working on (see Communication document).
 
+
+
+
 ## Preconditions
 
 This workflow assumes:
@@ -155,6 +163,9 @@ This workflow assumes:
 3. Both developers understand that main is sacred
 4. Both developers have tested locally before attempting merge
 
+
+
+
 ## What This Achieves
 
 - **Safety**: Bad code never enters main
@@ -162,6 +173,9 @@ This workflow assumes:
 - **Independence**: Can work on separate features without coordination overhead
 - **Recoverability**: Can revert any feature cleanly
 - **Simplicity**: No complex merge strategies, no pull request UI dependencies
+
+
+
 
 ## The Only Rule
 
