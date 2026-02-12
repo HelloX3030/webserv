@@ -14,7 +14,7 @@ NAME, all, clean, fclean, re
 [A configuration file]
 
 ### External Functions
-fns...wip
+see "4b_fns"
 
 ### Description
 You must implement an HTTP server in C++ 98.
