@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Server.hpp"
-#include "base.hpp"
+#include "base/base.hpp"
+#include "classes/Server.hpp"
 
 namespace WebServ
 {

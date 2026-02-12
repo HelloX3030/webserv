@@ -1,4 +1,4 @@
-#include "Server.hpp"
+#include "classes/Server.hpp"
 
 void Server::respond()
 {

@@ -8,35 +8,33 @@ SRC_DIR := src
 INC_DIR := include
 OBJ_DIR := obj
 
-# vpath for header and source files
-vpath %.hpp $(INC_DIR)
-vpath %.h   $(INC_DIR)
-vpath %.cpp $(SRC_DIR)
+# Recursive wildcard function
+rwildcard = $(foreach d,$(wildcard $1*), \
+              $(call rwildcard,$d/,$2) \
+              $(filter $(subst *,%,$2),$d))
 
-# Automatically collect files
-H_FILES   := $(wildcard $(INC_DIR)/*.hpp) $(wildcard $(INC_DIR)/*.h)
-SRC_FILES := $(wildcard $(SRC_DIR)/*.cpp)
+# Automatically collect files (recursive)
+SRC_FILES := $(call rwildcard,$(SRC_DIR)/,*.cpp)
+H_FILES   := $(call rwildcard,$(INC_DIR)/,*.hpp) \
+             $(call rwildcard,$(INC_DIR)/,*.h)
 
-# Object files
-OBJ_FILES := $(addprefix $(OBJ_DIR)/, $(notdir $(SRC_FILES:.cpp=.o)))
+# Object files (mirror src/ structure inside obj/)
+OBJ_FILES := $(patsubst $(SRC_DIR)/%.cpp,$(OBJ_DIR)/%.o,$(SRC_FILES))
 
 # Includes
-INCLUDES := -I $(INC_DIR)
+INCLUDES := -I$(INC_DIR)
 
 # Default target
 all: $(NAME)
 
-# Link the executable
+# Link executable
 $(NAME): $(OBJ_FILES)
-	$(CXX) $(OBJ_FILES) -o $(NAME)
+	$(CXX) $(OBJ_FILES) -o $@
 
-# Compile object files
-$(OBJ_DIR)/%.o: %.cpp $(H_FILES) | $(OBJ_DIR)
+# Compile rule (creates subdirectories as needed)
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp $(H_FILES)
+	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
-
-# Create object directory if it doesn't exist
-$(OBJ_DIR):
-	mkdir -p $@
 
 # Clean object files
 clean:

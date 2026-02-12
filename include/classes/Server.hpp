@@ -1,8 +1,8 @@
 #pragma once
 
-#include "base.hpp"
+#include "base/base.hpp"
 
-#include "Listener.hpp"
+#include "classes/Listener.hpp"
 
 class Server
 {
