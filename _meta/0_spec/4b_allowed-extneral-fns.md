@@ -2,6 +2,7 @@
 
 categorised by fundamental capability domain
 
+
 ## process identity & lifecycle
 - execve
 - fork
@@ -9,22 +10,30 @@ categorised by fundamental capability domain
 - kill
 - signal
 
+
 ## descriptor abstraction
+
+### descriptor creation
 - open
 - socket
 - pipe
 - socketpair
 - kqueue
 - epoll_create
+
+### descriptor manipulation
 - close
 - dup
 - dup2
 - fcntl
+- setsockopt
+
+### data transfer
 - read
 - write
 - send
 - recv
-- bind
+
 
 ## namespace & address resolution
 - stat
@@ -37,6 +46,8 @@ categorised by fundamental capability domain
 - freeaddrinfo
 - getprotobyname
 - getsockname
+- bind
+
 
 ## event coordination
 - select
@@ -45,15 +56,19 @@ categorised by fundamental capability domain
 - epoll_wait
 - kevent
 
-## protocol state machines
+
+## connection lifecycle
 - listen
 - accept
 - connect
+
+
+## data representation
 - htons
 - htonl
 - ntohs
 - ntohl
-- setsockopt
+
 
 ## error & introspection
 - errno
