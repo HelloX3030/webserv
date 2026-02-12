@@ -1,15 +1,15 @@
 # allowed external fns
 
-Categorised by fundamental capability domain
+categorised by fundamental capability domain
 
-**Process Identity & Lifecycle**
+## process identity & lifecycle
 - execve
 - fork
 - waitpid
 - kill
 - signal
 
-**Descriptor Abstraction**
+## descriptor abstraction
 - open
 - socket
 - pipe
@@ -25,7 +25,7 @@ Categorised by fundamental capability domain
 - send
 - recv
 
-**Namespace & Address Resolution**
+## namespace & address resolution
 - stat
 - access
 - chdir
@@ -38,14 +38,14 @@ Categorised by fundamental capability domain
 - getsockname
 - bind
 
-**Event Coordination**
+## event coordination
 - select
 - poll
 - epoll_ctl
 - epoll_wait
 - kevent
 
-**Protocol State Machines**
+## protocol state machines
 - listen
 - accept
 - connect
@@ -55,7 +55,7 @@ Categorised by fundamental capability domain
 - ntohl
 - setsockopt
 
-**Error & Introspection**
+## error & introspection
 - errno
 - strerror
 - gai_strerror
