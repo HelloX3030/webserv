@@ -10,6 +10,6 @@ extern std::vector<Server> servers;
 
 // Functions
 void parse(int argc, char **argv);
-void start();
+void run();
 
 } // namespace WebServ

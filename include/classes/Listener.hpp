@@ -8,7 +8,7 @@ class Listener
 {
   private:
     int fd;
-    Server *server;
+    int server_id;
 
   public:
     Listener();
