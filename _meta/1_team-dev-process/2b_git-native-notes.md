@@ -1,3 +1,5 @@
+GANESHA - PROCESS: extract this doc to personal system
+
 ## purpose
 
 This directory exists for asynchronous coordination items
