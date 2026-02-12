@@ -1,3 +1,5 @@
 *.pdf
 webserv
+webserv_debug
 obj/
+obj_debug/

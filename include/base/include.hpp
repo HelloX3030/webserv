@@ -12,8 +12,6 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
-#define DEBUG 1
-
 // Defines
 constexpr const char *START = "Start";
 constexpr const char *STOP = "Stop";

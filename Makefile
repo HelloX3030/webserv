@@ -3,10 +3,15 @@ CXX := c++
 CXXFLAGS := -Wall -Wextra -Werror -std=c++17
 NAME := webserv
 
+# Debug flags
+DEBUG_FLAGS := -DDEBUG=1 -g
+DEBUG_NAME  := webserv_debug
+
 # Directories
 SRC_DIR := src
 INC_DIR := include
 OBJ_DIR := obj
+DBG_OBJ_DIR := obj_debug
 
 # Recursive wildcard function
 rwildcard = $(foreach d,$(wildcard $1*), \
@@ -18,33 +23,69 @@ SRC_FILES := $(call rwildcard,$(SRC_DIR)/,*.cpp)
 H_FILES   := $(call rwildcard,$(INC_DIR)/,*.hpp) \
              $(call rwildcard,$(INC_DIR)/,*.h)
 
-# Object files (mirror src/ structure inside obj/)
+# Object files
 OBJ_FILES := $(patsubst $(SRC_DIR)/%.cpp,$(OBJ_DIR)/%.o,$(SRC_FILES))
+DBG_OBJ_FILES := $(patsubst $(SRC_DIR)/%.cpp,$(DBG_OBJ_DIR)/%.o,$(SRC_FILES))
 
 # Includes
 INCLUDES := -I$(INC_DIR)
 
-# Default target
+# =====================
+# Normal build
+# =====================
+
 all: $(NAME)
 
-# Link executable
 $(NAME): $(OBJ_FILES)
 	$(CXX) $(OBJ_FILES) -o $@
 
-# Compile rule (creates subdirectories as needed)
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp $(H_FILES)
 	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
 
-# Clean object files
+# =====================
+# Debug build
+# =====================
+
+debug: $(DEBUG_NAME)
+
+$(DEBUG_NAME): $(DBG_OBJ_FILES)
+	$(CXX) $(DBG_OBJ_FILES) -o $@
+
+$(DBG_OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp $(H_FILES)
+	@mkdir -p $(dir $@)
+	$(CXX) $(CXXFLAGS) $(DEBUG_FLAGS) $(INCLUDES) -c $< -o $@
+
+# =====================
+# Cleaning
+# =====================
+
 clean:
-	$(RM) -r $(OBJ_DIR)
+	$(RM) -r $(OBJ_DIR) $(DBG_OBJ_DIR)
 
-# Clean all
 fclean: clean
-	$(RM) -f $(NAME)
+	$(RM) -f $(NAME) $(DEBUG_NAME)
 
-# Rebuild
 re: fclean all
 
-.PHONY: all clean fclean re
+# =====================
+# Debug-only helpers
+# =====================
+
+debugclean:
+	$(RM) -r $(DBG_OBJ_DIR)
+	$(RM) -f $(DEBUG_NAME)
+
+debugre: debugclean debug
+
+# =====================
+# Run helpers
+# =====================
+
+run: $(NAME)
+	./$(NAME)
+
+debugrun: $(DEBUG_NAME)
+	./$(DEBUG_NAME)
+
+.PHONY: all debug clean fclean re debugclean debugre run debugrun
