@@ -1,12 +1,10 @@
 # Branching & Integration Workflow
 
-
 ## Law
 
 **Main branch represents valid program state at all times.**
 
 Every commit in main must compile, pass tests, and be deployable.
-
 
 
 ## Principles
@@ -32,7 +30,6 @@ Every commit in main must compile, pass tests, and be deployable.
    - Failures caught before integration, not after
 
 
-
 ## Branch Naming
 ```
 <developer>/<feature-name>
@@ -55,10 +52,7 @@ lukas/cgi-executor
 - Typically maps to one major requirement from spec
 
 
-
-
 ## Workflow
-
 
 ### 1. Starting New Feature
 ```bash
@@ -68,7 +62,6 @@ git checkout -b <yourname>/<feature-name>
 ```
 
 **Why pull first**: Ensure you branch from latest valid state.
-
 
 
 ### 2. Development
@@ -87,7 +80,6 @@ git push
 ```
 
 **Why push daily**: Backup + visibility. Other person can see your progress.
-
 
 
 ### 3. Ready to Integrate
