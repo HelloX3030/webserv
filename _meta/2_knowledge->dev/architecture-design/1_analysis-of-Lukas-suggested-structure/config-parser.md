@@ -74,3 +74,65 @@ server {
 ```
 
 No JSON. No custom format. NGINX-style blocks.
+
+
+
+
+
+what I must build:
+
+```cpp
+struct Location {
+    std::string path_prefix;  // "/api/"
+    std::string root;
+    std::vector<std::string> index_files;
+    std::set<std::string> allowed_methods;
+    bool autoindex;
+    std::string cgi_extension;
+    std::string cgi_path;
+};
+
+struct Server {
+    std::string host;
+    uint16_t port;
+    std::vector<std::string> server_names;
+    size_t client_max_body_size;
+    std::map<int, std::string> error_pages;  // 404 → "/errors/404.html"
+    std::map<std::string, Location> locations;  // "/api/" → Location config
+};
+
+class ConfigParser {
+public:
+    std::vector<Server> parse(const std::string& filepath);
+    
+private:
+    std::vector<Token> tokenize(const std::string& content);
+    Server parse_server_block(TokenIterator& it);
+    Location parse_location_block(TokenIterator& it);
+};
+```
+
+
+Tokeniser produces:
+
+```cpp
+enum TokenType { KEYWORD, STRING, NUMBER, LBRACE, RBRACE, SEMICOLON };
+
+struct Token {
+    TokenType type;
+    std::string value;
+};
+```
+
+**Parser state machine:**
+```
+START
+  → see "server" → PARSE_SERVER_BLOCK
+      → see "listen" → parse address:port
+      → see "server_name" → parse names
+      → see "location" → PARSE_LOCATION_BLOCK
+          → see "root" → parse path
+          → see "index" → parse filenames
+          → see "}" → END_LOCATION
+      → see "}" → END_SERVER
+```
