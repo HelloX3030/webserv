@@ -75,7 +75,8 @@ git commit -m "implement X"
 # 1st time pushing to new remote branch (`-u` means `--set-upstream`):
 git push -u origin <yourname>/<feature-name>
 
-# after remote branch has been set as the upstream (tracking branch) & assuming contined connection to it:
+# after remote branch has been set as the upstream (tracking branch)
+& assuming contined connection to it:
 git push
 ```
 

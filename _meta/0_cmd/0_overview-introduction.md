@@ -26,8 +26,6 @@ Network & system administration
 
 [subject / specification]
 
-This is when you finally understand why URLs start with HTTP
-
 ## Summary
 This project is about writing your own HTTP server.
 You will be able to test it with an actual browser.
@@ -38,8 +36,7 @@ even if you won’t be working on a website.
 ## Version
 24.0
 
-
-## Chapter I: Introduction
+## Introduction
 
 The Hypertext Transfer Protocol (HTTP) is an application protocol for distributed,
 collaborative, hypermedia information systems.
