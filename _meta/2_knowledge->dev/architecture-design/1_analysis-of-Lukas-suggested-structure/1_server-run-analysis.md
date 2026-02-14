@@ -1,35 +1,47 @@
+Current design:
 
-```c++
+```cpp
 class Server {
     std::vector<Listener> listener;
     void run();  // Infinite loop
 };
+
+
+Server (class)
+  ├─ vector<Listener>    // Its listening sockets
+  ├─ run()               // Its event loop
 ```
+
+
 
 What does this mean?
 
 1. "Each Server runs its own event loop"
 
     Implies threading or sequential execution
+    Can't poll multiple servers simultaneously (each run() blocks)
+    Wastes resources (N servers = N event loops = N poll() calls per iteration)
     Violates spec ("single poll()")
-    incorrect
 
-2. scaffolding: "Server::run() is temporary structure for early testing"
+2. scaffolding: "Server::run() is temporary structure for early testing"??
 
     Just echoes back bytes
     Will be replaced by centralized loop later
     Reasonable for incremental development
 
 
-Many tutorials show simple servers like:
-```cpp
-Server server;
-while (1) {
-    client = server.accept();
-    server.handle(client);
-}
-```
 
-This works for toy examples but fundamentally doesn't scale to concurrent connections.
 
-Event loop must be above Server abstraction.
+Server's job:
+
+    Parse config
+    Create listening sockets
+    Route requests (match URI to Location)
+    Generate responses
+
+
+Server does NOT:
+
+    Run event loop
+    Track client connections
+    Poll file descriptors
