@@ -2,11 +2,11 @@
 
 ctx:
 
-Attempted first-principles reasoning (with help of AI)
-in combination with foundations-focused study is good, but too slow.
-
+Attempted first-principles reasoning (with help of AI) (prev. 2 docs)
+in combination with foundations-focused study 
+- meaningful, but slow. 
 Need to be pragmatic and make progress with program dev.
-Good enough is good enough...
+Hence concurrently taking pragmatic, mechanics-oriented approach.
 
 
 ## 0. Starting Point: What Must We Actually Build?
@@ -79,7 +79,7 @@ while (running):
             handle_client(ready_fd)
 ```
 
-That's it. Two cases: accepting new connections, or servicing existing ones.
+Two cases: accepting new connections, or servicing existing ones.
 
 
 ### What's inside handle_client?

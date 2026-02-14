@@ -1,3 +1,5 @@
+Ausgangspunkt: analysis of Lukas' README
+
 # Webserver Architecture: First Principles Analysis
 
 ## 0. Ontological Foundation
@@ -25,7 +27,8 @@ Decomposition into necessary components:
 
 The webserver exists to:
 
-1. **Mediate** between HTTP protocol (network abstraction) and filesystem/process resources (OS abstractions).
+1. **Mediate** between HTTP protocol (network abstraction) 
+and filesystem/process resources (OS abstractions).
 2. **Enforce** access policies defined in configuration.
 3. **Maintain** concurrent connection state without blocking.
 
@@ -761,7 +764,8 @@ Essential for debugging state machine bugs.
 
 **What a webserver IS:**
 
-A **finite-state machine coordinator** managing concurrent byte-stream transformations according to protocol rules and configuration policy.
+A **finite-state machine coordinator** managing concurrent byte-stream transformations 
+according to protocol rules and configuration policy.
 
 **What it MUST do:**
 
@@ -794,7 +798,11 @@ Through rigorous state machine design where:
 
 The webserver architecture reduces to:
 
-**1. Event-driven state machines** (one per connection) coordinated by **2. I/O multiplexing** (poll/epoll/kqueue) guided by **3. Configuration-based routing** enforcing **4. Protocol compliance** (HTTP) while maintaining **5. Resource invariants** (fd management, memory, processes).
+**1. Event-driven state machines** (one per connection) coordinated by 
+**2. I/O multiplexing** (poll/epoll/kqueue) guided by 
+**3. Configuration-based routing** enforcing 
+**4. Protocol compliance** (HTTP) while maintaining 
+**5. Resource invariants** (fd management, memory, processes).
 
 Every design decision must trace to necessity:
 . Why this state? → Required by HTTP protocol state.
