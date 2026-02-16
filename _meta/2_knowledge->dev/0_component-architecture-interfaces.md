@@ -20,7 +20,6 @@
 
 ## issues
 
-
 ### 1: Listener class has no clear purpose
 ```cpp
 // Current (from codebase scan)
@@ -56,7 +55,8 @@ Currently this doesn't exist.
 ### 3: Unclear ownership boundaries
 
 **Questions:**
-- Do Connection objects live in WebServ namespace (global pool) or Server class (per-server)?
+- Do Connection objects live in WebServ namespace (global pool) 
+or Server class (per-server)?
 - Does Server own its listen fds or does WebServ track them?
 - Who creates Connection objects - WebServ on accept() or Server?
 
@@ -209,7 +209,6 @@ WebServ namespace owns:
 
 ## interface contracts
 
-
 ### Parser → Server
 
 **Parser produces:**
@@ -343,13 +342,6 @@ Before I can implement configuration parser, we need to establish:
 
 1. **Server class contents** (see Server class proposal above)
 2. **Connection class design** (see Connection class proposal above)
-3. **Remove Listener class** (redundant, replace with vector<int>)?
+3. **Remove Listener class** ?? (seems redundant, perhaps replace with vector<int>)
 4. **Parser output** (vector of Server objects with config populated)
 5. **Ownership** (WebServ owns servers and connections)
-
-**Next steps:**
-1. Agree on Server/Connection data structures
-2. Define Location struct fields (from NGINX directives)
-3. Implement parser to produce agreed Server format
-4. Implement Connection class
-5. Integrate into event loop
