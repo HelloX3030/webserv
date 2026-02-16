@@ -1,20 +1,20 @@
-# Webserv architecture documentation
-
 Hey Lukas,
-check out these docs in this order:
+
+Check out these docs.
+They would make most sense in this order:
 
 ## 0. Component architecture
-Defines what components exist, what they contain, and how they interact.
-**Read this first** - establishes the pieces we're building.
+what components exist, what they contain, and how they interact.
 
 ## 1. Namespacing
-Explains code organization pattern and fixes current encapsulation issues.
-**Read this second** - shows how to organize the pieces.
+on our code organization pattern 
+and potential fix for our current encapsulation issues.
 
 ## 2. Event loop
-Defines where event loop lives and fixes current multiple-loops issue.
-**Read this third** - establishes control flow.
+on where event loop lives 
+and fixes current multiple-loops issue.
+to establish control flow.
 
 ## 3. Poll infrastructure  
-Justifies poll() over epoll() for I/O multiplexing.
-**Read this last** - implementation technology choice.
+poll() vs epoll() for I/O multiplexing.
+implementation technology choice.
