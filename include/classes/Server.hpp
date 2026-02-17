@@ -10,7 +10,6 @@ class Server
     // Server Config
 
     // Server Vars
-    std::vector<Listener> listener;
 
     // Functions
     void start();

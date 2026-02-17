@@ -18,6 +18,12 @@ int main(int argc, char **argv)
         return 1;
     }
 
+    if (WebServ::init() != SUCCES)
+    {
+        return 1;
+    }
     WebServ::run();
+    WebServ::quit();
+
     return 0;
 }

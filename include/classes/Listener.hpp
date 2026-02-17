@@ -2,17 +2,16 @@
 
 #include "base/base.hpp"
 
-class Server;
-
-class Listener
+namespace Listener
 {
-  private:
-    int fd;
-    int server_id;
 
-  public:
-    Listener();
-    Listener(const Listener &other);
-    Listener &operator=(const Listener &other);
-    ~Listener();
-};
+extern int size;
+extern std::vector<int> server_id;
+extern std::vector<int> port;
+extern std::vector<int> fd;
+
+void add(int new_server_id, int new_port);
+int init();
+void quit();
+
+} // namespace Listener

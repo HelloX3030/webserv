@@ -12,6 +12,10 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
+// Exit Codes
+constexpr const int SUCCES = 1;
+constexpr const int FAILURE = -1;
+
 // Defines
 constexpr const char *START = "Start";
 constexpr const char *STOP = "Stop";
