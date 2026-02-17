@@ -1,5 +1,12 @@
+# Custom File Types
 *.pdf
+
+# Executables
 webserv
 webserv_debug
+webserv_leaks
+
+# Folders
 obj/
 obj_debug/
+obj_leaks/
