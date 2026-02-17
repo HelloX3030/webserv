@@ -35,6 +35,28 @@ int init()
             return FAILURE;
         }
 
+        // struct sockaddr_in addr;
+        // memset(&addr, 0, sizeof(addr));
+
+        // addr.sin_family = AF_INET;          // IPv4
+        // addr.sin_addr.s_addr = INADDR_ANY;  // 0.0.0.0 (all interfaces)
+        // addr.sin_port = htons(8080);        // port 8080 (network byte order)
+
+        // if (bind(listen_fd, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
+        //     perror("bind");
+        //     close(listen_fd);
+        //     exit(1);
+        // }
+
+        // /* =========================================================
+        //  * 4. Mark the socket as a listening socket
+        //  * ========================================================= */
+        // if (listen(listen_fd, SOMAXCONN) < 0) {
+        //     perror("listen");
+        //     close(listen_fd);
+        //     exit(1);
+        // }
+
         fd[i] = listen_fd;
     }
 
