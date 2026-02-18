@@ -7,6 +7,9 @@ code + documentation
 
 max line length 80 chars
 
+comments:
+full explanatory blocks, /* */, flush
+
 
 ## documentation 
 
