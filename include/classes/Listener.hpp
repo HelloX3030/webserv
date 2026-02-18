@@ -5,12 +5,31 @@
 namespace Listener
 {
 
-extern int size;
-extern std::vector<int> server_id;
-extern std::vector<int> port;
-extern std::vector<int> fd;
+class Entry
+{
+  private:
+    int server_id;
+    in_port_t port;
+    int fd;
+    bool valid;
 
-void add(int new_server_id, int new_port);
+  public:
+    Entry();
+    Entry(const Entry &other);
+    Entry &operator=(const Entry &other);
+    ~Entry();
+
+    // Custom Constructors
+    Entry(int server_id, int port);
+
+    // Functions
+    int init();
+    void quit();
+    bool get_valid() const;
+};
+
+extern std::vector<Entry> listener;
+
 int init();
 void quit();
 
