@@ -3,17 +3,13 @@
 [42 portal]
 
 ## description
-
-This project aims to create your own HTTP server. 
-You will be able to test it with a real web browser. 
-HTTP is one of the most used protocols on the internet. 
-Knowing its intricacies will be useful, 
-even if web development is not your intended career path.
+(same as subject document summary below)
 
 ## keywords
 Network
 
-## skills
+## skills 
+(domains, keywords, categories, tags)
 Object-oriented programming
 Rigour
 Unix
@@ -31,7 +27,7 @@ This project is about writing your own HTTP server.
 You will be able to test it with an actual browser.
 HTTP is one of the most widely used protocols on the internet.
 Understanding its intricacies will be useful,
-even if you won’t be working on a website.
+even if you won’t be working on websites.
 
 ## Version
 24.0

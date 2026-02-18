@@ -258,7 +258,7 @@ void handle_client_fd(int fd) {
 
 
 
-### Decision 2: Connection objects in WebServ namespace?
+### Connection objects in WebServ namespace?
 
 **Proposal:** Yes. WebServ owns global connection pool.
 
@@ -276,7 +276,7 @@ namespace WebServ {
 }
 ```
 
-### Decision 3: Parser output format?
+### Parser output format?
 
 **Proposal:** Parser returns `std::vector<Server>` with populated configuration fields.
 

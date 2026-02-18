@@ -1,6 +1,9 @@
+wip, for Ganesha
+
 ## programs
 
-"literate" style/paradigm: code + documentation
+"literate" style/paradigm:
+code + documentation
 
 max line length 80 chars
 
