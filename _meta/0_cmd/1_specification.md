@@ -22,7 +22,8 @@ without prior readiness notification
 - Server must handle client disconnections gracefully
 
 ### Operational Continuity
-- Server remains available under stress testing, invalid input, and client misbehavior
+- Server remains available under stress testing, invalid input, 
+and client misbehavior
 - Resilience is mandatory across all operational scenarios
 
 ## 2. Build System
@@ -294,7 +295,7 @@ resolves `/api/users` to `/var/www/users`
 
 #### Recommended Testing
 - Automated test suites (Python, Go, etc.)
-- NGINX behavioral comparison
+- NGINX behavioural comparison
 - Stress testing tools
 - Multiple concurrent client scenarios
 
@@ -336,7 +337,7 @@ resolves `/api/users` to `/var/www/users`
 - Regex in route matching
 
 ### Reference Implementation
-- NGINX serves as behavioral reference
+- NGINX serves as behavioural reference
 - Compare headers and response behaviors
 - Account for HTTP version differences
 
@@ -348,5 +349,5 @@ resolves `/api/users` to `/var/www/users`
 
 ### Testing Protocol
 - Test with `telnet` before submission
-- Test with NGINX for behavioral comparison
+- Test with NGINX for behavioural comparison
 - Browser testing required

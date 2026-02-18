@@ -2,7 +2,7 @@
 
 ## Essence
 
-The config parser is a **pure function**:
+The config parser is a pure function:
 
 ```
 bytes (config file) → [Server]
@@ -29,13 +29,13 @@ It hands off `std::vector<Server>` to the runtime.
 ```
 config file
     │
-    ▼
+    v
 ConfigParser::parse()
     │
-    ▼
+    v
 std::vector<Server>      ← parser's sole output
     │
-    ▼
+    v
 WebServ::run()           ← runtime takes over
 ```
 
@@ -54,7 +54,8 @@ Produce a validated, complete, runtime-ready representation of the operator's in
 - Not part of the event loop
 - Not responsible for socket creation
 - Not responsible for request handling
-- Not a general-purpose config system (no variables, no inheritance, no includes)
+- Not a general-purpose config system 
+(no variables, no inheritance, no includes)
 
 ---
 
