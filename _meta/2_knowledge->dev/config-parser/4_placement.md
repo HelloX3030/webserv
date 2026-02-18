@@ -108,4 +108,4 @@ Edit required to Lukas's files:
         — add Server config fields (ListenAddress, locations, etc.)
           once agreed with Lukas
 
-Agree with Lukas before touching Server.hpp.
+Agree together before touching Server.hpp.
