@@ -231,3 +231,75 @@ for (int i = 0; i < n_ready; i++) {
 Lukas is correct: the event loop body is both shorter and cleaner. 
 The complexity overhead lives only in init/registration code, which is cold path. 
 His +10% estimate is the more honest number.
+
+
+
+2. The educational argument — examination
+
+"Real servers use epoll" is true. 
+The question is: what specifically do you learn from epoll that poll() doesn't teach?
+
+What epoll teaches beyond poll():
+
+    Kernel-maintained interest set (state lives in kernel, not userspace array)
+    Edge-triggered vs level-triggered semantics — this is genuinely non-trivial
+    data.ptr pattern for zero-overhead dispatch
+    epoll_ctl CRUD lifecycle (add/modify/delete per-fd)
+
+What poll() teaches that is sufficient for the conceptual model:
+
+    I/O multiplexing as such
+    The readiness notification pattern
+    Non-blocking I/O discipline
+
+So the educational delta is real. Lukas isn't wrong.
+
+
+However — what he doesn't address:
+
+The data.ptr approach introduces a lifetime hazard: 
+if a Connection is destroyed while its pointer remains registered 
+in the epoll interest set, any subsequent event delivers a dangling pointer. 
+This is silent UB. With poll()'s fd-array, the worst case is a stale fd, 
+which is detectable via POLLHUP/POLLERR.
+
+The second hazard: epoll's real power is edge-triggered (ET) mode. 
+Level-triggered (LT, the default) with epoll is safe 
+but then you're not learning the hard, production-relevant part. 
+ET mode requires that you drain the fd completely on each wakeup — 
+partial reads → event is missed → connection hangs silently. 
+For a correctness-first 42 project, this is a genuine trap.
+
+
+3. What this actually reduces to
+
+Lukas' honest argument is: "small overhead, but we learn more because 
+that's what production uses." This is legitimate — 
+but only if stated cleanly as an educational goal, 
+not a performance argument (which he correctly abandons).
+
+The rigour question is: can you implement epoll LT + data.ptr correctly 
+and safely within the project's constraints? 
+If yes — the tradeoff is defensible. If the team will be fighting 
+lifetime bugs and undefined behaviour mid-project, 
+the educational value is negative.
+
+
+My position
+Lukas' counterarguments are stronger than I initially gave credit for — 
+particularly on complexity and the data.ptr simplification. 
+The educational motivation is honest and valid.
+
+The one thing to nail down before committing: 
+decide now between LT and ET mode, and understand the full implications 
+of data.ptr lifetime management. 
+If you go LT + data.ptr with disciplined Connection destruction 
+(always epoll_ctl(epfd, EPOLL_CTL_DEL, fd, NULL) b
+efore destroying the object), it's clean and correct.
+
+The recommendation in doc 3 to start with poll() still holds for risk management, but Lukas' case for epoll is not weak. If he owns the implementation and understands the hazards, it's a reasonable call.
+What would I want settled explicitly between you two:
+
+LT or ET? (LT is the right answer for correctness)
+data.ptr lifetime contract: who is responsible for deregistration before destruction?
+Does the event loop cap (MAX_EVENTS in epoll_wait) need handling when more than MAX_EVENTS fds are ready simultaneously?
