@@ -3,7 +3,7 @@
 int main(int argc, char **argv)
 {
 #ifdef DEBUG
-    std::cout << "============DEBUG MODE ENABLED============" << std::endl;
+    std::cout << format::header("DEBUG MODE ENABLED") << std::endl;
 #endif
 
     // Signals Handling
@@ -27,6 +27,11 @@ int main(int argc, char **argv)
     {
         return 1;
     }
+
+#ifdef DEBUG
+    std::cout << "State after Parsing" << std::endl;
+    WebServ::display();
+#endif
 
     WebServ::run();
     WebServ::quit();

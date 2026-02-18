@@ -12,6 +12,7 @@ extern std::vector<Server> servers;
 void add_test_data();
 int init();
 void parse(int argc, char **argv);
+void display();
 void run();
 void quit();
 

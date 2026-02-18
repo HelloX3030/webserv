@@ -26,11 +26,15 @@ class Entry
     int init();
     void quit();
     bool is_initialized() const;
+    std::string to_string() const;
 };
+
+std::ostream &operator<<(std::ostream &os, const Entry &e);
 
 extern std::vector<Entry> listener;
 
 int init();
 void quit();
+void display();
 
 } // namespace Listener

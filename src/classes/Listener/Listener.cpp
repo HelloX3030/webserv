@@ -126,6 +126,16 @@ bool Entry::is_initialized() const
     return initialized;
 }
 
+std::string Entry::to_string() const
+{
+    return std::string("Listener(server_id=") + std::to_string(server_id) + ", port=" + std::to_string(port) + ", fd=" + std::to_string(fd) + ", initialized=" + (initialized ? "true" : "false") + ")";
+}
+
+std::ostream &operator<<(std::ostream &os, const Entry &e)
+{
+    return os << e.to_string();
+}
+
 int init()
 {
     for (size_t i = 0; i < listener.size(); i++)
@@ -143,6 +153,15 @@ void quit()
     for (size_t i = 0; i < listener.size(); i++)
     {
         listener[i].quit();
+    }
+}
+
+void display()
+{
+    std::cout << "Listener Display" << std::endl;
+    for (size_t i = 0; i < listener.size(); i++)
+    {
+        std::cout << i << ": " << listener[i] << std::endl;
     }
 }
 
