@@ -108,6 +108,24 @@ Applied at parse time when a directive is absent.
 | Location::client_max_body_size | std::nullopt |
 | Location::allowed_methods    | {GET,POST,DELETE} |
 
+allowed_methods default — decision rationale:
+
+2 options when methods_dir is absent from a location block:
+
+- Option 1: default {GET} — silence means GET only.
+  Any other method returns 405.
+- Option 2: default {GET,POST,DELETE} — silence means
+  all methods permitted.
+
+This decision is internal to the parser. The runtime reads
+whatever is in the field and enforces it blindly — it cannot
+distinguish a parsed value from a default.
+
+Choice: option 2. A missing directive is an omission, not a
+restriction. Defaulting to restricted causes silent 405 failures
+during evaluation when the evaluator omits the directive.
+Permissive default is the safer choice for a school project.
+
 ---
 
 ## Notes
