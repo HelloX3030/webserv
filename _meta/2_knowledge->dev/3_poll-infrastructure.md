@@ -173,3 +173,61 @@ Reasons:
 
 Premature optimization wastes development time. 
 Measure first, optimize second.
+
+
+-------------------------------------------------------------------------------
+
+Lukas' comments:
+
+
+Habe mir gerade das ganze genauer angeschaut, muss aber sagen dass ich dir nicht ganz zustimme.
+
+Performance Gain: Nicht wirklich relevant, true. Aber das ist auch nicht der Punkt, weshalb ich es machen wollte.
+Implementation Complexity: Es gibt Grundlegend mehr Sachen die getan werden muessen, true, aber kaum. Es ist nicht +40% oder so, wie chat gpt/claude behaupted hat. So in meinen Tests, hat es eher nach +10% ausgesehen. Und diese sachen sind alle schoen seperat, unsere Event Loop, wird vermutlich sogar deutlich kuerzer, wenn wir z. b. event.data.ptr nutzen. Und es ist nicht das ganze Projekt +10%, sondern ein kleiner Teil des init codes, und der event loop...
+Warum also e-poll? Nicht enorm viel mehr aufwand, aber dennoch glaube ich das wir dabei mehr lernen. Einfach weil echte server, e-poll, oder equivalente nutzen.
+
+-------------------------------------------------------------------------------
+
+claims (stripped to essence)
+
+    +40% complexity estimate is wrong → closer to +10%
+    Event loop gets shorter with event.data.ptr
+    Real servers use epoll → therefore more to learn
+
+
+1. Complexity estimate dispute
+
+He's right to challenge the 40% figure. That number depended on what was being counted. Let's be precise.
+
+epoll adds over poll:
+
+    epoll_create1(0) — one line
+    epoll_ctl() CRUD calls instead of vector push/erase
+    epoll_wait() instead of poll()
+    Event data handling choice
+
+epoll reduces:
+
+    With event.data.ptr: eliminates the fd → Connection* map lookup entirely. 
+    You attach the pointer at registration time; epoll_wait hands you the Connection directly.
+
+So the hot path loop is:
+```cpp
+// poll() hot path
+for (auto& pfd : all_fds) {
+    if (pfd.revents & POLLIN) {
+        Connection* c = fd_map[pfd.fd]; // lookup
+        handle(c);
+    }
+}
+
+// epoll() hot path with data.ptr
+for (int i = 0; i < n_ready; i++) {
+    Connection* c = (Connection*)events[i].data.ptr; // direct
+    handle(c);
+}
+```
+
+Lukas is correct: the event loop body is both shorter and cleaner. 
+The complexity overhead lives only in init/registration code, which is cold path. 
+His +10% estimate is the more honest number.
