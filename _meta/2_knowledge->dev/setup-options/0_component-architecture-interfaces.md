@@ -20,26 +20,6 @@
 
 ## issues
 
-### 1: Listener class has no clear purpose
-```cpp
-// Current (from codebase scan)
-class Listener {
-    int fd;
-    int server_id;  // Which server owns this?
-};
-
-class Server {
-    std::vector<Listener> listener;
-};
-```
-
-**Problems:**
-1. `server_id` is redundant - if Listener is owned by Server, Server already knows its own id
-2. Listener is just wrapper around `int fd` with no additional behaviour
-3. No methods, no logic - pure data holder
-
-**Question:** Why not `std::vector<int> listen_fds` directly in Server?
-
 
 ### 2: Connection class missing
 
@@ -276,27 +256,7 @@ void handle_client_fd(int fd) {
 
 ## decisions required
 
-### Decision 1: Remove Listener class?
 
-**Proposal:** Yes. Replace with `std::vector<int> listen_fds` in Server.
-
-**Rationale:**
-- Listener adds no behaviour
-- `server_id` field is redundant
-- Direct vector is simpler and clearer
-
-**Implementation:**
-```cpp
-// Before
-class Server {
-    std::vector<Listener> listener;
-};
-
-// After
-class Server {
-    std::vector<int> listen_fds;
-};
-```
 
 ### Decision 2: Connection objects in WebServ namespace?
 
@@ -336,12 +296,14 @@ namespace Config {
 servers = Config::parse(filepath);
 ```
 
+
+
 ## summary
 
 Before I can implement configuration parser, we need to establish:
 
 1. **Server class contents** (see Server class proposal above)
 2. **Connection class design** (see Connection class proposal above)
-3. **Remove Listener class** ?? (seems redundant, perhaps replace with vector<int>)
+
 4. **Parser output** (vector of Server objects with config populated)
 5. **Ownership** (WebServ owns servers and connections)
