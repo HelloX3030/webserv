@@ -5,6 +5,7 @@ int main(int argc, char **argv)
 #ifdef DEBUG
     std::cout << "============DEBUG MODE ENABLED============" << std::endl;
 #endif
+
     // Signals Handling
     signal(SIGINT, handle_sigint);
 
@@ -18,10 +19,15 @@ int main(int argc, char **argv)
         return 1;
     }
 
+#ifdef DEBUG
+    WebServ::add_test_data();
+#endif
+
     if (WebServ::init() != SUCCES)
     {
         return 1;
     }
+
     WebServ::run();
     WebServ::quit();
 

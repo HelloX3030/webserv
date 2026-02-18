@@ -11,7 +11,7 @@ class Entry
     int server_id;
     in_port_t port;
     int fd;
-    bool valid;
+    bool initialized;
 
   public:
     Entry();
@@ -20,12 +20,12 @@ class Entry
     ~Entry();
 
     // Custom Constructors
-    Entry(int server_id, int port);
+    Entry(int server_id, in_port_t port);
 
     // Functions
     int init();
     void quit();
-    bool get_valid() const;
+    bool is_initialized() const;
 };
 
 extern std::vector<Entry> listener;

@@ -4,11 +4,11 @@ CXXFLAGS := -Wall -Wextra -Werror -std=c++17
 NAME := webserv
 
 # Debug flags
-DEBUG_FLAGS := -DDEBUG=1 -g
+DEBUG_FLAGS := -DDEBUG=1
 DEBUG_NAME  := webserv_debug
 
 # Leak-check build
-LEAK_FLAGS := -g -O0 -fno-omit-frame-pointer
+LEAK_FLAGS := -DDEBUG=1 -g -O0 -fno-omit-frame-pointer
 LEAK_NAME  := webserv_leaks
 
 # Directories
@@ -94,7 +94,7 @@ fclean: clean
 re: fclean all
 
 # =====================
-# Debug-only helpers
+# Debug helpers
 # =====================
 
 .PHONY: debugclean
@@ -104,6 +104,18 @@ debugclean:
 
 .PHONY: debugre
 debugre: debugclean debug
+
+# =====================
+# Leaks helpers
+# =====================
+
+.PHONY: leaksclean
+leaksclean:
+	$(RM) -r $(LEAK_OBJ_DIR)
+	$(RM) -f $(LEAK_NAME)
+
+.PHONY: leaksre
+leaksre: leaksclean leaks
 
 # =====================
 # Run helpers

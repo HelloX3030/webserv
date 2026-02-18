@@ -7,7 +7,7 @@ namespace Listener
 std::vector<Entry> listener;
 
 Entry::Entry()
-    : server_id(-1), port(-1), fd(-1), valid(false)
+    : server_id(-1), port(0), fd(-1), initialized(false)
 {
 }
 
@@ -23,7 +23,7 @@ Entry &Entry::operator=(const Entry &other)
         server_id = other.server_id;
         port = other.port;
         fd = other.fd;
-        valid = other.valid;
+        initialized = other.initialized;
     }
     return *this;
 }
@@ -32,13 +32,21 @@ Entry::~Entry()
 {
 }
 
-Entry::Entry(int server_id, int port)
-    : server_id(server_id), port(port), fd(-1), valid(false)
+Entry::Entry(int server_id, in_port_t port)
+    : server_id(server_id), port(port), fd(-1), initialized(false)
 {
 }
 
 int Entry::init()
 {
+
+#ifdef DEBUG
+    if (is_initialized())
+    {
+        throw SetupError("Init Called Multiple times, for the same Listener::Entry!");
+    }
+#endif
+
     // Create Socket
     fd = socket(AF_INET, SOCK_STREAM, 0);
     if (fd < 0)
@@ -99,23 +107,23 @@ int Entry::init()
         return FAILURE;
     }
 
-    valid = true;
+    initialized = true;
     return SUCCES;
 }
 
 void Entry::quit()
 {
-    if (get_valid())
+    if (is_initialized())
     {
         close(fd);
         fd = -1;
-        valid = false;
+        initialized = false;
     }
 }
 
-bool Entry::get_valid() const
+bool Entry::is_initialized() const
 {
-    return valid;
+    return initialized;
 }
 
 int init()
