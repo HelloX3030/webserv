@@ -3,7 +3,7 @@
 int main(int argc, char **argv)
 {
 #ifdef DEBUG
-    std::cout << format::header("DEBUG MODE ENABLED") << std::endl;
+    log::log(INFORMATION, "DEBUG MODE ENABLED");
 #endif
 
     // Signals Handling

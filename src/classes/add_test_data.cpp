@@ -5,7 +5,7 @@ namespace WebServ
 
 void add_test_data()
 {
-    std::cout << format::header("ADD TEST DATA") << std::endl;
+    log::log(FUNCTION, "WebServ::add_test_data()");
 
     Listener::listener.emplace_back(0, 8000);
     Listener::listener.emplace_back(0, 8100);

@@ -191,7 +191,7 @@ void quit()
 
 void display()
 {
-    std::cout << format::header("Listener Display") << std::endl;
+    log::log(DISPLAY, LISTENER);
     for (size_t i = 0; i < listener.size(); i++)
     {
         std::cout << i << ": " << listener[i] << std::endl;
