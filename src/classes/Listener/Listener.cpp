@@ -1,5 +1,4 @@
 #include "classes/Listener.hpp"
-#include "classes/Server.hpp"
 
 namespace Listener
 {
@@ -35,6 +34,40 @@ Entry::~Entry()
 Entry::Entry(int server_id, in_port_t port)
     : server_id(server_id), port(port), fd(-1), initialized(false)
 {
+}
+
+// Overrides
+int Entry::get_fd() const
+{
+    return fd;
+}
+
+void Entry::add_handler()
+{
+
+#ifdef DEBUG
+    if (WebServ::epfd == -1)
+        throw SetupError("Add Handler Called before WebServ::init()");
+#endif
+
+    struct epoll_event ev;
+    std::memset(&ev, 0, sizeof(ev));
+
+    ev.events = EPOLLIN; // start simple (level-triggered)
+    ev.data.ptr = static_cast<void *>(this);
+
+    if (epoll_ctl(WebServ::epfd, EPOLL_CTL_ADD, this->get_fd(), &ev) < 0)
+    {
+        throw std::runtime_error("epoll_ctl ADD failed");
+    }
+}
+
+void Entry::handle_event(uint32_t events)
+{
+    (void)events;
+#ifdef DEBUG
+    std::cout << "Listener::Entry::handle_event(): " << *this << std::endl;
+#endif
 }
 
 int Entry::init()
@@ -158,7 +191,7 @@ void quit()
 
 void display()
 {
-    std::cout << "Listener Display" << std::endl;
+    std::cout << format::header("Listener Display") << std::endl;
     for (size_t i = 0; i < listener.size(); i++)
     {
         std::cout << i << ": " << listener[i] << std::endl;

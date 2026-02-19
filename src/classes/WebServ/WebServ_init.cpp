@@ -5,9 +5,26 @@ namespace WebServ
 
 int init()
 {
+
+#ifdef DEBUG
+    std::cout << format::header("WebServ::init()") << std::endl;
+    if (epfd != -1)
+    {
+        throw SetupError("Multiple Calls to WebServ::init()!");
+    }
+#endif
+
+    // epoll Setup
+    epfd = epoll_create1(0);
+    if (epfd < 0)
+    {
+        perror("epoll_create1 failed");
+        return FAILURE;
+    }
+
+    // Listener Setup
     if (Listener::init() != SUCCES)
     {
-        Listener::quit();
         return FAILURE;
     }
 

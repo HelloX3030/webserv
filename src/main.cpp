@@ -9,6 +9,7 @@ int main(int argc, char **argv)
     // Signals Handling
     signal(SIGINT, handle_sigint);
 
+    // Parse
     try
     {
         WebServ::parse(argc, argv);
@@ -23,18 +24,29 @@ int main(int argc, char **argv)
     WebServ::add_test_data();
 #endif
 
+    // Init
     if (WebServ::init() != SUCCES)
     {
+        WebServ::quit();
         return 1;
     }
 
 #ifdef DEBUG
-    std::cout << "State after Parsing" << std::endl;
     WebServ::display();
 #endif
 
-    WebServ::run();
-    WebServ::quit();
+    // Run
+    try
+    {
+        WebServ::run();
+    }
+    catch (const std::exception &e)
+    {
+        log::log(WEB_SERV, e.what(), log::LogType::ERROR);
+        WebServ::quit();
+        return 1;
+    }
 
+    WebServ::quit();
     return 0;
 }

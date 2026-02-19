@@ -12,9 +12,6 @@ class Server
     // Server Vars
 
     // Functions
-    void start();
-    void respond();
-    void stop();
 
   public:
     Server();
@@ -24,5 +21,4 @@ class Server
 
     // Public Functions
     void parse(const std::string &file_path);
-    void run();
 };

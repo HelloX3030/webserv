@@ -1,11 +1,12 @@
 #pragma once
 
 #include "base/base.hpp"
+#include "interfaces/EPollHandler.hpp"
 
 namespace Listener
 {
 
-class Entry
+class Entry : public EpollHandler
 {
   private:
     int server_id;
@@ -22,10 +23,15 @@ class Entry
     // Custom Constructors
     Entry(int server_id, in_port_t port);
 
+    // Overrides
+    int get_fd() const override;
+    void add_handler() override;
+    void handle_event(uint32_t events) override;
+    bool is_initialized() const override;
+
     // Functions
     int init();
     void quit();
-    bool is_initialized() const;
     std::string to_string() const;
 };
 
