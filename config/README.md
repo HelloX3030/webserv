@@ -57,6 +57,10 @@ document roots per virtual host.
 
 path dependencies: www/html/ (reused across both servers for simplicity)
 
+note: if the Host header matches no server_name, the first defined
+server block handles the request (nginx convention). to be confirmed
+with Lukas before runtime implementation — config parser unaffected.
+
 ---
 
 ### cgi.conf
@@ -85,8 +89,53 @@ path dependencies: www/uploads/ (server writes uploaded files here)
 
 all directives combined in one config. the comprehensive scenario:
 static files, error pages, method restrictions, CGI, uploads, body
-size limits, autoindex, virtual hosting.
+size limits, autoindex, virtual hosting, redirects.
 
 intended as a final integration test and eval demonstration.
 
 path dependencies: all of the above.
+
+
+## directives reference
+
+all directive names are final.
+
+### server-level
+
+```
+listen               <port> | <host>:<port>
+server_name          <name> [<name> ...]
+client_max_body_size <size>[k|m|g]
+error_page           <status_code> <path>
+```
+
+### location-level
+
+```
+root                 <path>
+index                <filename> [<filename> ...]
+allowed_methods      GET | POST | DELETE
+autoindex            on | off
+cgi_extension        <.ext>
+cgi_path             <path>
+client_max_body_size <size>[k|m|g]
+upload_enable        on | off
+upload_store         <path>
+return               <status_code> <path>
+```
+
+return adopted from nginx convention.
+upload_enable and upload_store are webserv-specific.
+
+
+## path resolution
+
+relative paths in root and upload_store directives are resolved
+at parse time via getcwd(). Location::root always contains an
+absolute path after parsing. the binary must therefore always be
+launched from the repository root:
+
+```
+./webserv [config]       correct
+cd build && ./webserv    incorrect
+```
