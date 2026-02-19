@@ -1,11 +1,23 @@
 wip, for Ganesha
 
-## programs
+## general
+
+natural language (not code)
+lower case cli style, except for 
+    I​
+    proper nouns
+
+max line length 80 chars
+
+simple, minimal, e.g.
+formatting in markdown docs: 
+- only #, ##, ###, newlines and bullet points
+- no bold/italics
+
+## program
 
 "literate" style/paradigm:
 code + documentation
-
-max line length 80 chars
 
 comments:
 full explanatory blocks, /* */, flush
@@ -14,7 +26,3 @@ full explanatory blocks, /* */, flush
 ## documentation 
 
 markdown (asap: Emacs org-mode)
-
-minimal formatting: 
-- only #, ##, ###, newlines and bullet points
-- no bold/italics
