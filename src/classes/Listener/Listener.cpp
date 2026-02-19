@@ -62,12 +62,14 @@ void Entry::add_handler()
     }
 }
 
-void Entry::handle_event(uint32_t events)
+int Entry::handle_event(uint32_t events)
 {
     (void)events;
 #ifdef DEBUG
     std::cout << "Listener::Entry::handle_event(): " << *this << std::endl;
 #endif
+
+    return SUCCES;
 }
 
 int Entry::init()

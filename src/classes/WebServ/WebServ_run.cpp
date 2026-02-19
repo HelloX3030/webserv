@@ -3,7 +3,7 @@
 namespace WebServ
 {
 
-void run()
+int run()
 {
     struct epoll_event events[WEBSERV_EPOLL_MAX_EVENTS];
 
@@ -14,15 +14,21 @@ void run()
         {
             if (errno == EINTR)
                 continue; // interrupted by signal
-            throw std::runtime_error("epoll_wait failed");
+            perror("epoll_wait failed");
+            return FAILURE;
         }
 
         for (int i = 0; i < n; ++i)
         {
             EpollHandler *handler = static_cast<EpollHandler *>(events[i].data.ptr);
-            handler->handle_event(events[i].events);
+            if (handler->handle_event(events[i].events) != SUCCES)
+            {
+                return FAILURE;
+            }
         }
     }
+
+    return SUCCES;
 }
 
 } // namespace WebServ

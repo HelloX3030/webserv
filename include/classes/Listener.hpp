@@ -26,7 +26,7 @@ class Entry : public EpollHandler
     // Overrides
     int get_fd() const override;
     void add_handler() override;
-    void handle_event(uint32_t events) override;
+    int handle_event(uint32_t events) override;
     bool is_initialized() const override;
 
     // Functions

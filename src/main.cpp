@@ -36,17 +36,13 @@ int main(int argc, char **argv)
 #endif
 
     // Run
-    try
+    if (WebServ::run() != SUCCES)
     {
-        WebServ::run();
-    }
-    catch (const std::exception &e)
-    {
-        log::log(WEB_SERV, e.what(), log::LogType::ERROR);
         WebServ::quit();
         return 1;
     }
 
+    // Quit
     WebServ::quit();
     return 0;
 }
