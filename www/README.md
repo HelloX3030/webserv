@@ -3,20 +3,20 @@
 default document root for webserv.
 
 this directory contains the static files the server delivers to the browser
-when running with the default configuration. it is committed to the repository
-so the server is self-contained and runnable on any machine without external
-setup.
+when running with the default configuration. 
+it is committed to the repository so the server is self-contained 
+and runnable on any machine without external setup.
 
 
 ## structure
 
 ```
 www/
-. html/
-    . index.html          default landing page (served at /)
-    . errors/
-        . 404.html        not found
-        . 500.html        internal server error
+    html/
+        index.html          default landing page (served at /)
+        errors/
+            404.html        not found
+            500.html        internal server error
 ```
 
 
