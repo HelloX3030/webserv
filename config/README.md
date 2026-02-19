@@ -48,18 +48,25 @@ path dependencies: www/html/, www/html/errors/
 
 ### multi-server.conf
 
-virtual hosting: multiple server blocks on the same port, differentiated
-by server_name. the runtime matches the HTTP Host header against
-server_names to route the request to the correct server block.
+virtual hosting: two server configurations sharing one port, each
+identified by a different server_name. the runtime selects which
+configuration handles a request by comparing the HTTP Host header
+against each server's server_name list.
 
-demonstrates: multiple server blocks, server_name routing, separate
-document roots per virtual host.
+a server configuration here means one server { } unit in the config
+file and the corresponding ServerConfig object in memory.
+
+demonstrates: multiple server configurations on one port, server_name
+routing, the autoindex directive (one server uses it, one does not).
 
 path dependencies: www/html/ (reused across both servers for simplicity)
 
-note: if the Host header matches no server_name, the first defined
-server block handles the request (nginx convention). to be confirmed
-with Lukas before runtime implementation — config parser unaffected.
+fallback (decided): if the Host header matches no server_name, the first
+server configuration defined on that port handles the request. this is
+nginx behaviour and our adopted convention. runtime must iterate
+ServerConfig objects in parse order and return the first match on
+host:port when no server_name matches. config parser unaffected —
+it already stores configs in parse order.
 
 ---
 
@@ -104,7 +111,7 @@ all directive names are final.
 
 ```
 listen               <port> | <host>:<port>
-server_name          <name> [<name> ...]
+server_name          <n> [<n> ...]
 client_max_body_size <size>[k|m|g]
 error_page           <status_code> <path>
 ```
