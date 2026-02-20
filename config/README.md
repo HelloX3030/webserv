@@ -5,9 +5,9 @@ configuration files for webserv.
 
 ## test suite philosophy
 
-one file per use-case/scenario. each file demonstrates a coherent
-operational scenario the evaluator might test, not an isolated directive.
-this keeps the set small, readable, and directly mapped to eval criteria.
+1 file per use-case/scenario. 
+each file demonstrates a coherent operational scenario 
+the evaluator might test, not an isolated directive.
 
 
 ## files
@@ -20,8 +20,8 @@ scenario — used to verify the parser accepts valid minimal input and
 rejects nothing it shouldn't.
 
 mandatory constraints exercised:
-. at least one listen address per server
-. at least one location per server
+. at least 1 listen address per server
+. at least 1 location per server
 . root present in every location
 
 path dependencies: none (not intended to be run).

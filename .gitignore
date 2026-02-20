@@ -3,3 +3,6 @@ webserv
 webserv_debug
 obj/
 obj_debug/
+
+www/uploads/*
+!www/uploads/README.md
