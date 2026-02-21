@@ -10,7 +10,12 @@
 comment stripping replaces # to end-of-line with spaces, not deletion.
 whitespace replacement preserves line numbers — every token produced
 by the lexer carries the line it was found on. deleting characters
-would shift line numbers, breaking all error messages. */
+would shift line numbers, breaking all error messages. 
+
+precondition: source uses unix line endings (\n only).
+\r\n (windows crlf) is not handled — \r would be accumulated
+into STRING tokens, corrupting values like "8080\r" which
+then fail numeric conversion. */
 std::string ConfigParser::read(const std::string& filepath)
 {
     std::ifstream file(filepath);
