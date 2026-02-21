@@ -20,9 +20,8 @@ dependency arrow is: Server.hpp → Config.hpp → stdlib only.
 
 /*
 The grammar's methods_dir terminals form a closed set: GET, POST, DELETE.
-enum class encodes this closure at the type level — the compiler rejects
-any value outside the set. std::set<HttpMethod> therefore guarantees at
-compile time that allowed_methods contains only valid members.
+enum class enforces membership at compile time - 
+an unknown method cannot be represented, no runtime string comparison required.
 */
 enum class HttpMethod
 {
@@ -32,13 +31,18 @@ enum class HttpMethod
 };
 
 /*
-Derived from the host_port production in the grammar.
-host is optional in the grammar (bare port is valid); when absent the
-parser assigns the default "0.0.0.0" — all interfaces.
+Derived from the host_port grammar production.
+Host is optional in the grammar — bare port (`listen 8080;`) is valid.
+When absent, the parser assigns default host "0.0.0.0".
 
-uint16_t : unsigned integer type with width of exactly 16 bits.
-matches the TCP port space [0, 65535]. The semantic constraint
-[1, 65535] is enforced in the validator, not here.
+uint16_t : unsigned integer type (non-negative) 
+with width of exactly 16 bits.
+
+2^16 = 65536 > 65535; 2^8 = 256 < 65535. uint16_t is the minimal
+standard width whose range contains the TCP port space [0, 65535].
+
+Valid range enforced at parse time in parse_port() and confirmed in
+the validator.
 */
 struct ListenAddress
 {
@@ -48,19 +52,25 @@ struct ListenAddress
 
 /*
 Derived from location_block and location_dir productions.
+One Location per location {} block within a server block.
 
-client_max_body_size is std::optional<size_t> because it overrides the
-server-level default only when explicitly present. Absent means inherit
-from server; present means override. A sentinel value (e.g. 0) would
-conflate 2 distinct semantic states. optional makes the distinction
-unambiguous at the type level.
+client_max_body_size is std::optional<size_t>: it overrides the
+server-level default when present. std::nullopt means inherit.
+A sentinel value (e.g. 0) would conflate "not set" with "set to 0".
 
-allowed_methods defaults to {GET, POST, DELETE} when methods_dir is
-absent from a location block. The parser initialises this default before
-processing any directives in the block.
+allowed_methods default: {GET, POST, DELETE} — all methods permitted
+unless explicitly restricted. Absent directive = no restriction.
 
-cgi_extension and cgi_path are either both set or both absent.
-The grammar cannot express this coupling; the validator enforces it.
+cgi_extension and cgi_path are semantically coupled: either both set
+or both absent. Validator enforces.
+
+upload_enable / upload_store: upload_enable=true requires upload_store
+to be non-empty. Validator enforces.
+
+return_code is std::optional<uint16_t>: std::nullopt means no redirect
+configured for this location. When set, return_path must be non-empty.
+Validator enforces coupling. Valid range [300, 399] enforced at parse
+time and confirmed in validator.
 */
 struct Location
 {
@@ -79,25 +89,26 @@ struct Location
 
 /*
 Derived from server_block and server_dir productions.
-Named ServerConfig, not Server, to distinguish this pure data record from
-main Server class. ServerConfig is passive: it holds operator intent.
+Named ServerConfig, not Server, to distinguish this pure data record
+from the operational Server class (Server.hpp).
+ServerConfig is passive: it holds operator intent.
 Server is an actor: it has lifecycle and behaviour.
 
-`listen` is a vector: the grammar permits multiple `listen_dir` within 1
-server block — 1 server may listen on multiple addresses and ports.
+`listen` is a vector: the grammar permits multiple listen_dir within
+1 server block — 1 server may listen on multiple addresses.
 
-`error_pages` maps HTTP status code to path. 
-uint16_t key: status codes are 3-digit integers in [100, 599]. 
-Range enforced in validator.
+`error_pages` maps HTTP status code to path.
+uint16_t key: status codes are non-negative, maximum 599, requiring
+more than 8 bits (2^8 = 256 < 599). uint16_t is the minimal standard
+width that fits [100, 599]. Valid range enforced at parse time and
+confirmed in validator.
 
-`locations` maps path prefix to Location. 
-std::map gives O(log n) lookup by prefix, 
-which the request dispatcher will use at runtime.
+`locations` maps path prefix to Location.
+std::map: O(log n) prefix lookup used by the request dispatcher.
 
-`client_max_body_size` at server level is a concrete size_t, not optional.
-It is always set — either explicitly from the config or from the default
-(1048576, 1M). It is the value Location inherits when its own field is
-std::nullopt.
+`client_max_body_size` is a concrete size_t, not optional. Always set
+— either from config or from the default (1048576, 1M). This is the
+value Location inherits when its own field is std::nullopt.
 */
 struct ServerConfig
 {
