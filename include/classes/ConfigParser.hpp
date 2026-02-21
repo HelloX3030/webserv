@@ -1,6 +1,6 @@
 #pragma once
 
-#include "include/classes/Config.hpp"
+#include "./Config.hpp"
 
 #include <cstdint>
 #include <string>
@@ -8,17 +8,13 @@
 
 class ConfigParser
 {
-    /*
-    lexer output types. private nested — callers of parse() never see
-    a token.
-    */
     enum class TokenType { STRING, LBRACE, RBRACE, SEMICOLON, END };
 
     struct Token
     {
         TokenType   type;
         std::string value;
-        size_t      line; // carried for error messages in all phases
+        size_t      line; // carried for error messages
     };
 
     // shared cursor state across all private methods via this
@@ -39,12 +35,7 @@ class ConfigParser
     void                      tokenise(const std::string& source);
     void                      validate(const std::vector<ServerConfig>& result);
 
-    /*
-    1 method per grammar production rule.
-    precondition for specific directive parsers: pos_ is at the first
-    value token — dispatch (parse_server / parse_location) consumes
-    the directive name before calling.
-    */
+    /* 1 method per grammar production rule */
     [[nodiscard]] std::vector<ServerConfig> parse_config();
     [[nodiscard]] ServerConfig              parse_server_block();
     [[nodiscard]] Location                  parse_location_block();
@@ -69,6 +60,7 @@ class ConfigParser
     void parse_return       (Location& loc);
 
     // interpretation leaves — STRING token value → typed value
+    // [[nodiscard]] — for fns whose return value is the computation
     [[nodiscard]] size_t        parse_size     (const Token& t);
     [[nodiscard]] uint16_t      parse_port     (const std::string& s, size_t line);
     [[nodiscard]] ListenAddress parse_host_port(const Token& t);
@@ -76,6 +68,8 @@ class ConfigParser
 public:
     ConfigParser() = default;
 
+    /* this obj has identity, no val. semantics
+    cpy mid-parse = bug */
     ConfigParser(const ConfigParser&)            = delete;
     ConfigParser& operator=(const ConfigParser&) = delete;
 
