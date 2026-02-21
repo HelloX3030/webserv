@@ -1,5 +1,9 @@
 # Webserv
 
+overview
+statistics
+description
+
 ## context
 42
 Core Curriculum

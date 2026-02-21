@@ -41,6 +41,16 @@ and guarantees the result is valid before the server runs.
 
 ---
 
+what is the relationship between a caller and ConfigParser? 
+What does the caller actually need from this object in order to use it correctly?
+
+The caller needs exactly 1 thing: the ability to say 
+"here is a filepath, give me back a vector<ServerConfig>." 
+That is the contract. Everything else — tokens, cursor position, 
+grammar production methods — exists only in service of honouring that contract.
+
+---
+
 ## 4 components
 
 in sequence:
