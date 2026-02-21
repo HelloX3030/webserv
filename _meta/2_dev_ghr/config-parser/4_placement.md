@@ -42,7 +42,7 @@ structured Server (1 file per method/responsibility).
 
 ## Where the config structs live: Config.hpp
 
-The parser produces three types: ListenAddress, Location,
+The parser produces 3 types: ListenAddress, Location,
 and the config data that populates Server objects.
 These are pure data records — no methods, no behaviour.
 
@@ -70,12 +70,12 @@ Config.hpp depends on nothing in classes/.
 
 ### Team ownership boundary
 
-Config.hpp is owned entirely by you.
+Config.hpp is owned entirely by ghr.
 Server.hpp is owned by Lukas.
 
 Any change to config structs touches only Config.hpp.
 No edit to Server.hpp is required during config parser
-development. No merge conflicts on a file you share.
+development. No merge conflicts on a file we share.
 
 The file boundary maps to the team ownership boundary.
 This is the criterion for where to draw the line.
