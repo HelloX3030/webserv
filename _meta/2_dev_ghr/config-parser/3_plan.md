@@ -1,61 +1,63 @@
-# Config Parser — Implementation Plan
+# config parser — implementation plan
 
 ---
 
-## Pipeline
+## pipeline
 
-The parser is a linear pipeline of 4 phases.
-Each phase has a single input type and a single output type.
-Failure at any phase throws with a precise error message.
+linear, 4 phases. single input/output type per phase.
+failure at any phase throws with a precise error message.
 
 ```
 std::string (filepath)
     |
-    | Phase 1: File read
+    | phase 1: file read
     v
 std::string (raw content)
     |
-    | Phase 2: Lexer
+    | phase 2: lexer
     v
 std::vector<Token>
     |
-    | Phase 3: Parser
+    | phase 3: parser
     v
-std::vector<ServerConfig>  (fields populated, defaults applied)
+std::vector<ServerConfig>   (fields populated, defaults applied)
     |
-    | Phase 4: Validation
+    | phase 4: validation
     v
-std::vector<ServerConfig>  (semantically verified)
+std::vector<ServerConfig>   (semantically verified)
 ```
 
 ---
 
-## Phase 1 — File Read
+## phase 1 — file read
 
-Read entire file into a std::string.
-Strip comments: from `#` to end of line, replace with whitespace.
-Whitespace preservation keeps line numbers accurate for errors.
+read entire file into std::string.
+strip comments: from # to end of line, replace with whitespace.
+whitespace replacement (not deletion) keeps line numbers accurate.
 
 ---
 
-## Phase 2 — Lexer
-
-### Input / Output
+## phase 2 — lexer
 
 ```
-std::string → std::vector<Token>
+std::string → void   (populates tokens_)
 ```
 
-### Token
+### token and tokentype
+
+Token and TokenType are private nested types inside ConfigParser.
+no caller of parse() ever sees a token. 3 options considered:
+
+1. free types in ConfigParser.hpp — exposes internals to every
+   includer; any change triggers recompilation of all includers.
+2. separate internal header — correct scoping but adds a file whose
+   only purpose is hiding what the class could own itself.
+3. private nested types — chosen. class owns its pipeline machinery.
+   access-controlled; implementation files reach them as
+   ConfigParser::Token, ConfigParser::TokenType.
 
 ```cpp
-enum class TokenType {
-    STRING,
-    LBRACE,
-    RBRACE,
-    SEMICOLON,
-    END_OF_FILE
-};
+enum class TokenType { STRING, LBRACE, RBRACE, SEMICOLON, END };
 
 struct Token {
     TokenType   type;
@@ -64,76 +66,36 @@ struct Token {
 };
 ```
 
-`line` is carried on every token. It is the only mechanism
-for producing precise error messages in later phases.
+`line` is carried on every token — the only mechanism for precise
+error messages in later phases.
 
-### Rules
+`END` is a sentinel appended by the tokeniser as its final element.
+allows peek() to return a valid token at stream exhaustion without
+an unchecked index. the outer parse loop terminates on END rather
+than testing pos_ against tokens_.size().
+tokeniser postcondition: tokens_.back() is always Token{END, "", last_line}.
 
-- `{`  → LBRACE
-- `}`  → RBRACE
-- `;`  → SEMICOLON
-- anything else → STRING
+### lexer rules
 
-### Why no NUMBER token type — decision and reasoning
+- `{`            → LBRACE
+- `}`            → RBRACE
+- `;`            → SEMICOLON
+- anything else  → STRING
 
-The token type for a digit-leading sequence such as `8080`
-is STRING, not a separate NUMBER type.
+### why no NUMBER type
 
-The lexer's contract is to recognise *shape* — the structural
-boundaries between tokens. A token is any unbroken sequence
-of non-whitespace, non-brace, non-semicolon characters.
-`8080` and `localhost` satisfy this definition identically.
-The lexer cannot distinguish them without knowing *meaning*,
-and meaning-awareness is the parser's job, not the lexer's.
+`8080` after `listen` means port. `8080` after `server_name` would
+be a hostname. the token does not carry its own meaning — grammar
+position determines it. a NUMBER type would require the lexer to
+classify digit-leading strings as semantically special, violating
+the single-responsibility boundary: the lexer would be doing partial
+meaning-assignment, which belongs to the parser.
 
-Concretely: `8080` appearing after `listen` means port.
-`8080` appearing after `server_name` would be a hostname.
-`8080` does not carry its own meaning — the grammar position
-determines it. Therefore the type distinction must live in
-the parser, not the lexer.
+consequence: every directive parser that expects a numeric value
+consumes a STRING token and interprets its value via std::stoi.
+if the string does not convert, the parser throws with the line number.
 
-A NUMBER type would require the lexer to classify digit-leading
-strings as semantically special. This violates the single-
-responsibility boundary between phases. The lexer would be
-doing partial meaning-assignment — incorrect.
-
-Consequence for the parser: every directive helper that expects
-a numeric value (parse_port, parse_size, parse_error_page)
-consumes a STRING token and interprets its value string via
-std::stoi or equivalent. If the string does not convert,
-the parser throws with the token's line number.
-
-```cpp
-// example: parse_listen_dir
-void ConfigParser::parse_listen_dir(ServerConfig& s) {
-    Token t = consume();           // type: STRING, value: "8080" or "127.0.0.1:8080"
-    expect_semicolon();
-    s.listen.push_back(parse_host_port(t));
-}
-
-ListenAddress ConfigParser::parse_host_port(const Token& t) {
-    // try to find ':' — if present, split host and port
-    // then call parse_port() on the port substring
-}
-
-uint16_t ConfigParser::parse_port(const std::string& s, size_t line) {
-    try {
-        int val = std::stoi(s);
-        if (val < 1 || val > 65535)
-            throw std::runtime_error(/* ... */);
-        return static_cast<uint16_t>(val);
-    } catch (const std::invalid_argument&) {
-        throw std::runtime_error("[config] line " + std::to_string(line)
-            + ": expected port number, got '" + s + "'");
-    }
-}
-```
-
-This is more logic in the parser — intentionally. The parser is
-where grammar and meaning converge. The lexer is kept minimal
-and mechanical.
-
-### Lexer does not
+### lexer does not
 
 - validate values (port range, path existence, etc.)
 - classify tokens by semantic meaning
@@ -142,53 +104,16 @@ and mechanical.
 
 ---
 
-## Phase 3 — Parser
+## phase 3 — parser
 
-### Structure
+### structure
 
-Recursive descent. 1 function per grammar production rule.
-The grammar is the specification; the code is a direct
-translation of it.
+recursive descent. 1 method per grammar production rule.
+grammar is the specification; methods are a direct transliteration.
 
-### Token and TokenType — private nested types
-
-`Token` and `TokenType` appear conceptually in Phase 2 as the output
-type of the lexer. Their definition belongs inside `ConfigParser` as
-private nested types.
-
-The question is: who needs to see `Token`?
-
-The tokeniser (`ConfigParser_tokenise.cpp`) produces tokens.
-The parser (`ConfigParser_parse.cpp`) consumes them.
-No caller of `parse()` ever sees a token. No file outside the
-ConfigParser implementation units has any use for these types.
-
-3 options were considered:
-
-1. Free types in `ConfigParser.hpp` — makes implementation details
-   visible to any file that includes the header. A file that calls
-   `parse()` and never touches a token still sees Token in scope.
-   Unnecessary exposure.
-
-2. Separate internal header `ConfigParser_internal.hpp` — included
-   only by the 2 implementation files. Correctly restricts scope,
-   but adds a file whose sole purpose is to hide information that the
-   class itself could simply own.
-
-3. Private nested types inside `ConfigParser` — the class owns its
-   pipeline machinery. `Token` and `TokenType` are syntactically
-   present in the header but access-controlled: external code cannot
-   name them. The implementation files reach them as
-   `ConfigParser::Token` and `ConfigParser::TokenType`.
-
-Option 3 is the correct choice. It expresses the ownership relation
-directly: `Token` is an artefact of `ConfigParser`'s internal
-pipeline, not a type belonging to the config subsystem's public
-vocabulary. No separate file, no leaked scope.
-
-The class declaration therefore opens with:
 ```cpp
-class ConfigParser {
+class ConfigParser
+{
     enum class TokenType { STRING, LBRACE, RBRACE, SEMICOLON, END };
 
     struct Token {
@@ -197,77 +122,124 @@ class ConfigParser {
         size_t      line;
     };
 
-    // remainder of private state and methods...
-```
+    std::vector<Token> tokens_;
+    size_t             pos_;
 
-`TokenType::END` is the sentinel appended by the tokeniser as its
-final element. It allows `peek()` to return a well-defined token at
-stream exhaustion without an unchecked index — the outer parse loop
-terminates on `END` rather than on `pos >= tokens.size()`. The
-tokeniser's postcondition: the last element of `tokens` is always
-`Token{TokenType::END, "", last_line}`.
+    // observations — const (no state change)
+    Token peek()                              const;
+    bool  at_STRING(const std::string& value) const;
 
+    // advancement — not const
+    Token consume();
+    Token expect(TokenType type);
+    Token expect_STRING();
+    void  expect_SEMICOLON();
 
-```cpp
-class ConfigParser {
-    std::vector<Token> tokens;
-    size_t             pos;
+    // pipeline phases
+    std::string               read    (const std::string& filepath);
+    void                      tokenise(const std::string& source);
+    void                      validate(const std::vector<ServerConfig>& result);
 
-    Token   peek();
-    Token   consume();
-    Token   expect(TokenType type);    // consume or throw
-    Token   expect_STRING();             // consume STRING or throw
-    void    expect_semicolon();        // consume SEMICOLON or throw
-    bool    at_STRING(const std::string& value);
+    // grammar methods — 1 per production rule
+    [[nodiscard]] std::vector<ServerConfig> parse_config();
+    [[nodiscard]] ServerConfig              parse_server_block();
+    [[nodiscard]] Location                  parse_location_block();
 
-    std::vector<ServerConfig>  parse_config();
-    ServerConfig    parse_server_block();
-    void    parse_server_dir(ServerConfig& s);
-    void    parse_listen_dir(ServerConfig& s);
-    void    parse_server_name_dir(ServerConfig& s);
-    void    parse_error_page_dir(ServerConfig& s);
-    Location    parse_location_block();
-    void    parse_location_dir(Location& loc);
-    void    parse_root_dir(Location& loc);
-    void    parse_index_dir(Location& loc);
-    void    parse_methods_dir(Location& loc);
-    void    parse_autoindex_dir(Location& loc);
-    void    parse_cgi_ext_dir(Location& loc);
-    void    parse_cgi_path_dir(Location& loc);
-    void    parse_upload_enable_dir(Location& loc);
-    void    parse_upload_store_dir(Location& loc);
-    void    parse_return_dir(Location& loc);
+    void parse_server  (ServerConfig& s);
+    void parse_location(Location& loc);
 
-    size_t  parse_size(const Token& t);
-    uint16_t    parse_port(const std::string& s, size_t line);
-    ListenAddress   parse_host_port(const Token& t);
+    void parse_listen     (ServerConfig& s);
+    void parse_server_name(ServerConfig& s);
+    void parse_error_page (ServerConfig& s);
+    void parse_body_size  (ServerConfig& s);
+    void parse_body_size  (Location& loc);
+
+    void parse_root         (Location& loc);
+    void parse_index        (Location& loc);
+    void parse_methods      (Location& loc);
+    void parse_autoindex    (Location& loc);
+    void parse_cgi_ext      (Location& loc);
+    void parse_cgi_path     (Location& loc);
+    void parse_upload_enable(Location& loc);
+    void parse_upload_store (Location& loc);
+    void parse_return       (Location& loc);
+
+    // interpretation leaves — STRING token value → typed value
+    [[nodiscard]] size_t        parse_size     (const Token& t);
+    [[nodiscard]] uint16_t      parse_port     (const std::string& s, size_t line);
+    [[nodiscard]] ListenAddress parse_host_port(const Token& t);
 
 public:
-    std::vector<ServerConfig>   parse(const std::string& filepath);
+    ConfigParser() = default;
+    ConfigParser(const ConfigParser&)            = delete;
+    ConfigParser& operator=(const ConfigParser&) = delete;
+
+    [[nodiscard]] std::vector<ServerConfig> parse(const std::string& filepath);
 };
 ```
 
-parse_size is the single leaf for body size interpretation. It returns a size_t. 
-The 2 call sites differ in assignment type: 
-. parse_server_dir assigns directly to ServerConfig::client_max_body_size (a size_t); 
-. parse_location_dir wraps the result in std::optional. 
-A shared parse_body_size_dir(size_t&) cannot serve both 
-without forcing the caller to hold an intermediate. 
-The leaf is general; the assignment is local. No shared intermediate method is needed.
+### navigation helpers
 
-### Defaults applied here
+tokens_ and pos_ are object members, not locals passed through the
+call chain, to eliminate tramp data — parameters carried through
+every level of a deep call chain not because those functions use
+them but because something below does. object members are visible
+to all private methods via this, with no parameter overhead.
 
-When a directive is absent, the parser sets the default value
-as specified in 2_data-model.md. The struct is initialised
-with defaults before any directives are parsed.
+peek() and at_STRING() are const: pure observations, no state change.
+consume() and the expect_* family are not const: they advance pos_.
+the read/advance asymmetry is visible in the declaration.
 
-### Error format
+expect_STRING() and expect_SEMICOLON() are not aliases for
+expect(TokenType::STRING/SEMICOLON). they carry semantic context:
+at a call site where expect_STRING() is used, the grammar demands a
+directive value or identifier — the error says "expected directive
+value", not "expected STRING". expect_SEMICOLON() always produces
+"expected ';'". difference: reporting what the token stream received
+vs what the grammar position requires.
+
+### directive consumption contract
+
+parse_server and parse_location consume the directive name token
+before dispatching to the specific parser. the specific parser enters
+with pos_ at the first value token. it consumes values and the
+terminating semicolon, then returns.
+
+rationale: the name token is spent as the dispatch decision.
+consuming it again inside the specific parser would be redundant
+and would create a hidden coupling: every specific parser would need
+to know to skip its own name. that is a trap for every future
+addition. the contract is: dispatch owns the name; specific parser
+owns the values.
+
+violating this contract produces off-by-one token errors.
+
+### parse_body_size — overloads, single leaf
+
+parse_size(const Token&) → size_t is the single interpretation leaf.
+2 call sites assign differently:
+
+- server level: assigns directly to ServerConfig::client_max_body_size (size_t)
+- location level: wraps in std::optional<size_t>
+
+a shared method with size_t& out cannot serve both. the leaf is
+general; assignment is local to each caller. parse_body_size is
+overloaded on parameter type (ServerConfig& / Location&). both
+call parse_size internally. overload resolution is by argument type
+at the call site — no naming distinction needed.
+
+### defaults applied here
+
+struct is initialised with defaults before any directives are parsed.
+see 2_data-model.md defaults table.
+
+### error format
 
 ```
 [config] line <N>: <message>
 ```
 
-Examples:
+examples:
 
 ```
 [config] line 12: expected ';'
@@ -276,59 +248,63 @@ Examples:
 [config] line 17: expected port number, got 'abc'
 ```
 
-### Navigation helpers
+### parse_port example
 
-expect(TokenType) is the base: consume the next token, 
-throw if type does not match. It reports a type name. 
-
-expect_STRING() and expect_SEMICOLON() are specialisations 
-that carry semantic context: at a parse site that calls expect_STRING(), 
-we know we are at a position in the grammar where a directive value 
-or identifier is required — the error message can say "expected directive value" 
-rather than "expected STRING". expect_SEMICOLON() always says "expected ';'". 
-
-This is not redundancy. It is the difference between reporting 
-what the grammar received and what the grammar position demands. 
-These specialisations are the mechanism for error messages 
-that orient the operator in the config file, not merely in the token stream.
+```cpp
+uint16_t ConfigParser::parse_port(const std::string& s, size_t line)
+{
+    try {
+        int val = std::stoi(s);
+        if (val < 1 || val > 65535)
+            throw std::runtime_error(
+                "[config] line " + std::to_string(line)
+                + ": port out of range [1, 65535]: '" + s + "'");
+        return static_cast<uint16_t>(val);
+    }
+    catch (const std::invalid_argument&) {
+        throw std::runtime_error(
+            "[config] line " + std::to_string(line)
+            + ": expected port number, got '" + s + "'");
+    }
+}
+```
 
 ---
 
-## Phase 4 — Validation
+## phase 4 — validation
 
-Runs after the full std::vector<ServerConfig> is built.
-Checks semantic constraints that the grammar cannot express.
+runs after the full std::vector<ServerConfig> is built.
+checks semantic constraints the grammar cannot express.
 
-### Mandatory fields
+### mandatory fields
 
-| Level    | Field    | Rule                                    |
-|----------|----------|-----------------------------------------|
-| Server   | listen   | at least one ListenAddress required     |
-| Server   | locations| at least one location block required    |
-| Location | root     | required                                |
+| level    | field     | rule                                |
+|----------|-----------|-------------------------------------|
+| server   | listen    | at least 1 ListenAddress required   |
+| server   | locations | at least 1 location block required  |
+| location | root      | required                            |
 
-### Value range checks
+### value range checks
 
-| Field                  | Constraint     |
-|------------------------|----------------|
-| ListenAddress::port    | [1, 65535]     |
-| error_pages key        | [100, 599]     |
-| client_max_body_size   | > 0            |
+| field                | constraint  |
+|----------------------|-------------|
+| ListenAddress::port  | [1, 65535]  |
+| error_pages key      | [100, 599]  |
+| client_max_body_size | > 0         |
 
-### Semantic coupling
+### semantic coupling
 
-- cgi_extension and cgi_path: either both set or both absent.
-  One without the other is an error.
+- cgi_ext and cgi_path: either both set or both absent.
 - return_code and return_path: either both set or both absent.
+- upload_enable true requires upload_store non-empty.
 
-### Duplicate checks
+### duplicate checks
 
-- Duplicate listen address+port pair across servers:
-  valid (spec allows multiple servers on same port for
-  virtual hosting). note but do not error.
-- Duplicate location path within one server: error.
+- duplicate listen address:port across servers: valid (virtual
+  hosting). note but do not error.
+- duplicate location path within 1 server: error.
 
-### Error format
+### error format
 
 ```
 [config] validation error: <message>
@@ -336,8 +312,8 @@ Checks semantic constraints that the grammar cannot express.
 
 ---
 
-## Error Handling
+## error handling
 
-All phases throw `std::runtime_error`.
-Caller (main / WebServ::init) catches and exits with message.
-The program must not start with an invalid config.
+all phases throw std::runtime_error.
+caller (main / WebServ::init) catches and exits with the message.
+the program must not start with an invalid config.
