@@ -1,4 +1,4 @@
-# Config Parser — Overview
+# Configuration file Parser — Overview
 
 ## Essence
 
@@ -43,7 +43,8 @@ WebServ::run()           ← runtime takes over
 
 ## Telos
 
-Produce a validated, complete, runtime-ready representation of the operator's intent.
+Produce a validated, complete, runtime-ready representation 
+of the operator's intent.
 
 "Runtime-ready" means: whatever `WebServ::run()` needs.
 

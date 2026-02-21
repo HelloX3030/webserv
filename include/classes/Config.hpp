@@ -35,14 +35,12 @@ Derived from the host_port grammar production.
 Host is optional in the grammar — bare port (`listen 8080;`) is valid.
 When absent, the parser assigns default host "0.0.0.0".
 
-uint16_t : unsigned integer type (non-negative) 
-with width of exactly 16 bits.
-
+uint16_t : unsigned integer type with width 16 bits.
 2^16 = 65536 > 65535; 2^8 = 256 < 65535. uint16_t is the minimal
 standard width whose range contains the TCP port space [0, 65535].
 
-Valid range enforced at parse time in parse_port() and confirmed in
-the validator.
+Valid range enforced at parse time in parse_port() 
+and confirmed in the validator.
 */
 struct ListenAddress
 {
@@ -52,19 +50,19 @@ struct ListenAddress
 
 /*
 Derived from location_block and location_dir productions.
-One Location per location {} block within a server block.
+One `Location` per location {} block within a server block.
 
-client_max_body_size is std::optional<size_t>: it overrides the
+`client_max_body_size` is std::optional<size_t>: it overrides the
 server-level default when present. std::nullopt means inherit.
 A sentinel value (e.g. 0) would conflate "not set" with "set to 0".
 
 allowed_methods default: {GET, POST, DELETE} — all methods permitted
 unless explicitly restricted. Absent directive = no restriction.
 
-cgi_extension and cgi_path are semantically coupled: either both set
+`cgi_extension` and `cgi_path` are semantically coupled: either both set
 or both absent. Validator enforces.
 
-upload_enable / upload_store: upload_enable=true requires upload_store
+`upload_enable` / `upload_store`: upload_enable=true requires upload_store
 to be non-empty. Validator enforces.
 
 return_code is std::optional<uint16_t>: std::nullopt means no redirect
@@ -83,7 +81,7 @@ struct Location
     std::optional<size_t>client_max_body_size; // default: std::nullopt (inherit)
     bool                        upload_enable;
     std::string                 upload_store;
-    uint16_t                    return_code;
+    std::optional<uint16_t>     return_code;
     std::string                 return_path;
 };
 

@@ -2,11 +2,15 @@ ServerConfig (from Config.hpp) is the interface type —
 i.e. Server::parse() will consume a ServerConfig 
 rather than the parser directly populating a Server 
 
+`ConfigParser::parse()` returns `std::vector<ServerConfig>`. 
+`Server::parse()` should calls this & store the result. 
 
 
-How to populate Server from ServerConfig:
 
-Server::parse(path) becomes a 2-step function:
+
+How to populate Server from ServerConfig - options:
+
+1. Server::parse(path) becomes a 2-step function:
 
 ```cpp
 void Server::parse(const std::string& path)
@@ -25,7 +29,9 @@ void Server::parse(const std::string& path)
 }
 ```
 
-Or more cleanly, store the whole ServerConfig as a member:
+
+2. Or more cleanly, store the whole ServerConfig as a member:
+
 ```cpp
 // in Server.hpp
 #include "classes/Config.hpp"
@@ -47,7 +53,6 @@ void Server::parse(const std::string& path)
 The second form is cleaner — it avoids re-listing every field when `ServerConfig` changes. 
 Ask `this->config.locations` rather than `this->locations`. 
 
-The contract to communicate to Lukas is simply: `ConfigParser::parse()` returns `std::vector<ServerConfig>`. 
-His `Server::parse()` calls it and stores the result. He owns how he stores it internally.
+
 
 Note: also need to `#include "classes/Config.hpp"` in `Server.hpp`

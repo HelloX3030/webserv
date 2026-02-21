@@ -20,8 +20,8 @@ server {
 }
 ```
 
-The parser reads this file and produces one ServerConfig object:
-host=0.0.0.0, port=8080, one location at "/" with root
+The parser reads this file and produces 1 ServerConfig object:
+host=0.0.0.0, port=8080, 1 location at "/" with root
 /var/www/html and index file index.html.
 
 The rest of the program never reads the config file.
@@ -32,7 +32,7 @@ It only ever sees the ServerConfig objects the parser produced.
 ## The problem the parser solves
 
 The config file is text. The program needs structured data.
-The gap between the two is what the parser bridges.
+The gap between the 2 is what the parser bridges.
 
 Text has no types, no structure the program can reason about.
 A ServerConfig struct has typed fields, known ranges, clear ownership.
@@ -41,9 +41,9 @@ and guarantees the result is valid before the server runs.
 
 ---
 
-## Four components
+## 4 components
 
-The parser is built from 4 components in sequence.
+in sequence:
 
 ### 1. File reader
 
