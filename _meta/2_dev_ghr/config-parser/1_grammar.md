@@ -1,6 +1,9 @@
-# Config Language — Formal Grammar (ISO 14977 EBNF)
+# Configuration file: formal grammar
 
-## Notation
+## formalism
+ISO 14977 EBNF
+
+## notation
 
 Terminals are quoted strings. 
 Whitespace between tokens is implicit and ignored.

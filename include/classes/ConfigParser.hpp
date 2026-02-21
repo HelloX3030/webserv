@@ -17,7 +17,7 @@ class ConfigParser
         size_t      line; // carried for error messages
     };
 
-    // shared cursor state across all private methods via this
+    // shared cursor state across all private methods via `this`
     std::vector<Token> tokens_;
     size_t             pos_;
 
@@ -60,7 +60,6 @@ class ConfigParser
     void parse_return       (Location& loc);
 
     // interpretation leaves — STRING token value → typed value
-    // [[nodiscard]] — for fns whose return value is the computation
     [[nodiscard]] size_t        parse_size     (const Token& t);
     [[nodiscard]] uint16_t      parse_port     (const std::string& s, size_t line);
     [[nodiscard]] ListenAddress parse_host_port(const Token& t);
@@ -68,8 +67,7 @@ class ConfigParser
 public:
     ConfigParser() = default;
 
-    /* this obj has identity, no val. semantics
-    cpy mid-parse = bug */
+    /* this obj has identity, no val. semantics. cpy mid-parse = bug */
     ConfigParser(const ConfigParser&)            = delete;
     ConfigParser& operator=(const ConfigParser&) = delete;
 
