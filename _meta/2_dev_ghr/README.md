@@ -1,2 +1,2 @@
-documentation to assist development process
-of ghr's components.
+from ghr:
+documentation to assist development process.

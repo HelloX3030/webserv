@@ -1,26 +1,24 @@
 # Webserv
 
-[42 portal]
+## context
+42
+Core Curriculum
+Rank05
 
-## description
-(same as subject document summary below)
+## form
+group project
+estimated time: about 175 hours
+
+## specification version
+24.0
 
 ## keywords
+(domains, categories, tags, skills)
 Network
-
-## skills 
-(domains, keywords, categories, tags)
 Object-oriented programming
 Rigour
 Unix
 Network & system administration
-
-## additional
-. group project
-. estimated time: about 175 hours
-
-
-[subject / specification]
 
 ## Summary
 This project is about writing your own HTTP server.
@@ -28,9 +26,6 @@ You will be able to test it with an actual browser.
 HTTP is one of the most widely used protocols on the internet.
 Understanding its intricacies will be useful,
 even if you won’t be working on websites.
-
-## Version
-24.0
 
 ## Introduction
 
