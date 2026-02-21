@@ -21,11 +21,11 @@ std::vector<Token>
     |
     | Phase 3: Parser
     v
-std::vector<Server>  (fields populated, defaults applied)
+std::vector<ServerConfig>  (fields populated, defaults applied)
     |
     | Phase 4: Validation
     v
-std::vector<Server>  (semantically verified)
+std::vector<ServerConfig>  (semantically verified)
 ```
 
 ---
@@ -95,7 +95,7 @@ the parser, not the lexer.
 A NUMBER type would require the lexer to classify digit-leading
 strings as semantically special. This violates the single-
 responsibility boundary between phases. The lexer would be
-doing partial meaning-assignment — exactly what it must not do.
+doing partial meaning-assignment — incorrect.
 
 Consequence for the parser: every directive helper that expects
 a numeric value (parse_port, parse_size, parse_error_page)
@@ -155,38 +155,38 @@ class ConfigParser {
     std::vector<Token> tokens;
     size_t             pos;
 
-    Token  peek();
-    Token  consume();
-    Token  expect(TokenType type);    // consume or throw
-    Token  expect_STRING();             // consume STRING or throw
-    void   expect_semicolon();        // consume SEMICOLON or throw
-    bool   at_STRING(const std::string& value);
+    Token   peek();
+    Token   consume();
+    Token   expect(TokenType type);    // consume or throw
+    Token   expect_STRING();             // consume STRING or throw
+    void    expect_semicolon();        // consume SEMICOLON or throw
+    bool    at_STRING(const std::string& value);
 
     std::vector<ServerConfig>  parse_config();
-    ServerConfig               parse_server_block();
-    void                       parse_server_dir(ServerConfig& s);
-    void                       parse_listen_dir(ServerConfig& s);
-    void                       parse_server_name_dir(ServerConfig& s);
-    void                       parse_body_size_dir(size_t& out);
-    void                       parse_error_page_dir(ServerConfig& s);
-    Location                   parse_location_block();
-    void                       parse_location_dir(Location& loc);
-    void                       parse_root_dir(Location& loc);
-    void                       parse_index_dir(Location& loc);
-    void                       parse_methods_dir(Location& loc);
-    void                       parse_autoindex_dir(Location& loc);
-    void                       parse_cgi_ext_dir(Location& loc);
-    void                       parse_cgi_path_dir(Location& loc);
-    void                       parse_upload_enable_dir(Location& loc);
-    void                       parse_upload_store_dir(Location& loc);
-    void                       parse_return_dir(Location& loc);
+    ServerConfig    parse_server_block();
+    void    parse_server_dir(ServerConfig& s);
+    void    parse_listen_dir(ServerConfig& s);
+    void    parse_server_name_dir(ServerConfig& s);
+    void    parse_body_size_dir(size_t& out);
+    void    parse_error_page_dir(ServerConfig& s);
+    Location    parse_location_block();
+    void    parse_location_dir(Location& loc);
+    void    parse_root_dir(Location& loc);
+    void    parse_index_dir(Location& loc);
+    void    parse_methods_dir(Location& loc);
+    void    parse_autoindex_dir(Location& loc);
+    void    parse_cgi_ext_dir(Location& loc);
+    void    parse_cgi_path_dir(Location& loc);
+    void    parse_upload_enable_dir(Location& loc);
+    void    parse_upload_store_dir(Location& loc);
+    void    parse_return_dir(Location& loc);
 
-    size_t           parse_size(const Token& t);
-    uint16_t         parse_port(const std::string& s, size_t line);
-    ListenAddress    parse_host_port(const Token& t);
+    size_t  parse_size(const Token& t);
+    uint16_t    parse_port(const std::string& s, size_t line);
+    ListenAddress   parse_host_port(const Token& t);
 
 public:
-    std::vector<ServerConfig>  parse(const std::string& filepath);
+    std::vector<ServerConfig>   parse(const std::string& filepath);
 };
 ```
 
