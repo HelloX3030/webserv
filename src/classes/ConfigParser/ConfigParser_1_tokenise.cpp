@@ -19,7 +19,6 @@ moment of its emission — the line a token was on, not a line relative
 to a block or directive. */
 void ConfigParser::tokenise(const std::string& source)
 {
-    // defensive
     tokens_.clear();
 
     size_t      line = 1;
@@ -62,7 +61,7 @@ void ConfigParser::tokenise(const std::string& source)
         }
         else
         {
-            current += c;
+            current += c;   // accumulate
         }
     }
 
