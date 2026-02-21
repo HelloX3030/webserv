@@ -3,7 +3,7 @@
 #include <stdexcept>
 #include <string>
 
-/* parse_config: top-level production.
+/* top-level production.
 grammar: config = server_block, { server_block } ;
 at least 1 server block required — an empty config is rejected. */
 std::vector<ServerConfig> ConfigParser::parse_config()
@@ -26,8 +26,7 @@ std::vector<ServerConfig> ConfigParser::parse_config()
     return result;
 }
 
-/* parse_server_block: 1 server {} block.
-grammar: server_block = "server", "{", { server_dir }, "}" ;
+/* grammar: server_block = "server", "{", { server_dir }, "}" ;
 "server" already consumed by parse_config.
 struct initialised with defaults before the directive loop —
 any directive present in config overrides. */
@@ -61,7 +60,7 @@ ServerConfig ConfigParser::parse_server_block()
     return s;
 }
 
-/* parse_server: dispatch a server-level directive.
+/* dispatch a server-level directive.
 consumes the directive name — spent as the dispatch key.
 specific parser enters with pos_ at the 1st value token.
 the specific parser owns values and the terminating semicolon.
@@ -86,8 +85,7 @@ void ConfigParser::parse_server(ServerConfig& s)
         ": unknown server directive '" + name.value + "'");
 }
 
-/* parse_location_block: 1 location {} block.
-grammar: location_block = "location", path, "{", { location_dir }, "}" ;
+/* grammar: location_block = "location", path, "{", { location_dir }, "}" ;
 "location" and path already consumed by parse_server_block.
 defaults applied before directive loop. */
 Location ConfigParser::parse_location_block()
@@ -113,8 +111,8 @@ Location ConfigParser::parse_location_block()
     return loc;
 }
 
-/* parse_location: dispatch a location-level directive.
-same contract as parse_server: consumes name, specific parser owns values. */
+/* same contract as parse_server: 
+consumes name, specific parser owns values. */
 void ConfigParser::parse_location(Location& loc)
 {
     Token name = consume();

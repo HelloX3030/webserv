@@ -4,7 +4,7 @@
 #include <stdexcept>
 #include <string>
 
-/* parse_host_port: STRING token → ListenAddress.
+/* STRING token → ListenAddress.
 grammar: host_port = port | host, ":", port ;
 colon presence distinguishes the 2 forms.
 C++17 if-init scopes pos to the branch where it is meaningful. */
@@ -25,7 +25,7 @@ ListenAddress ConfigParser::parse_host_port(const Token& t)
     return addr;
 }
 
-/* parse_port: decimal string → uint16_t.
+/* decimal string → uint16_t.
 valid range [1, 65535]: 0 excluded because uint16_t admits it but
 no valid service binds port 0.
 stoi over stoul: stoi throws std::invalid_argument on non-numeric input;
@@ -47,7 +47,7 @@ uint16_t ConfigParser::parse_port(const std::string& s, size_t line)
     return static_cast<uint16_t>(n);
 }
 
-/* parse_size: STRING token value → size_t in bytes.
+/* STRING token value → size_t in bytes.
 grammar: size = digit, { digit }, [ size_suffix ] ;
 size_suffix = "k" | "K" | "m" | "M" | "g" | "G" ;
 

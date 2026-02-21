@@ -3,7 +3,7 @@
 #include <stdexcept>
 #include <string>
 
-/* listen_dir: grammar: "listen", host_port, ";" ;
+/* grammar: "listen", host_port, ";" ;
 multiple listen directives valid — each appends to listen. */
 void ConfigParser::parse_listen(ServerConfig& s)
 {
@@ -12,7 +12,7 @@ void ConfigParser::parse_listen(ServerConfig& s)
     expect_SEMICOLON();
 }
 
-/* server_name_dir: grammar: "server_name", name, { name }, ";" ;
+/* grammar: "server_name", name, { name }, ";" ;
 grammar requires at least 1 name. */
 void ConfigParser::parse_server_name(ServerConfig& s)
 {
@@ -27,7 +27,7 @@ void ConfigParser::parse_server_name(ServerConfig& s)
     expect_SEMICOLON();
 }
 
-/* error_page_dir: grammar: "error_page", status_code, path, ";" ;
+/* grammar: "error_page", status_code, path, ";" ;
 status_code range [100, 599] enforced here; validator confirms. */
 void ConfigParser::parse_error_page(ServerConfig& s)
 {
@@ -51,7 +51,7 @@ void ConfigParser::parse_error_page(ServerConfig& s)
     expect_SEMICOLON();
 }
 
-/* body_size_dir (server): grammar: "client_max_body_size", size, ";" ;
+/* grammar: "client_max_body_size", size, ";" ;
 assigns directly to ServerConfig::client_max_body_size (size_t).
 overload resolved at the call site in parse_server by argument type. */
 void ConfigParser::parse_body_size(ServerConfig& s)

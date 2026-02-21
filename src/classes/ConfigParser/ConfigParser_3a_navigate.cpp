@@ -3,7 +3,7 @@
 #include <stdexcept>
 #include <string>
 
-/* parse: pipeline orchestrator.
+/* pipeline orchestrator.
 pos_ reset before parse_config — method is re-entrant if needed,
 though standard usage is construct-once, call-once, discard. */
 std::vector<ServerConfig> ConfigParser::parse(const std::string& filepath)
@@ -16,7 +16,7 @@ std::vector<ServerConfig> ConfigParser::parse(const std::string& filepath)
     return result;
 }
 
-/* peek: return current token without advancing pos_.
+/* return current token without advancing pos_.
 const: pure observation, no state change.
 safe at stream exhaustion: tokenise() postcondition guarantees
 tokens_.back() is END. */
@@ -25,23 +25,30 @@ ConfigParser::Token ConfigParser::peek() const
     return tokens_[pos_];
 }
 
-/* at_STRING: true if current token is STRING with exactly this value.
+/* true if current token is STRING with exactly this value.
 used for named dispatch: at_STRING("location") in parse_server_block. */
 bool ConfigParser::at_STRING(const std::string& value) const
 {
     return peek().type == TokenType::STRING && peek().value == value;
 }
 
-/* consume: advance pos_, return the token that was current.
+/* advance pos_, return the token that was current.
 does not check type — caller is responsible for context. */
 ConfigParser::Token ConfigParser::consume()
 {
     return tokens_[pos_++];
 }
 
-/* expect: consume and return token, throw if type mismatches.
+/* consume and return token, throw if type mismatches.
 error names the token structurally for operator-facing messages,
-not by enum constant name. */
+not by enum constant name. 
+
+`tp`: shortened form for `type`
+lambda's parameter should be named differently from outer type parameter
+already in scope in expect().
+a better name would be t — except t is also used in expect() 
+for the consumed token. tok_type could be cleaner and more explicit. 
+*/
 ConfigParser::Token ConfigParser::expect(TokenType type)
 {
     auto type_name = [](TokenType tp) -> std::string
@@ -67,7 +74,7 @@ ConfigParser::Token ConfigParser::expect(TokenType type)
         (t.type == TokenType::END ? "EOF" : t.value) + "'");
 }
 
-/* expect_STRING: consume STRING or throw with grammar-position context.
+/* consume STRING or throw with grammar-position context.
 error says "expected directive value" — what the grammar requires —
 not "expected STRING", which is an implementation detail. */
 ConfigParser::Token ConfigParser::expect_STRING()
@@ -81,7 +88,7 @@ ConfigParser::Token ConfigParser::expect_STRING()
         (t.type == TokenType::END ? "EOF" : t.value) + "'");
 }
 
-/* expect_SEMICOLON: consume SEMICOLON or throw.
+/* consume SEMICOLON or throw.
 every directive ends with ';'. single enforcement point. */
 void ConfigParser::expect_SEMICOLON()
 {
