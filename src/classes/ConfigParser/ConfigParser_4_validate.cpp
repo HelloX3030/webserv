@@ -3,20 +3,17 @@
 #include <stdexcept>
 #include <string>
 
-/* phase 4: validate the completed std::vector<ServerConfig>.
-check semantic constraints the grammar cannot express and the parser
-cannot check locally — constraints that require the fully built structs.
+/* validate the completed std::vector<ServerConfig>.
+check semantic constraints the grammar cannot express & 
+the parser cannot check locally — 
+constraints that require fully built struct.
 
 2-layer enforcement strategy:
 parse time: range checks on numeric values (port, status code, size).
-  illegal values are rejected before they enter the structs.
+  illegal values rejected before they enter the structs.
 validate time: confirms those constraints held across every code path,
   checks mandatory field presence, and checks semantic couplings between
-  fields that have no individual syntax error but are invalid in combination.
-
-error format: "[config] validation error: <message>"
-distinct from parse-phase "[config] line N: <message>" —
-the validator has no token line numbers, only struct contents. */
+  fields that have no individual syntax error but are invalid in combination. */
 void ConfigParser::validate(const std::vector<ServerConfig>& servers)
 {
     if (servers.empty())
@@ -27,12 +24,7 @@ void ConfigParser::validate(const std::vector<ServerConfig>& servers)
         validate_server(s);
 }
 
-/* mandatory fields and per-location checks.
-
-. at least 1 ListenAddress required — without it the server
-  has no address to bind to. the runtime cannot proceed.
-. at least 1 location required — a server block with no
-  locations cannot route any request. */
+/* mandatory fields & per-location checks */
 void ConfigParser::validate_server(const ServerConfig& s)
 {
     if (s.listen.empty())
