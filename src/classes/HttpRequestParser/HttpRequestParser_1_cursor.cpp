@@ -1,0 +1,1 @@
+// buffer pos. peek / consume (shame can't slurp)
