@@ -181,3 +181,7 @@ the gap widens with connection count.
 
 in both cases: 1 call per loop iteration, no blocking on any individual fd,
 no `EAGAIN` handling needed — readiness guaranteed before `recv()`/`send()`.
+
+
+https://nginx.org/en/docs/events.html
+Connection processing methods
