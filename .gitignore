@@ -12,4 +12,4 @@ obj_debug/
 www/uploads/*
 !www/uploads/README.md
 
-.vscode/*
+.vscode/
