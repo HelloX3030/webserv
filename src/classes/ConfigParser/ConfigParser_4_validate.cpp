@@ -4,7 +4,7 @@
 #include <string>
 
 /* phase 4: validate the completed std::vector<ServerConfig>.
-checks semantic constraints the grammar cannot express and the parser
+check semantic constraints the grammar cannot express and the parser
 cannot check locally — constraints that require the fully built structs.
 
 2-layer enforcement strategy:
@@ -27,11 +27,11 @@ void ConfigParser::validate(const std::vector<ServerConfig>& servers)
         validate_server(s);
 }
 
-/* validate_server: mandatory fields and per-location checks.
+/* mandatory fields and per-location checks.
 
-listen: at least 1 ListenAddress required — without it the server
+. at least 1 ListenAddress required — without it the server
   has no address to bind to. the runtime cannot proceed.
-locations: at least 1 location required — a server block with no
+. at least 1 location required — a server block with no
   locations cannot route any request. */
 void ConfigParser::validate_server(const ServerConfig& s)
 {

@@ -48,6 +48,11 @@ ServerConfig ConfigParser::parse_server_block()
         {
             consume(); // "location"
             Token path_tok = expect_STRING();
+            
+            if (s.locations.count(path_tok.value))
+                throw std::runtime_error(
+                    "[config] line " + std::to_string(path_tok.line) +
+                    ": duplicate location path '" + path_tok.value + "'");
             s.locations[path_tok.value] = parse_location_block();
         }
         else

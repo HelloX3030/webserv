@@ -64,6 +64,9 @@ class ConfigParser
     [[nodiscard]] uint16_t      parse_port     (const std::string& s, size_t line);
     [[nodiscard]] ListenAddress parse_host_port(const Token& t);
 
+    void validate_server  (const ServerConfig& s);
+    void validate_location(const std::string& path, const Location& loc);
+
 public:
     ConfigParser() = default;
 
