@@ -47,8 +47,8 @@ under any circumstances
 
 ### language constraints
 - prefer C++ standard library over C equivalents
-- example: `<cstring>` over `<string.h>`
-- C functions permitted when no C++ equivalent exists
+    example: `<cstring>` over `<string.h>`
+    C functions permitted when no C++ equivalent exists
 - external libraries forbidden
 - Boost libraries forbidden
 
