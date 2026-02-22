@@ -1,68 +1,76 @@
-# Webserv: HTTP Server Specification
+# specification
 
-## 1. Invariants
+## 1. invariants
 
-### Process Stability
-- Server must not crash or terminate unexpectedly under any circumstances
-- Includes: memory exhaustion, invalid input, resource limits
-- Failed invariant compliance results in project failure
+### process stability
+- server must not crash or terminate unexpectedly
+  under any circumstances
+- includes: memory exhaustion, invalid input, resource limits
+- failed invariant compliance results in project failure
 
-### Non-Blocking I/O Architecture
-- All I/O operations on sockets, pipes, and FIFOs must be non-blocking
-- Single `poll()` (or `select()`, `epoll()`, `kqueue()`) multiplexes all I/O operations
-- Multiplexer monitors both read and write events simultaneously
-- Never call `read()`/`recv()` or `write()`/`send()` on non-blocking descriptors 
-without prior readiness notification
-- Exception: regular disk files exempt from multiplexer requirement
-- `errno` inspection after read/write operations to adjust behavior is forbidden
+### non-blocking I/O architecture
+- all I/O operations on sockets, pipes, and FIFOs
+  must be non-blocking
+- single `poll()` (or `select()`, `epoll()`, `kqueue()`)
+  multiplexes all I/O operations
+- multiplexer monitors both read and write events simultaneously
+- never call `read()`/`recv()` or `write()`/`send()`
+  on non-blocking descriptors without prior readiness notification
+- exception: regular disk files exempt from multiplexer requirement
+- `errno` inspection after read/write operations
+  to adjust behavior is forbidden
 
-### Request Lifecycle
-- No client request may hang indefinitely
-- Timeout mechanism required
-- Server must handle client disconnections gracefully
+### request lifecycle
+- no client request may hang indefinitely
+- timeout mechanism required
+- server must handle client disconnections gracefully
 
-### Operational Continuity
-- Server remains available under stress testing, invalid input, 
-and client misbehavior
-- Resilience is mandatory across all operational scenarios
+### operational continuity
+- server remains available under stress testing,
+  invalid input, and client misbehavior
+- resilience is mandatory across all operational scenarios
 
-## 2. Build System
+---
 
-### Makefile
-- Required rules: `$(NAME)`, `all`, `clean`, `fclean`, `re`
-- No unnecessary relinking
+## 2. build system
 
-### Compilation
-- Compiler: `c++`
-- Flags: `-Wall -Wextra -Werror`
-- Standard: `-std=c++98` (42 Heilbronn permits `-std=c++17`)
+### makefile
+- required rules: `$(NAME)`, `all`, `clean`, `fclean`, `re`
+- no unnecessary relinking
 
-### Language Constraints
-- Prefer C++ standard library over C equivalents
-- Example: `<cstring>` over `<string.h>`
+### compilation
+- compiler: `c++`
+- flags: `-Wall -Wextra -Werror`
+- standard: `-std=c++98` (42 Heilbronn permits `-std=c++17`)
+
+### language constraints
+- prefer C++ standard library over C equivalents
+- example: `<cstring>` over `<string.h>`
 - C functions permitted when no C++ equivalent exists
-- External libraries forbidden
+- external libraries forbidden
 - Boost libraries forbidden
 
-## 3. Executable Interface
+---
+
+## 3. executable interface
 
 ```
 ./webserv [configuration_file]
 ```
 
-- Configuration file path optional
-- If omitted: implementation-defined default location used
+- executable built in program's repository root
+- configuration file path optional
+- if omitted: implementation-defined default location used
 
-## 4. Permitted System Calls
+---
 
-### Process Management
+## 4. permitted system calls
+
 - execve
 - fork
 - waitpid
 - kill
 - signal
-
-### File Descriptors
 - socket
 - accept
 - listen
@@ -77,14 +85,10 @@ and client misbehavior
 - fcntl
 - setsockopt
 - getsockname
-
-### I/O Operations
 - read
 - write
 - send
 - recv
-
-### Event Multiplexing
 - select
 - poll
 - epoll_create
@@ -92,262 +96,265 @@ and client misbehavior
 - epoll_wait
 - kqueue
 - kevent
-
-### Address Resolution
 - getaddrinfo
 - freeaddrinfo
 - getprotobyname
-
-### Byte Order Conversion
 - htons
 - htonl
 - ntohs
 - ntohl
-
-### Filesystem Operations
 - stat
 - access
 - chdir
 - opendir
 - readdir
 - closedir
-
-### Error Handling
 - errno
 - strerror
 - gai_strerror
+- event multiplexer macros and helper functions (e.g. `FD_SET`)
 
-### Additional Permissions
-- Event multiplexer macros and helper functions (e.g., `FD_SET`)
-
-### Forbidden
+### forbidden
 - `execve()` except for CGI subprocess creation
 - `fork()` except for CGI subprocess creation
 
-## 5. HTTP Protocol
+---
 
-### Protocol Version
+## 5. HTTP protocol
+
+### protocol version
 - HTTP/1.1 subset
 - HTTP/1.0 acceptable as reference point
-- Full RFC compliance not required
+- full RFC compliance not required
 
-### Required Methods
+### required methods
 - GET
 - POST
 - DELETE
 
-### Request Processing
+### request processing
 
-#### Request Line Parsing
-- Method extraction
+#### request line parsing
+- method extraction
 - URI parsing
 - HTTP version identification
 
-#### Header Parsing
-- All standard headers
+#### header parsing
+- all standard headers
 - `Content-Length` for body size determination
 - `Host` for server selection
 
-#### Body Handling
-- Support `Content-Length`-specified bodies
-- Chunked transfer encoding: server un-chunks before passing to CGI
+#### body handling
+- support `Content-Length`-specified bodies
+- chunked transfer encoding:
+  server un-chunks before passing to CGI
 - CGI receives EOF-terminated plain body stream
 
-### Response Generation
+### response generation
 
-#### Status Codes
-- Must be accurate per HTTP specification
-- Minimum required:
-  - 200 OK
-  - 400 Bad Request
-  - 404 Not Found
-  - 500 Internal Server Error
-  - 503 Service Unavailable
+#### status codes
+- must be accurate per HTTP specification
 
-#### Headers
+#### headers
 - `Content-Type`
 - `Content-Length`
-- Additional headers as appropriate
+- additional headers as appropriate
 
-#### Error Pages
-- Default error pages required
-- Custom error pages configurable
+#### error pages
+- default error pages required
+- custom error pages configurable
 
-### Browser Compatibility
-- Must function with standard web browsers
+### browser compatibility
+- must function with standard web browsers
 - NGINX behavior serves as reference for edge cases
-- Account for HTTP version differences when comparing
+- account for HTTP version differences when comparing
 
-### Functional Capabilities
-- Serve fully static websites
-- Accept file uploads from clients
-- Execute CGI scripts
+### functional capabilities
+- serve fully static websites
+- accept file uploads from clients
+- execute CGI scripts
 
-## 6. Configuration System
+---
 
-### Format
-- Inspired by NGINX `server` block syntax
-- Plain text configuration file
+## 6. configuration system
 
-### Server-Level Directives
+### format
+- inspired by NGINX `server` block syntax
+- plain text configuration file
 
-#### Network Binding
-- Define all `interface:port` pairs for listening
-- Support multiple servers serving different content
+### server-level directives
 
-#### Server Identification
-- Server names (optional, for virtual hosting)
-- Virtual hosting out of scope but permitted
+#### network binding
+- define all `interface:port` pairs for listening
+- support multiple servers serving different content
 
-#### Global Policies
-- Default error page paths
-- Maximum client request body size
+#### server identification
+- server names (optional, for virtual hosting)
+- virtual hosting out of scope but permitted
 
-### Location-Level Directives
+#### global policies
+- default error page paths
+- maximum client request body size
 
-#### Route Matching
+### location-level directives
+
+#### route matching
 - URL prefix matching
-- No regex support required
+- no regex support required
 
-#### Method Control
-- List of accepted HTTP methods per route
+#### method control
+- list of accepted HTTP methods per route
 
-#### Redirection
+#### redirection
 - HTTP redirect configuration
 
-#### Resource Resolution
-- Root directory for route
-- Example: route `/api` with root `/var/www` 
-resolves `/api/users` to `/var/www/users`
+#### resource resolution
+- root directory for route
+- example: route `/api` with root `/var/www`
+  resolves `/api/users` to `/var/www/users`
 
-#### Directory Behavior
-- Autoindex: enable/disable directory listing
-- Index files: default file(s) when route resolves to directory
+#### directory behavior
+- autoindex: enable/disable directory listing
+- index files: default file(s) when route resolves to directory
 
-#### File Upload
-- Authorization flag
-- Storage path specification
+#### file upload
+- authorization flag
+- storage path specification
 
-#### CGI Configuration
-- File extension to CGI interpreter mapping
+#### CGI configuration
+- file extension to CGI interpreter mapping
 - CGI interpreter path
 
-### Deliverable Requirements
-- Provide configuration files demonstrating all features
-- Include default files for testing and evaluation
+### deliverable requirements
+- provide configuration files demonstrating all features
+- include default files for testing and evaluation
 
-## 7. CGI Execution
+---
 
-### Invocation Mechanism
-- Fork-exec pattern: `fork()` followed by `execve()`
-- Triggered by file extension matching configuration
+## 7. CGI execution
 
-### Execution Context
-- CGI process runs in correct directory for relative path file access
+### invocation mechanism
+- fork-exec pattern: `fork()` followed by `execve()`
+- triggered by file extension matching configuration
 
-### Environment Variables
+### execution context
+- CGI process runs in correct directory
+  for relative path file access
+
+### environment variables
 - REQUEST_METHOD
 - CONTENT_LENGTH
 - QUERY_STRING
-- All data necessary to reconstruct full client request
-- Client arguments passed correctly
+- all data necessary to reconstruct full client request
+- client arguments passed correctly
 
-### Communication Protocol
+### communication protocol
 
-#### Input to CGI
-- Request body written to stdin
-- For chunked requests: server un-chunks, CGI receives plain body
+#### input to CGI
+- request body written to stdin
+- for chunked requests:
+  server un-chunks, CGI receives plain body
 - EOF signals end of input
 
-#### Output from CGI
-- Read from stdout
-- Contains HTTP headers followed by body
-- If no `Content-Length` header: EOF marks end of response
+#### output from CGI
+- read from stdout
+- contains HTTP headers followed by body
+- if no `Content-Length` header: EOF marks end of response
 
-### Minimum Requirements
-- Support at least one CGI interpreter
-- Examples: php-cgi, Python, Perl
+### minimum requirements
+- support at least 1 CGI interpreter
+- examples: php-cgi, Python, Perl
 
-## 8. Quality Attributes
+---
 
-### Availability
-- Withstand stress testing
-- Handle multiple concurrent clients
-- Maintain responsiveness under load
+## 8. quality attributes
 
-### Error Handling Coverage
+### availability
+- withstand stress testing
+- handle multiple concurrent clients
+- maintain responsiveness under load
 
-#### Client Errors (4xx)
+### error handling coverage
+
+#### client errors (4xx)
 - 400 Bad Request: malformed HTTP
 - 404 Not Found: missing resource
-- Additional 4xx codes as appropriate
+- additional 4xx codes as appropriate
 
-#### Server Errors (5xx)
+#### server errors (5xx)
 - 500 Internal Server Error: unexpected server conditions
 - 503 Service Unavailable: resource exhaustion
-- Additional 5xx codes as appropriate
+- additional 5xx codes as appropriate
 
-### Testing Requirements
+### testing requirements
 
-#### Mandatory Testing
+#### mandatory testing
 - `telnet` for raw protocol verification
-- Standard web browsers
+- standard web browsers
 
-#### Recommended Testing
-- Automated test suites (Python, Go, etc.)
+#### recommended testing
+- automated test suites (Python, Go, etc.)
 - NGINX behavioural comparison
-- Stress testing tools
-- Multiple concurrent client scenarios
+- stress testing tools
+- multiple concurrent client scenarios
 
-## 9. Deliverables
+---
 
-### Source Files
-- Makefile
-- Header files: `*.{h,hpp}`
-- Implementation files: `*.cpp`
-- Template files: `*.{tpp,ipp}`
+## 9. deliverables
 
-### Configuration Assets
-- Configuration files demonstrating all mandatory features
-- Default error page files (if custom pages not configured)
+### source files
+- makefile
+- header files: `*.{h,hpp}`
+- implementation files: `*.cpp`
+- template files: `*.{tpp,ipp}`
 
-### Testing Assets
-- Example configuration for evaluation
-- Test files demonstrating features
+### configuration assets
+- configuration files demonstrating all mandatory features
+- default error page files (if custom pages not configured)
 
-## 10. Bonus Extensions
+### testing assets
+- example configuration for evaluation
+- test files demonstrating features
 
-### Evaluation Conditions
-- Assessed only if mandatory requirements fully satisfied
-- Incomplete mandatory implementation: bonus not evaluated
+---
 
-### Cookie and Session Management
+## 10. bonus extensions
+
+### evaluation conditions
+- assessed only if mandatory requirements fully satisfied
+- incomplete mandatory implementation: bonus not evaluated
+
+### cookie and session management
 - HTTP cookie support
-- Session tracking mechanisms
-- Provide simple working examples
+- session tracking mechanisms
+- provide simple working examples
 
-### Multiple CGI Types
-- Support for multiple different CGI interpreters
+### multiple CGI types
+- support for multiple different CGI interpreters
 
-## 11. Scope
+---
 
-### Explicitly Out of Scope
-- Virtual hosting (permitted but not required)
-- Full HTTP/1.1 feature set (subset acceptable)
-- Regex in route matching
+## 11. scope
 
-### Reference Implementation
+### explicitly out of scope
+- virtual hosting (permitted but not required)
+- full HTTP/1.1 feature set (subset acceptable)
+- regex in route matching
+
+### reference implementation
 - NGINX serves as behavioural reference
-- Compare headers and response behaviors
-- Account for HTTP version differences
+- compare headers and response behaviors
+- account for HTTP version differences
 
-## 12. Study Requirements
+---
 
-### Mandatory Reading
+## 12. study requirements
+
+### mandatory reading
 - HTTP protocol RFCs
 - HTTP/1.0 suggested as reference point (not enforced)
 
-### Testing Protocol
-- Test with `telnet` before submission
-- Test with NGINX for behavioural comparison
-- Browser testing required
+### testing protocol
+- test with `telnet` before submission
+- test with NGINX for behavioural comparison
+- browser testing required
