@@ -4,9 +4,9 @@
 
 ### process stability
 - server must not crash or terminate unexpectedly
-  under any circumstances
-- includes: memory exhaustion, invalid input, resource limits
-- failed invariant compliance results in project failure
+under any circumstances
+    includes: memory exhaustion, invalid input, resource limits
+- failed compliance results in project failure
 
 ### non-blocking I/O architecture
 - all I/O operations on sockets, pipes, and FIFOs
@@ -16,7 +16,7 @@
 - multiplexer monitors both read and write events simultaneously
 - never call `read()`/`recv()` or `write()`/`send()`
   on non-blocking descriptors without prior readiness notification
-- exception: regular disk files exempt from multiplexer requirement
+    exception: regular disk files exempt from multiplexer requirement
 - `errno` inspection after read/write operations
   to adjust behavior is forbidden
 
