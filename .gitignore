@@ -1,15 +1,17 @@
-# executables
+# built executables
 webserv
 webserv_debug
 
-# build result
+# build dirs + obj artifacts
 obj/
 obj_debug/
 
-# jic?
 *.pdf
 
+# runtime-generated files
 www/uploads/*
+# keep dir struct in repo
 !www/uploads/README.md
 
+# local dev env: editor settings
 .vscode/
