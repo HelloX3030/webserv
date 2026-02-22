@@ -9,6 +9,7 @@ Rank05
 
 ## format
 group project
+max. 3 people
 
 ## version
 24.0
@@ -21,12 +22,7 @@ Unix
 Network & system administration
 
 ## Summary
-Writing your own HTTP server.
-Test it with a browser.
-
-HTTP is one of the most widely used protocols on the internet.
-Understanding its intricacies will be useful,
-even if you won’t be working on websites.
+write your own HTTP server and test it with a browser.
 
 ## Introduction
 
