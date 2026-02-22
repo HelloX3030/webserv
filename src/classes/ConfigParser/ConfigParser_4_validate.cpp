@@ -43,16 +43,16 @@ void ConfigParser::validate_server(const ServerConfig& s)
     {
         if (code < 100 || code > 599)
             throw std::runtime_error(
-                "[config] validation error: error_page code out of range "
-                "[100, 599]: " + std::to_string(code));
+                "[config] validation error: error_page code out of range"
+                " — got " + std::to_string(code) + ", valid range [100, 599]");
     }
 
     for (const auto& addr : s.listen)
     {
         if (addr.port < 1 || addr.port > 65535)
             throw std::runtime_error(
-                "[config] validation error: listen port out of range "
-                "[1, 65535]: " + std::to_string(addr.port));
+                "[config] validation error: listen port out of range"
+                " — got " + std::to_string(addr.port) + ", valid range [1, 65535]");
     }
 
     for (const auto& [path, loc] : s.locations)
