@@ -1,8 +1,15 @@
-*.pdf
+# executables
 webserv
 webserv_debug
+
+# build result
 obj/
 obj_debug/
 
+# jic?
+*.pdf
+
 www/uploads/*
 !www/uploads/README.md
+
+.vscode*
