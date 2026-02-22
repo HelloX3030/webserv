@@ -1,9 +1,19 @@
-# Configuration file: formal grammar
+# configuration file: formal grammar
 
-## formalism
+## notation, formalism
+
 ISO 14977 EBNF
 
-## notation
+why chosen?
+appropriate for ctx:
+. designed for formal specification of context-free grammar.
+. from mathematical/formal language theory tradition.
+    used in compiler textbooks, language specs. 
+. simple (ideal for ghr as beginner informatics student)
+
+(upcoming: for HTTP parsing: ABNF — to keep direct correspondence with
+HTTP spec (RFC 7230/9110), which is written in ABNF)
+
 
 Terminals are quoted strings. 
 Whitespace between tokens is implicit and ignored.
@@ -88,7 +98,7 @@ digit           = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" ;
 
 ---
 
-## Unspecified Directives
+## unspecified directives
 
 The subject specifies the following location-level behaviours
 without prescribing directive names or syntax.

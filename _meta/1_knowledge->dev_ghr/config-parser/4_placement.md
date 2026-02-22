@@ -27,13 +27,3 @@ Config.hpp belongs to ghr. Server.hpp to Lukas.
 changes to config structs touch only Config.hpp.
 no edits to Server.hpp required during config parser development.
 file boundary = team ownership boundary. no merge conflicts.
-
----
-
-## edit required to Lukas's files
-
-include/classes/Server.hpp:
-    add: #include "classes/Config.hpp"
-    add: ServerConfig or its fields as member(s)
-
-see interface-for-lukas.md for the handoff contract.
