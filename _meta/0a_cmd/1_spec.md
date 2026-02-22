@@ -39,7 +39,9 @@
 - no unnecessary relinking
 
 ### compilation
-- compiler: `c++`
+- compiler command: `c++`
+    (POSIX alias — resolves to system C++ compiler,
+    typically g++ or clang++)
 - flags: `-Wall -Wextra -Werror`
 - standard: `-std=c++98` (42 Heilbronn permits `-std=c++17`)
 
