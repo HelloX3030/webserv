@@ -67,7 +67,7 @@ void ConfigParser::validate_server(const ServerConfig& s)
         validate_location(path, loc);
 }
 
-/* validate_location: mandatory fields and semantic couplings.
+/* mandatory fields and semantic couplings.
 
 root: mandatory — without it the server cannot resolve any file path.
   the validator enforces this rather than the parser because root
@@ -75,8 +75,7 @@ root: mandatory — without it the server cannot resolve any file path.
   absence is only an error in the completed struct.
 
 cgi coupling: cgi_extension and cgi_path are co-dependent.
-  either both must be set or both must be absent. 1 without the other
-  is an incomplete CGI configuration — the server cannot invoke CGI
+  either both must be set or both must be absent. server cannot invoke CGI
   without both an extension to trigger on and a path to the interpreter.
 
 upload coupling: upload_enable true requires upload_store non-empty.
