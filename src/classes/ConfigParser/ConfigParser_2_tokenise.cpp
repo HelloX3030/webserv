@@ -2,21 +2,22 @@
 
 #include <string>
 
-/* phase 2: tokenise source string into tokens_.
+/* tokenise src string into tokens_.
 
 the lexer is a finite automaton with 2 states: 
-accumulating a STRING or not. 
-whitespace and structural characters are the state transitions.
+accumulating a STRING | not. 
+whitespace & structural characters are the state transitions.
 
-structural chars ({, }, ;) are boundary events: they terminate any
-STRING in progress, then emit their own token. 
+structural chars ({, }, ;) are boundary events: 
+they terminate any STRING in progress, then emit their own token.
+
 this ordering is the flush-before-emit invariant — 
-no accumulated character is silently dropped.
+no accumulated char is silently dropped.
 
 line is incremented on \n only. structural chars and whitespace other
 than \n do not change line. every token receives the line at the
-moment of its emission — the line a token was on, not a line relative
-to a block or directive. */
+moment of its emission (line token was on, not a line relative
+to a block or directive) */
 void ConfigParser::tokenise(const std::string& source)
 {
     tokens_.clear();
