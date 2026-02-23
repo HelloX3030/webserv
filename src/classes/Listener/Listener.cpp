@@ -42,26 +42,6 @@ int Entry::get_fd() const
     return fd;
 }
 
-void Entry::add_handler()
-{
-
-#ifdef DEBUG
-    if (WebServ::epfd == -1)
-        throw SetupError("Add Handler Called before WebServ::init()");
-#endif
-
-    struct epoll_event ev;
-    std::memset(&ev, 0, sizeof(ev));
-
-    ev.events = EPOLLIN; // start simple (level-triggered)
-    ev.data.ptr = static_cast<void *>(this);
-
-    if (epoll_ctl(WebServ::epfd, EPOLL_CTL_ADD, this->get_fd(), &ev) < 0)
-    {
-        throw std::runtime_error("epoll_ctl ADD failed");
-    }
-}
-
 int Entry::handle_event(uint32_t events)
 {
     (void)events;
@@ -140,6 +120,23 @@ int Entry::init()
         close(fd);
         fd = -1;
         return FAILURE;
+    }
+
+// Add To E-Poll Queue
+#ifdef DEBUG
+    if (WebServ::epfd == -1)
+        throw SetupError("Add Handler Called before WebServ::init()");
+#endif
+
+    struct epoll_event ev;
+    std::memset(&ev, 0, sizeof(ev));
+
+    ev.events = EPOLLIN; // start simple (level-triggered)
+    ev.data.ptr = static_cast<void *>(this);
+
+    if (epoll_ctl(WebServ::epfd, EPOLL_CTL_ADD, this->get_fd(), &ev) < 0)
+    {
+        throw std::runtime_error("epoll_ctl ADD failed");
     }
 
     initialized = true;

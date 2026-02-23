@@ -9,7 +9,9 @@ int run()
 
     while (g_running)
     {
+        std::cout << "running" << std::endl;
         int n = epoll_wait(epfd, events, WEBSERV_EPOLL_MAX_EVENTS, WEBSERV_EPOLL_TIMEOUT);
+        std::cout << "wakeup" << std::endl;
         if (n < 0)
         {
             if (errno == EINTR)
