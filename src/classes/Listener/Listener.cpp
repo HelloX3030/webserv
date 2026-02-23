@@ -64,8 +64,8 @@ int Entry::handle_event(uint32_t events)
         sockaddr_in client_addr;
         socklen_t len = sizeof(client_addr);
 
-        int client_fd = accept(fd, (struct sockaddr *)&client_addr, &len);
-        if (client_fd < 0)
+        int connection_fd = accept(fd, (struct sockaddr *)&client_addr, &len);
+        if (connection_fd < 0)
         {
             // No more clients waiting
             if (errno == EAGAIN || errno == EWOULDBLOCK)
@@ -77,19 +77,31 @@ int Entry::handle_event(uint32_t events)
             return FAILURE;
         }
 
-        log::log(LISTENER, "Accepted client fd=" + std::to_string(client_fd));
+        log::log(LISTENER, "Accepted client fd=" + std::to_string(connection_fd));
 
         // Make client non-blocking
-        int flags = fcntl(client_fd, F_GETFL, 0);
-        if (flags == -1 || fcntl(client_fd, F_SETFL, flags | O_NONBLOCK) == -1)
+        int flags = fcntl(connection_fd, F_GETFL, 0);
+        if (flags == -1 || fcntl(connection_fd, F_SETFL, flags | O_NONBLOCK) == -1)
         {
             perror("fcntl client");
-            close(client_fd);
+            close(connection_fd);
             continue;
         }
 
+        // Register to e_poll
+        struct epoll_event ev{};
+        ev.events = EPOLLIN;
+        ev.data.ptr = this;
+
+        if (epoll_ctl(WebServ::epfd, EPOLL_CTL_ADD, connection_fd, &ev) < 0)
+        {
+            perror("epoll_ctl ADD connection failed");
+            close(connection_fd);
+            return FAILURE;
+        }
+
         // Add New Connection
-        Connection::connections.emplace_back(server_id, client_fd);
+        Connection::connections.emplace_back(server_id, connection_fd);
     }
 
     return SUCCES;

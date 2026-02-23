@@ -33,9 +33,8 @@ Connection::~Connection()
 }
 
 Connection::Connection(int server_id, int fd)
+    : server_id(server_id), fd(fd), state(ConnectionState::READ)
 {
-    this->server_id = server_id;
-    this->fd = fd;
 }
 
 // Overrides
