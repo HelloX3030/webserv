@@ -360,3 +360,24 @@ under any circumstances
 - test with `telnet` before submission
 - test with NGINX for behavioural comparison
 - browser testing required
+
+
+---
+
+
+## Readme Requirements
+
+repository root must have a README including at least:
+
+. as 1st line, italicised: 
+This project has been created as part of the 42 curriculum by 
+<login1>, <login...n>
+. A “Description” section presenting the project, incl. its goal & brief overview.
+. An “Instructions” section containing any relevant information about compilation,
+installation, and/or execution.
+. A “Resources” section listing references related to the topic
+(documentation, articles, tutorials, etc.), 
+as well as a description of how AI was used —
+specifying for which tasks and which parts of the project.
+. Additional sections may be required depending on the project (e.g., usage
+examples, feature list, technical choices, etc.).
