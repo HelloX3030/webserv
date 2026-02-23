@@ -6,7 +6,7 @@ namespace Connection
 std::vector<Connection> connections;
 
 Connection::Connection()
-    : server_id(-1), fd(-1), state(ConnectionState::READING)
+    : server_id(-1), fd(-1), state(ConnectionState::READ)
 {
 }
 
@@ -65,6 +65,16 @@ void Connection::quit()
     }
 }
 
+std::string Connection::to_string() const
+{
+    return std::string("Connection(server_id=") + std::to_string(server_id) + ", fd=" + std::to_string(fd) + ", state=" + ::to_string(state) + ", read_buffer_size=" + std::to_string(read_buffer.size()) + ", write_buffer_size=" + std::to_string(write_buffer.size()) + ")";
+}
+
+std::ostream &operator<<(std::ostream &os, const Connection &connection)
+{
+    return os << connection.to_string();
+}
+
 void quit()
 {
     for (size_t i = 0; i < connections.size(); i++)
@@ -74,4 +84,36 @@ void quit()
     }
 }
 
+void display()
+{
+    log::log(DISPLAY, CONNECTION);
+
+    // No Connections
+    if (connections.size() == 0)
+    {
+        std::cout << ELLIPSIS << std::endl;
+    }
+
+    // Print Elements
+    for (size_t i = 0; i < connections.size(); i++)
+    {
+        log::log(CONNECTION, i, connections[i].to_string());
+    }
+}
+
 } // namespace Connection
+
+std::string to_string(Connection::ConnectionState state)
+{
+    switch (state)
+    {
+    case Connection::ConnectionState::READ:
+        return READ;
+    case Connection::ConnectionState::WRITE:
+        return WRITE;
+    case Connection::ConnectionState::CLOSE:
+        return CLOSE;
+    default:
+        return UNKNOWN;
+    }
+}

@@ -235,9 +235,17 @@ void quit()
 void display()
 {
     log::log(DISPLAY, LISTENER);
+
+    // No listeners
+    if (listener.size() == 0)
+    {
+        std::cout << ELLIPSIS << std::endl;
+    }
+
+    // Print Elements
     for (size_t i = 0; i < listener.size(); i++)
     {
-        std::cout << i << ": " << listener[i] << std::endl;
+        log::log(LISTENER, i, listener[i].to_string());
     }
 }
 

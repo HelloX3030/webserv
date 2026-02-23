@@ -11,7 +11,9 @@ int run()
     {
         int n = epoll_wait(epfd, events, WEBSERV_EPOLL_MAX_EVENTS, WEBSERV_EPOLL_TIMEOUT);
 #ifdef DEBUG
+        std::cout << BR << std::endl;
         log::log(WEB_SERV, "e_poll wakeup...");
+        Connection::display();
 #endif
         if (n < 0)
         {

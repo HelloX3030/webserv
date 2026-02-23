@@ -33,7 +33,6 @@ class Entry : public EpollHandler
     void quit();
     std::string to_string() const;
 };
-
 std::ostream &operator<<(std::ostream &os, const Entry &e);
 
 extern std::vector<Entry> listener;

@@ -8,9 +8,9 @@ namespace Connection
 
 enum class ConnectionState
 {
-    READING,
-    WRITING,
-    CLOSED
+    READ,
+    WRITE,
+    CLOSE
 };
 
 class Connection : public EpollHandler
@@ -38,9 +38,14 @@ class Connection : public EpollHandler
 
     // Functions
     void quit();
+    std::string to_string() const;
 };
+std::ostream &operator<<(std::ostream &os, const Connection &connection);
 
 extern std::vector<Connection> connections;
 void quit();
+void display();
 
 } // namespace Connection
+
+std::string to_string(Connection::ConnectionState state);
