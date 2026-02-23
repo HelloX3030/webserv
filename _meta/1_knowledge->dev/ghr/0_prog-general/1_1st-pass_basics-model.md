@@ -33,7 +33,7 @@ waits to be asked, then answers.
                   ┌─────────────────────────────────────┐
                   │             YOUR SERVER             │
                   │                                     │
-  [Browser] ◄────►│  network  ◄──►  logic  ◄──►  disk  │
+  [Browser] ◄────►│  network  ◄──►  logic  ◄──►  disk   │
                   │                                     │
                   └─────────────────────────────────────┘
 ```
@@ -51,6 +51,7 @@ server bridges them.
 
 requests and responses — text messages following HTTP format.
 
+
 request (browser → server):
 ```
 GET /hello.html HTTP/1.0
@@ -58,6 +59,7 @@ Host: example.com
 
 ```
 "give me /hello.html"
+
 
 response (server → browser):
 ```
@@ -68,7 +70,12 @@ Content-Type: text/html
 ```
 "here it is, it's HTML"
 
-HTTP is structured text. server reads, understands, fetches, sends.
+
+HTTP is structured text. 
+server reads, understands, fetches, sends.
+
+
+---
 
 
 ## core challenge
@@ -90,10 +97,13 @@ handle all at once without:
 - crashing on bad input
 - losing track of who asked what
 
-this is the hard part. not HTTP. concurrency.
+this is the hard part: not HTTP — concurrency.
 
 
-## tw2o phases
+--- 
+
+
+## 2 phases
 
 ### startup (once)
 
@@ -117,19 +127,27 @@ loop:
 loop never ends, until you kill the server.
 
 
+---
+
+
 ## "something happens"
 
 you ask the OS:
 
 > "any connections ready for attention?"
 
+
 OS answers:
 
 > "client #7 sent bytes. client #12 ready for you to send."
 
+
 handle those two, ask again. forever.
 
 this is I/O multiplexing: 1 program, many conversations, no paralysis.
+
+
+---
 
 
 ## shape of a conversation
@@ -154,6 +172,9 @@ each client in one stage at any moment.
 server tracks them all.
 
 
+---
+
+
 ## configuration
 
 rules the server follows:
@@ -172,6 +193,9 @@ server {
 - `/something` → look in `/var/www/something`
 
 config defines mapping between URLs and reality.
+
+
+---
 
 
 ## summary
