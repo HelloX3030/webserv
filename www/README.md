@@ -8,6 +8,18 @@ it is committed to the repository so the server is self-contained
 and runnable on any machine without external setup.
 
 
+directory naming:
+
+convention from early web servers (Apache, NCSA). stands for World Wide Web. 
+the directory holds content destined for web access — files the server 
+will serve to HTTP clients. local disk, but named for its purpose: 
+"this is what the world can see."
+
+alternative conventions: 
+htdocs/ (hypertext documents), public_html/, html/. 
+all mean the same: "web-accessible content root."
+
+
 ## structure
 
 ```
@@ -26,7 +38,8 @@ www/
 ## file roles
 
 **html/index.html**
-the evaluator's first impression when running default.conf. GET / resolves
+the evaluator's first impression when running default.conf. 
+GET / resolves
 here via the index directive.
 
 **html/upload.html**
@@ -93,8 +106,8 @@ cd build && ./webserv    incorrect — path resolution will fail
 ```
 
 absolute paths (e.g. root /var/www/html) would break on any machine where
-that path does not exist — including the evaluator's machine. relative paths
-resolve correctly anywhere the repo is cloned.
+that path does not exist. 
+relative paths resolve correctly anywhere the repo is cloned.
 
 
 ## precedent
@@ -111,6 +124,3 @@ in production web servers:
 . gnu libmicrohttpd: minimal embedded server, leaves document root to the
   application — no bundled www/ directory
   https://www.gnu.org/software/libmicrohttpd/
-
-the pattern exists precisely because portability demands it: a server that
-requires manual filesystem setup before it can run is not portable.
