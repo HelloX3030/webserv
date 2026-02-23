@@ -40,7 +40,7 @@ class Connection : public EpollHandler
     void quit();
 };
 
-std::vector<Connection> connections;
+extern std::vector<Connection> connections;
 void quit();
 
 } // namespace Connection

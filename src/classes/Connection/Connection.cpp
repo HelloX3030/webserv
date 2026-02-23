@@ -3,6 +3,8 @@
 namespace Connection
 {
 
+std::vector<Connection> connections;
+
 Connection::Connection()
     : server_id(-1), fd(-1), state(ConnectionState::READING)
 {
@@ -60,6 +62,15 @@ void Connection::quit()
     {
         close(fd);
         fd = -1;
+    }
+}
+
+void quit()
+{
+    for (size_t i = 0; i < connections.size(); i++)
+    {
+        connections[i].quit();
+        connections.clear();
     }
 }
 

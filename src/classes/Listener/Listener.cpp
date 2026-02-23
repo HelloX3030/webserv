@@ -1,4 +1,5 @@
 #include "classes/Listener.hpp"
+#include "classes/Connection.hpp"
 
 namespace Listener
 {
@@ -87,8 +88,8 @@ int Entry::handle_event(uint32_t events)
             continue;
         }
 
-        // For now, just close immediately (until Client class exists)
-        close(client_fd);
+        // Add New Connection
+        Connection::connections.emplace_back(server_id, client_fd);
     }
 
     return SUCCES;
@@ -228,6 +229,7 @@ void quit()
     {
         listener[i].quit();
     }
+    listener.clear();
 }
 
 void display()
