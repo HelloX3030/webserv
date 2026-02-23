@@ -44,10 +44,52 @@ int Entry::get_fd() const
 
 int Entry::handle_event(uint32_t events)
 {
-    (void)events;
+    if (events & (EPOLLERR | EPOLLHUP))
+    {
+        log::log(LISTENER, std::string("EPOLLERR or EPOLLHUP on fd=") + std::to_string(fd), log::LogType::ERROR);
+        return FAILURE;
+    }
+
+    if (!(events & EPOLLIN))
+        return SUCCES;
+
 #ifdef DEBUG
-    std::cout << "Listener::Entry::handle_event(): " << *this << std::endl;
+    std::cout << "Listener ready on port " << port << std::endl;
 #endif
+
+    // Accept all waiting Clients
+    while (true)
+    {
+        sockaddr_in client_addr;
+        socklen_t len = sizeof(client_addr);
+
+        int client_fd = accept(fd, (struct sockaddr *)&client_addr, &len);
+        if (client_fd < 0)
+        {
+            // No more clients waiting
+            if (errno == EAGAIN || errno == EWOULDBLOCK)
+            {
+                break;
+            }
+
+            perror("accept");
+            return FAILURE;
+        }
+
+        log::log(LISTENER, "Accepted client fd=" + std::to_string(client_fd));
+
+        // Make client non-blocking
+        int flags = fcntl(client_fd, F_GETFL, 0);
+        if (flags == -1 || fcntl(client_fd, F_SETFL, flags | O_NONBLOCK) == -1)
+        {
+            perror("fcntl client");
+            close(client_fd);
+            continue;
+        }
+
+        // For now, just close immediately (until Client class exists)
+        close(client_fd);
+    }
 
     return SUCCES;
 }

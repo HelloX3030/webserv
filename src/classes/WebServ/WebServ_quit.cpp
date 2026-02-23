@@ -13,6 +13,7 @@ void quit()
     }
 
     Listener::quit();
+    Connection::quit();
 }
 
 } // namespace WebServ
