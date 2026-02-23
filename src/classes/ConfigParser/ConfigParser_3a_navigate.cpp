@@ -3,19 +3,6 @@
 #include <stdexcept>
 #include <string>
 
-/* pipeline orchestrator.
-pos_ reset before parse_config — method is re-entrant if needed,
-though standard usage is construct-once, call-once, discard. */
-std::vector<ServerConfig> ConfigParser::parse(const std::string& filepath)
-{
-    std::string source = read(filepath);
-    tokenise(source);
-    pos_ = 0;
-    std::vector<ServerConfig> result = parse_config();
-    validate(result);
-    return result;
-}
-
 /* return current token without advancing pos_.
 const: pure observation, no state change.
 safe at stream exhaustion: tokenise() postcondition guarantees
