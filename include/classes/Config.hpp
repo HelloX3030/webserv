@@ -30,18 +30,19 @@ enum class HttpMethod
     DELETE
 };
 
-/*
-Derived from the host_port grammar production.
-Host is optional in the grammar — bare port (`listen 8080;`) is valid.
-When absent, the parser assigns default host "0.0.0.0".
+/* derived from the host_port grammar production.
+host is optional — bare port (`listen 8080;`) is valid.
+when absent, parser assigns default host "0.0.0.0".
 
-uint16_t : unsigned integer type with width 16 bits.
-2^16 = 65536 > 65535; 2^8 = 256 < 65535. uint16_t is the minimal
-standard width whose range contains the TCP port space [0, 65535].
+`port` type:
+must contain full TCP port space [0, 65535].
+    2^8 = 256 < 65535
+    2^16 = 65536 > 65535
+∴ uint16_t chosen (unsigned integer type w/ width 16 bits).
+as minimal std width.
 
-Valid range enforced at parse time in parse_port() 
-and confirmed in the validator.
-*/
+valid range enforced at parse time in parse_port() 
+& confirmed in validator. */
 struct ListenAddress
 {
     std::string host; // default: "0.0.0.0"

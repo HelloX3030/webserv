@@ -27,8 +27,13 @@ ListenAddress ConfigParser::parse_host_port(const Token& tok)
 /* decimal string → uint16_t.
 valid range [1, 65535]: 0 excluded because uint16_t admits it but
 no valid service binds port 0.
+
 stoi over stoul: stoi throws std::invalid_argument on non-numeric input;
-stoul silently accepts leading whitespace and some edge inputs. */
+stoul silently accepts leading whitespace and some edge inputs. 
+
+interpretation leaf fn, receives str + line instead of passed `Token`
+— `token-agnostic, could be used on any str.
+flexibility not necessary here just personal preference */
 uint16_t ConfigParser::parse_port(const std::string& s, size_t line)
 {
     int n;
@@ -37,12 +42,14 @@ uint16_t ConfigParser::parse_port(const std::string& s, size_t line)
     {
         throw std::runtime_error(
             "[config] line " + std::to_string(line) +
-            ": invalid port '" + s + "'");
+            ": port parse failed — value provided: '" + s +
+            "', expected: integer in range [1, 65535]");
     }
     if (n < 1 || n > 65535)
         throw std::runtime_error(
             "[config] line " + std::to_string(line) +
-            ": port out of range [1, 65535]: " + s);
+            ": port out of range — value provided: " + std::to_string(n) +
+            ", valid range: [1, 65535]");
     return static_cast<uint16_t>(n);
 }
 
