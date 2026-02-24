@@ -1,7 +1,7 @@
 ctx, location in sys
 
                     ┌─────────────────────┐
-                    │    Config Parser    │  ← startup phase
+                    │    Config Frontend  │  ← startup phase
                     └──────────┬──────────┘
                                │ produces
                                ▼
@@ -15,7 +15,7 @@ ctx, location in sys
 │  ┌────────────┐     ┌───────────────────────────────────── ─┐ │
 │  │   poll()   │ ──► │         Connection (per-client)       │ │
 │  └────────────┘     │  ┌───────────────────────────────────┐│ │
-│                     │  │      HTTP Request Parser          ││ │
+│                     │  │      HTTP Request Front end       ││ │
 │                     │  │  (state machine inside Connection)││ │
 │                     │  └───────────────────────────────────┘│ │
 │                     └───────────────────────────────────────┘ │
