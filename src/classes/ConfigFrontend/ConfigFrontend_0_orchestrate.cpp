@@ -1,4 +1,4 @@
-#include "../../../include/classes/ConfigParser.hpp"
+#include "../../../include/classes/ConfigFrontend.hpp"
 
 #include <string>
 
