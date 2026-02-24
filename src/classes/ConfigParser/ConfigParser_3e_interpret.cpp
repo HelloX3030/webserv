@@ -5,8 +5,7 @@
 #include <string>
 
 /* STRING token → ListenAddress.
-grammar: host_port = port | host, ":", port ;
-colon presence distinguishes the 2 forms.
+host_port = port | host, ":", port ;
 C++17 if-init scopes pos to the branch where it is meaningful. */
 ListenAddress ConfigParser::parse_host_port(const Token& tok)
 {
