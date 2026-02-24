@@ -3,7 +3,7 @@
 
 ## the Chomsky hierarchy
 
-Noam Chomsky (1956) classified formal languages into four types
+Noam Chomsky (1956) classified formal languages into 4 types
 based on the generative power of their grammars.
 
 ```
@@ -13,7 +13,7 @@ type 2: context-free              (A → γ)
 type 3: regular                   (A → aB or A → a)
 ```
 
-the types form a strict inclusion chain:
+these form a strict inclusion chain:
 
 ```
 type 3 ⊂ type 2 ⊂ type 1 ⊂ type 0

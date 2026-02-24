@@ -38,7 +38,7 @@ problem (parse this config file) to the mathematical foundation
 
 ## the universal pipeline
 
-every language processor follows the same archetypal structure:
+every language processor follows the same structure:
 
 ```
 characters
@@ -60,11 +60,11 @@ verified structure
 result
 ```
 
-each phase has:
-- a distinct input type
-- a distinct output type
-- a distinct class of errors it can detect
-- a distinct formal model that describes it
+each phase has a distinct:
+- input type
+- output type
+- class of errors it can detect
+- formal model that describes it
 
 the phases are not arbitrary engineering choices.
 they correspond to levels in the Chomsky hierarchy —
@@ -108,7 +108,7 @@ the domain changes. the structure persists.
 ---
 
 
-## telos
+## directive
 
 understand the pipeline at the archetypal level:
 - why each phase exists (logical necessity, not convention)

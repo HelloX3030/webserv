@@ -1,5 +1,6 @@
-telnet testing 
-minimal viable requirements
+# telnet testing 
+
+minimal viable requirements:
 
 basic socket infrastructure:
 

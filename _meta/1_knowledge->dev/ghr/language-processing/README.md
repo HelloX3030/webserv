@@ -1,2 +1,2 @@
-created after implementation of ConfigFrontend.
-make more general.
+created after implementation of WebServ : ConfigFrontend.
+generalise.
