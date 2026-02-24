@@ -54,7 +54,7 @@ uint16_t ConfigParser::parse_port(const std::string& s, size_t line)
 }
 
 /* STRING token value → size_t in bytes.
-grammar: size = digit, { digit }, [ size_suffix ] ;
+size = digit, { digit }, [ size_suffix ] ;
 size_suffix = "k" | "K" | "m" | "M" | "g" | "G" ;
 
 stoull over stoul: on 32-bit platforms size_t is 32 bits; stoull gives
