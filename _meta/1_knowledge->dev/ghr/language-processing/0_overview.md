@@ -119,19 +119,3 @@ understand the pipeline at the archetypal level:
 this understanding transfers across every instantiation.
 a config parser and an HTTP parser and a compiler frontend
 are the same archetype with different grammars.
-
-
----
-
-
-## document structure
-
-```
-0_overview.md           — this file. essence, scope, telos.
-1_formal-foundations.md — Chomsky hierarchy, automata correspondence.
-2_lexical-analysis.md   — characters → tokens. regular languages. DFA.
-3_syntactic-analysis.md — tokens → tree. context-free grammars. parsing algorithms.
-4_semantic-analysis.md  — tree → verified structure. type checking. validation.
-5_error-handling.md     — error classes, recovery, reporting.
-6_manifestations.md     — how the archetype appears in specific domains.
-```
