@@ -4,9 +4,8 @@
 #include <stdexcept>
 #include <string>
 
-/* STRING token → ListenAddress.
-host_port = port | host, ":", port ;
-C++17 if-init scopes pos to the branch where it is meaningful. */
+/*  STRING token → ListenAddress.
+host_port = port | host, ":", port ;    */
 ListenAddress ConfigParser::parse_host_port(const Token& tok)
 {
     ListenAddress addr;
@@ -14,6 +13,7 @@ ListenAddress ConfigParser::parse_host_port(const Token& tok)
 
     if (auto pos = tok.value.find(':'); pos != std::string::npos)
     {
+        // extract both sides of split pt `:`
         addr.host = tok.value.substr(0, pos);
         addr.port = parse_port(tok.value.substr(pos + 1), tok.line);
     }
