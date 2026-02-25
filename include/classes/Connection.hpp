@@ -13,15 +13,15 @@ enum class ConnectionState
 class Connection : public EpollHandler
 {
   private:
-    int fd;
+    Fd fd;
     ConnectionState state;
     std::string read_buffer;
     std::string write_buffer;
 
   public:
-    Connection();
-    Connection(const Connection &other);
-    Connection &operator=(const Connection &other);
+    Connection() = delete;
+    Connection(const Connection &other) = delete;
+    Connection &operator=(const Connection &other) = delete;
     ~Connection();
 
     // Special Constructors
@@ -32,7 +32,6 @@ class Connection : public EpollHandler
     void handle_event(uint32_t events) override;
 
     // Functions
-    void quit();
     std::string to_string() const;
 };
 std::ostream &operator<<(std::ostream &os, const Connection &connection);

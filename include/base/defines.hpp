@@ -1,7 +1,16 @@
 #pragma once
 
-#define WEBSERV_EPOLL_MAX_EVENTS 64
-#define WEBSERV_EPOLL_TIMEOUT -1
+#include <cstddef>
+
+// Batch Sizes
+namespace WebServ
+{
+
+constexpr const std::size_t EPOLL_MAX_EVENTS = 64;
+constexpr const int EPOLL_TIMEOUT = -1;
+constexpr const std::size_t EPOLL_HANDLERS_BATCH_SIZE = 64;
+
+} // namespace WebServ
 
 // Structure
 constexpr const char *BR = "-----------------------------------------------------------------------";
@@ -33,3 +42,12 @@ constexpr const char *PARSE_SERVER_CONFIG = "Parse Server Config";
 
 // defaults
 constexpr const char *DEFAULT_CONFIG_PATH = "default/path";
+
+// Branch Prediction
+#if defined(__GNUC__) || defined(__clang__)
+#define LIKELY(x) (__builtin_expect(!!(x), 1))
+#define UNLIKELY(x) (__builtin_expect(!!(x), 0))
+#else
+#define LIKELY(x) (x)
+#define UNLIKELY(x) (x)
+#endif

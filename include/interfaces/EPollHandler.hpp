@@ -22,4 +22,6 @@ namespace WebServ
 extern int epfd;
 extern std::vector<std::unique_ptr<EpollHandler>> epoll_handlers;
 
+void add_epoll_handler(std::unique_ptr<EpollHandler> new_epoll_handler);
+
 } // namespace WebServ

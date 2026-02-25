@@ -5,11 +5,11 @@ namespace WebServ
 
 void run()
 {
-    struct epoll_event events[WEBSERV_EPOLL_MAX_EVENTS];
+    struct epoll_event events[EPOLL_MAX_EVENTS];
 
     while (g_running)
     {
-        int n = epoll_wait(epfd, events, WEBSERV_EPOLL_MAX_EVENTS, WEBSERV_EPOLL_TIMEOUT);
+        int n = epoll_wait(epfd, events, EPOLL_MAX_EVENTS, EPOLL_MAX_EVENTS);
 #ifdef DEBUG
         std::cout << BR << std::endl;
         log::log(WEB_SERV, "e_poll wakeup...");

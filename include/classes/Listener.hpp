@@ -7,7 +7,7 @@ class Listener : public EpollHandler
 {
   private:
     in_port_t port;
-    int fd;
+    Fd fd;
 
   public:
     Listener() = delete;

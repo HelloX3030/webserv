@@ -9,7 +9,7 @@ Listener::Listener(in_port_t port)
     : port(port)
 {
     // Create Socket
-    fd = socket(AF_INET, SOCK_STREAM, 0);
+    int fd = socket(AF_INET, SOCK_STREAM, 0);
     if (fd < 0)
     {
         throw std::system_error(errno, std::generic_category(), "socket");
@@ -51,28 +51,13 @@ Listener::Listener(in_port_t port)
         throw std::system_error(errno, std::generic_category(), "listen");
     }
 
-// Add To E-Poll Queue
-#ifdef DEBUG
-    if (WebServ::epfd == -1)
-        throw SetupError("Add Handler Called before WebServ::init()");
-#endif
-
-    struct epoll_event ev;
-    std::memset(&ev, 0, sizeof(ev));
-
-    ev.events = EPOLLIN; // start simple (level-triggered)
-    ev.data.ptr = static_cast<void *>(this);
-
-    if (epoll_ctl(WebServ::epfd, EPOLL_CTL_ADD, this->get_fd(), &ev) < 0)
-    {
-        throw std::system_error(errno, std::generic_category(), "epoll_ctl");
-    }
+    this->fd.set(fd);
 }
 
 // Overrides
 int Listener::get_fd() const
 {
-    return fd;
+    return fd.get();
 }
 
 void Listener::handle_event(uint32_t events)
@@ -95,7 +80,7 @@ void Listener::handle_event(uint32_t events)
         sockaddr_in client_addr;
         socklen_t len = sizeof(client_addr);
 
-        int connection_fd = accept(fd, (struct sockaddr *)&client_addr, &len);
+        int connection_fd = accept(fd.get(), (struct sockaddr *)&client_addr, &len);
         if (connection_fd < 0)
         {
             // No more clients waiting
@@ -136,7 +121,7 @@ void Listener::handle_event(uint32_t events)
 
 std::string Listener::to_string() const
 {
-    return "Listener(port=" + std::to_string(port) + ", fd=" + std::to_string(fd) + ")";
+    return "Listener(port=" + std::to_string(port) + ", fd=" + std::to_string(fd.get()) + ")";
 }
 
 std::ostream &operator<<(std::ostream &os, const Listener &e)
@@ -150,7 +135,7 @@ namespace WebServ
 void add_listener(in_port_t port)
 {
     auto new_listener = std::make_unique<Listener>(port);
-    epoll_handlers[new_listener->get_fd()] = std::move(new_listener);
+    add_epoll_handler(std::move(new_listener));
 }
 
 } // namespace WebServ
