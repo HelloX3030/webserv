@@ -7,8 +7,6 @@
 namespace WebServ
 {
 
-extern std::vector<Server> servers;
-
 // Functions
 void add_test_data();
 int init();

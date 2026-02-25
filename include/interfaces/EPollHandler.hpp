@@ -1,13 +1,16 @@
 #pragma once
 
-#include <cstdint>
+#include "base/base.hpp"
+
+class EpollHandler;
 
 namespace WebServ
 {
 
 extern int epfd;
+extern std::vector<std::unique_ptr<EpollHandler>> epoll_handlers;
 
-}
+} // namespace WebServ
 
 class EpollHandler
 {
