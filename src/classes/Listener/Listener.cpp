@@ -75,16 +75,15 @@ int Listener::get_fd() const
     return fd;
 }
 
-int Listener::handle_event(uint32_t events)
+void Listener::handle_event(uint32_t events)
 {
     if (events & (EPOLLERR | EPOLLHUP))
     {
-        log::log(LISTENER, std::string("EPOLLERR or EPOLLHUP on fd=") + std::to_string(fd), log::LogType::ERROR);
-        return FAILURE;
+        // TODO => I guess close connection?
     }
 
     if (!(events & EPOLLIN))
-        return SUCCES;
+        return;
 
 #ifdef DEBUG
     std::cout << "Listener ready on port " << port << std::endl;
@@ -105,8 +104,7 @@ int Listener::handle_event(uint32_t events)
                 break;
             }
 
-            perror("accept");
-            return FAILURE;
+            throw std::system_error(errno, std::generic_category(), "accept");
         }
 
         log::log(LISTENER, "Accepted client fd=" + std::to_string(connection_fd));
@@ -127,16 +125,13 @@ int Listener::handle_event(uint32_t events)
 
         if (epoll_ctl(WebServ::epfd, EPOLL_CTL_ADD, connection_fd, &ev) < 0)
         {
-            perror("epoll_ctl ADD connection failed");
             close(connection_fd);
-            return FAILURE;
+            throw std::system_error(errno, std::generic_category(), "epoll_ctl ADD connection failed");
         }
 
         // Add New Connection
         // TODO
     }
-
-    return SUCCES;
 }
 
 std::string Listener::to_string() const
@@ -148,3 +143,14 @@ std::ostream &operator<<(std::ostream &os, const Listener &e)
 {
     return os << e.to_string();
 }
+
+namespace WebServ
+{
+
+void add_listener(in_port_t port)
+{
+    auto new_listener = std::make_unique<Listener>(port);
+    epoll_handlers[new_listener->get_fd()] = std::move(new_listener);
+}
+
+} // namespace WebServ

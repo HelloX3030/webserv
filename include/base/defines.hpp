@@ -3,10 +3,6 @@
 #define WEBSERV_EPOLL_MAX_EVENTS 64
 #define WEBSERV_EPOLL_TIMEOUT -1
 
-// Exit Codes
-constexpr const int SUCCES = 1;
-constexpr const int FAILURE = -1;
-
 // Structure
 constexpr const char *BR = "-----------------------------------------------------------------------";
 constexpr const char *ELLIPSIS = "...";

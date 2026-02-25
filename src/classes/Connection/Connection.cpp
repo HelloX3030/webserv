@@ -37,11 +37,10 @@ int Connection::get_fd() const
     return fd;
 }
 
-int Connection::handle_event(uint32_t events)
+void Connection::handle_event(uint32_t events)
 {
     (void)events;
     std::cout << "Connection event" << std::endl;
-    return SUCCES;
 }
 
 void Connection::quit()

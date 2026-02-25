@@ -13,36 +13,17 @@ int main(int argc, char **argv)
     try
     {
         WebServ::parse(argc, argv);
+        WebServ::init();
+#ifdef DEBUG
+        WebServ::add_test_data();
+        WebServ::display();
+#endif
+        WebServ::run();
     }
     catch (const std::exception &e)
     {
         log::log(WEB_SERV, e.what(), log::LogType::ERROR);
         return 1;
     }
-
-#ifdef DEBUG
-    WebServ::add_test_data();
-#endif
-
-    // Init
-    if (WebServ::init() != SUCCES)
-    {
-        WebServ::quit();
-        return 1;
-    }
-
-#ifdef DEBUG
-    WebServ::display();
-#endif
-
-    // Run
-    if (WebServ::run() != SUCCES)
-    {
-        WebServ::quit();
-        return 1;
-    }
-
-    // Quit
-    WebServ::quit();
     return 0;
 }

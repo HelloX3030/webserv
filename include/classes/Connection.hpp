@@ -29,7 +29,7 @@ class Connection : public EpollHandler
 
     // Overrides
     int get_fd() const override;
-    int handle_event(uint32_t events) override;
+    void handle_event(uint32_t events) override;
 
     // Functions
     void quit();

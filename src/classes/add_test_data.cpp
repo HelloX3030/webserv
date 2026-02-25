@@ -7,11 +7,10 @@ void add_test_data()
 {
     log::log(FUNCTION, "WebServ::add_test_data()");
 
-    // TODO
-    // Listener::listener.emplace_back(0, 8000);
-    // Listener::listener.emplace_back(0, 8100);
-    // Listener::listener.emplace_back(0, 8200);
-    // Listener::listener.emplace_back(0, 8300);
+    add_listener(8000);
+    add_listener(8100);
+    add_listener(8200);
+    add_listener(8300);
 }
 
 }; // namespace WebServ

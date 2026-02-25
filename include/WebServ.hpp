@@ -9,10 +9,9 @@ namespace WebServ
 
 // Functions
 void add_test_data();
-int init();
+void init();
 void parse(int argc, char **argv);
 void display();
-int run();
-void quit();
+void run();
 
 } // namespace WebServ

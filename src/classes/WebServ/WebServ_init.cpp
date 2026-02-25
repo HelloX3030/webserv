@@ -3,7 +3,7 @@
 namespace WebServ
 {
 
-int init()
+void init()
 {
 
 #ifdef DEBUG
@@ -18,11 +18,8 @@ int init()
     epfd = epoll_create1(0);
     if (epfd < 0)
     {
-        perror("epoll_create1 failed");
-        return FAILURE;
+        throw std::system_error(errno, std::generic_category(), "epoll_create1");
     }
-
-    return SUCCES;
 }
 
 } // namespace WebServ
