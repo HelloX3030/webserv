@@ -13,7 +13,6 @@ int run()
 #ifdef DEBUG
         std::cout << BR << std::endl;
         log::log(WEB_SERV, "e_poll wakeup...");
-        Connection::display();
 #endif
         if (n < 0)
         {

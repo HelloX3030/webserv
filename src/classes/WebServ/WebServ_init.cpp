@@ -22,12 +22,6 @@ int init()
         return FAILURE;
     }
 
-    // Listener Setup
-    if (Listener::init() != SUCCES)
-    {
-        return FAILURE;
-    }
-
     return SUCCES;
 }
 

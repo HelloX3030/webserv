@@ -1,49 +1,42 @@
 #include "classes/Listener.hpp"
 #include "classes/Connection.hpp"
 
-namespace Listener
-{
-
-std::vector<Entry> listener;
-
-Entry::Entry()
-    : server_id(-1), port(0), fd(-1), initialized(false)
+Listener::Listener()
+    : port(0), fd(-1)
 {
 }
 
-Entry::Entry(const Entry &other)
+Listener::Listener(const Listener &other)
 {
     *this = other;
 }
 
-Entry &Entry::operator=(const Entry &other)
+Listener &Listener::operator=(const Listener &other)
 {
     if (this != &other)
     {
-        server_id = other.server_id;
         port = other.port;
         fd = other.fd;
-        initialized = other.initialized;
     }
     return *this;
 }
 
-Entry::~Entry()
+Listener::~Listener()
 {
 }
 
-Entry::Entry(int server_id, in_port_t port)
-    : server_id(server_id), port(port), fd(-1), initialized(false)
+Listener::Listener(in_port_t port)
+    : port(port), fd(-1)
 {
 }
 
 // Overrides
-int Entry::get_fd() const
+int Listener::get_fd() const
 {
     return fd;
 }
 
-int Entry::handle_event(uint32_t events)
+int Listener::handle_event(uint32_t events)
 {
     if (events & (EPOLLERR | EPOLLHUP))
     {
@@ -101,21 +94,14 @@ int Entry::handle_event(uint32_t events)
         }
 
         // Add New Connection
-        Connection::connections.emplace_back(server_id, connection_fd);
+        // TODO
     }
 
     return SUCCES;
 }
 
-int Entry::init()
+int Listener::init()
 {
-
-#ifdef DEBUG
-    if (is_initialized())
-    {
-        throw SetupError("Init Called Multiple times, for the same Listener::Entry!");
-    }
-#endif
 
     // Create Socket
     fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -194,71 +180,21 @@ int Entry::init()
         throw std::runtime_error("epoll_ctl ADD failed");
     }
 
-    initialized = true;
     return SUCCES;
 }
 
-void Entry::quit()
+void Listener::quit()
 {
-    if (is_initialized())
-    {
-        close(fd);
-        fd = -1;
-        initialized = false;
-    }
+    close(fd);
+    fd = -1;
 }
 
-bool Entry::is_initialized() const
+std::string Listener::to_string() const
 {
-    return initialized;
+    return "Listener(port=" + std::to_string(port) + ", fd=" + std::to_string(fd) + ")";
 }
 
-std::string Entry::to_string() const
-{
-    return std::string("Listener(server_id=") + std::to_string(server_id) + ", port=" + std::to_string(port) + ", fd=" + std::to_string(fd) + ", initialized=" + (initialized ? "true" : "false") + ")";
-}
-
-std::ostream &operator<<(std::ostream &os, const Entry &e)
+std::ostream &operator<<(std::ostream &os, const Listener &e)
 {
     return os << e.to_string();
 }
-
-int init()
-{
-    for (size_t i = 0; i < listener.size(); i++)
-    {
-        if (listener[i].init() != SUCCES)
-        {
-            return FAILURE;
-        }
-    }
-    return SUCCES;
-}
-
-void quit()
-{
-    for (size_t i = 0; i < listener.size(); i++)
-    {
-        listener[i].quit();
-    }
-    listener.clear();
-}
-
-void display()
-{
-    log::log(DISPLAY, LISTENER);
-
-    // No listeners
-    if (listener.size() == 0)
-    {
-        std::cout << ELLIPSIS << std::endl;
-    }
-
-    // Print Elements
-    for (size_t i = 0; i < listener.size(); i++)
-    {
-        log::log(LISTENER, i, listener[i].to_string());
-    }
-}
-
-} // namespace Listener

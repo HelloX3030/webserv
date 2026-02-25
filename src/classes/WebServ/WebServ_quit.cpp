@@ -11,9 +11,6 @@ void quit()
         close(epfd);
         epfd = -1;
     }
-
-    Listener::quit();
-    Connection::quit();
 }
 
 } // namespace WebServ
