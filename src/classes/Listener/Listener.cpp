@@ -102,20 +102,7 @@ void Listener::handle_event(uint32_t events)
             throw std::system_error(errno, std::generic_category(), "fcntl");
         }
 
-        // Register to e_poll
-        // TODO: Use add_epoll_handler instead!
-        struct epoll_event ev{};
-        ev.events = EPOLLIN;
-        ev.data.ptr = this;
-
-        if (epoll_ctl(WebServ::epfd, EPOLL_CTL_ADD, connection_fd, &ev) < 0)
-        {
-            close(connection_fd);
-            throw std::system_error(errno, std::generic_category(), "epoll_ctl ADD connection failed");
-        }
-
-        // Add New Connection
-        // TODO
+        WebServ::add_connection(connection_fd);
     }
 }
 

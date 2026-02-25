@@ -45,3 +45,14 @@ std::string to_string(ConnectionState state)
         return UNKNOWN;
     }
 }
+
+namespace WebServ
+{
+
+void add_connection(int fd)
+{
+    auto new_connection = std::make_unique<Connection>(fd);
+    add_epoll_handler(std::move(new_connection));
+}
+
+} // namespace WebServ

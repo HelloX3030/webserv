@@ -36,3 +36,10 @@ class Connection : public EpollHandler
     std::string to_string() const;
 };
 std::ostream &operator<<(std::ostream &os, const Connection &connection);
+
+namespace WebServ
+{
+
+void add_connection(int fd);
+
+}
