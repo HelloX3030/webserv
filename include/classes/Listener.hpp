@@ -10,9 +10,9 @@ class Listener : public EpollHandler
     int fd;
 
   public:
-    Listener();
-    Listener(const Listener &other);
-    Listener &operator=(const Listener &other);
+    Listener() = delete;
+    Listener(const Listener &other) = delete;
+    Listener &operator=(const Listener &other) = delete;
     ~Listener();
 
     // Custom Constructors
@@ -23,8 +23,6 @@ class Listener : public EpollHandler
     int handle_event(uint32_t events) override;
 
     // Functions
-    int init();
-    void quit();
     std::string to_string() const;
 };
 std::ostream &operator<<(std::ostream &os, const Listener &e);
