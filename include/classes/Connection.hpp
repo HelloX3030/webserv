@@ -9,6 +9,7 @@ enum class ConnectionState
     WRITE,
     CLOSE
 };
+std::string to_string(ConnectionState state);
 
 class Connection : public EpollHandler
 {
@@ -35,5 +36,3 @@ class Connection : public EpollHandler
     std::string to_string() const;
 };
 std::ostream &operator<<(std::ostream &os, const Connection &connection);
-
-std::string to_string(ConnectionState state);

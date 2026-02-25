@@ -98,12 +98,12 @@ void Listener::handle_event(uint32_t events)
         int flags = fcntl(connection_fd, F_GETFL, 0);
         if (flags == -1 || fcntl(connection_fd, F_SETFL, flags | O_NONBLOCK) == -1)
         {
-            perror("fcntl client");
             close(connection_fd);
-            continue;
+            throw std::system_error(errno, std::generic_category(), "fcntl");
         }
 
         // Register to e_poll
+        // TODO: Use add_epoll_handler instead!
         struct epoll_event ev{};
         ev.events = EPOLLIN;
         ev.data.ptr = this;
