@@ -15,6 +15,11 @@ int Connection::get_fd() const
     return fd.get();
 }
 
+uint32_t Connection::get_events() const
+{
+    return EPOLLIN;
+}
+
 void Connection::handle_event(uint32_t events)
 {
     (void)events;

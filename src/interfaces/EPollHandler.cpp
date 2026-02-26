@@ -8,12 +8,12 @@ std::vector<std::unique_ptr<EpollHandler>> epoll_handlers;
 
 void add_epoll_handler(std::unique_ptr<EpollHandler> new_epoll_handler)
 {
-    // Add to E-Poll Queue
 #ifdef DEBUG
     if (WebServ::epfd == -1)
         throw SetupError("Add Listener Called before WebServ::init()");
 #endif
 
+    // Add to E-Poll Queue
     struct epoll_event ev;
     std::memset(&ev, 0, sizeof(ev));
 

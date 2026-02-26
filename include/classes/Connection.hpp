@@ -30,6 +30,7 @@ class Connection : public EpollHandler
 
     // Overrides
     int get_fd() const override;
+    uint32_t get_events() const override;
     void handle_event(uint32_t events) override;
     std::string to_string() const override;
 };

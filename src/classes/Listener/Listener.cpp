@@ -106,6 +106,11 @@ void Listener::handle_event(uint32_t events)
     }
 }
 
+uint32_t Listener::get_events() const
+{
+    EPOLLIN;
+}
+
 std::string Listener::to_string() const
 {
     return "Listener(port=" + std::to_string(port) + ", fd=" + std::to_string(fd.get()) + ")";
