@@ -21,9 +21,7 @@ class Listener : public EpollHandler
     // Overrides
     int get_fd() const override;
     void handle_event(uint32_t events) override;
-
-    // Functions
-    std::string to_string() const;
+    std::string to_string() const override;
 };
 std::ostream &operator<<(std::ostream &os, const Listener &e);
 

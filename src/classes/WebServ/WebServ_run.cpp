@@ -9,7 +9,7 @@ void run()
 
     while (g_running)
     {
-        int n = epoll_wait(epfd, events, EPOLL_MAX_EVENTS, EPOLL_MAX_EVENTS);
+        int n = epoll_wait(epfd, events, ::WebServ::EPOLL_MAX_EVENTS, ::WebServ::EPOLL_TIMEOUT);
 #ifdef DEBUG
         std::cout << BR << std::endl;
         log::log(WEB_SERV, "e_poll wakeup...");
@@ -24,6 +24,9 @@ void run()
         for (int i = 0; i < n; ++i)
         {
             EpollHandler *handler = static_cast<EpollHandler *>(events[i].data.ptr);
+#ifdef DEBUG
+            log::log(WEB_SERV, handler->get_fd(), handler->to_string());
+#endif
             handler->handle_event(events[i].events);
         }
     }

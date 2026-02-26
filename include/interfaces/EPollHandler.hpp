@@ -14,6 +14,7 @@ class EpollHandler
     // Functions
     virtual int get_fd() const = 0;
     virtual void handle_event(uint32_t events) = 0;
+    virtual std::string to_string() const = 0;
 };
 
 namespace WebServ
