@@ -44,13 +44,13 @@ void Connection::handle_event(uint32_t events)
     {
         while (true)
         {
-            char buffer[4096];
+            char buffer[WebServ::CONNECTION_READ_BUFFER_SIZE];
 
             ssize_t n = ::read(fd.get(), buffer, sizeof(buffer));
 
             if (n > 0)
             {
-                read_buffer.append(buffer, n);
+                http_parser.add_buffer(buffer, n);
             }
             else if (n == 0)
             {
@@ -68,18 +68,9 @@ void Connection::handle_event(uint32_t events)
             }
         }
 
-        // ---- Minimal demo response ----
-        // For now: respond once we receive anything
-        if (!read_buffer.empty() && write_buffer.empty())
+        if (http_parser.response_ready())
         {
-            write_buffer =
-                "HTTP/1.1 200 OK\r\n"
-                "Content-Length: 5\r\n"
-                "Connection: close\r\n"
-                "\r\n"
-                "Hello";
-
-            // enable EPOLLOUT
+            write_buffer = http_parser.take_response();
             update_epoll_events();
         }
     }
@@ -124,7 +115,7 @@ bool Connection::should_close() const
 
 std::string Connection::to_string() const
 {
-    return "Connection(fd=" + std::to_string(get_fd()) + ", state=" + ::to_string(state) + ", read_buffer_size=" + std::to_string(read_buffer.size()) + ", write_buffer_size=" + std::to_string(write_buffer.size()) + ")";
+    return "Connection(fd=" + std::to_string(get_fd()) + ", state=" + ::to_string(state) + ", read_buffer_size=" + std::to_string(http_parser.get_buffer_size()) + ", write_buffer_size=" + std::to_string(write_buffer.size()) + ")";
 }
 
 std::ostream &operator<<(std::ostream &os, const Connection &connection)

@@ -9,6 +9,7 @@ namespace WebServ
 constexpr const std::size_t EPOLL_MAX_EVENTS = 64;
 constexpr const int EPOLL_TIMEOUT = -1;
 constexpr const std::size_t EPOLL_HANDLERS_BATCH_SIZE = 64;
+constexpr const std::size_t CONNECTION_READ_BUFFER_SIZE = 4096;
 
 } // namespace WebServ
 
@@ -36,6 +37,7 @@ constexpr const char *WEB_SERV = "WebServ";
 constexpr const char *SERVER = "Server";
 constexpr const char *LISTENER = "Listener";
 constexpr const char *CONNECTION = "Connection";
+constexpr const char *HTTP_PARSER = "HttpParser";
 
 // Log Msg
 constexpr const char *PARSE_SERVER_CONFIG = "Parse Server Config";

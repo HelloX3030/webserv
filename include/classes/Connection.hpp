@@ -1,6 +1,7 @@
 #pragma once
 
 #include "base/base.hpp"
+#include "classes/HttpParser.hpp"
 #include "interfaces/EPollHandler.hpp"
 
 enum class ConnectionState
@@ -16,7 +17,7 @@ class Connection : public EpollHandler
   private:
     Fd fd;
     ConnectionState state;
-    std::string read_buffer;
+    HttpParser http_parser;
     std::string write_buffer;
 
   public:
