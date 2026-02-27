@@ -10,11 +10,13 @@ void run()
     while (g_running)
     {
         int n = epoll_wait(epfd, events, ::WebServ::EPOLL_MAX_EVENTS, ::WebServ::EPOLL_TIMEOUT);
+
 #ifdef DEBUG
         std::cout << BR << std::endl;
         log::log(WEB_SERV, "e_poll wakeup...");
         display();
 #endif
+
         if (n < 0)
         {
             if (errno == EINTR)
@@ -29,6 +31,17 @@ void run()
             log::log(WEB_SERV, handler->get_fd(), handler->to_string());
 #endif
             handler->handle_event(events[i].events);
+
+            // Close when needed
+            if (handler->should_close())
+            {
+                remove_epoll_handler(handler->get_fd());
+            }
+            else
+            {
+                // Update Events
+                handler->update_epoll_events();
+            }
         }
     }
 }

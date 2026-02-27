@@ -60,6 +60,11 @@ int Listener::get_fd() const
     return fd.get();
 }
 
+uint32_t Listener::get_events() const
+{
+    return EPOLLIN;
+}
+
 void Listener::handle_event(uint32_t events)
 {
     if (events & (EPOLLERR | EPOLLHUP))
@@ -106,9 +111,9 @@ void Listener::handle_event(uint32_t events)
     }
 }
 
-uint32_t Listener::get_events() const
+bool Listener::should_close() const
 {
-    EPOLLIN;
+    return false;
 }
 
 std::string Listener::to_string() const

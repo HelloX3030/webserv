@@ -17,13 +17,26 @@ int Connection::get_fd() const
 
 uint32_t Connection::get_events() const
 {
-    return EPOLLIN;
+    uint32_t events = 0;
+
+    if (state == ConnectionState::READ)
+        events |= EPOLLIN;
+
+    if (state == ConnectionState::WRITE)
+        events |= EPOLLOUT;
+
+    return events;
 }
 
 void Connection::handle_event(uint32_t events)
 {
     (void)events;
     std::cout << "Connection event" << std::endl;
+}
+
+bool Connection::should_close() const
+{
+    return false;
 }
 
 std::string Connection::to_string() const

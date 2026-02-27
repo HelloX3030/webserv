@@ -13,5 +13,6 @@ void init();
 void parse(int argc, char **argv);
 void display();
 void run();
+void quit();
 
 } // namespace WebServ
