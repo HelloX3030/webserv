@@ -37,11 +37,6 @@ void run()
             {
                 remove_epoll_handler(handler->get_fd());
             }
-            else
-            {
-                // Update Events
-                handler->update_epoll_events();
-            }
         }
     }
 }

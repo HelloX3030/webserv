@@ -17,12 +17,12 @@ int Connection::get_fd() const
 
 uint32_t Connection::get_events() const
 {
-    uint32_t events = 0;
+    if (state == ConnectionState::CLOSE)
+        return 0;
 
-    if (state == ConnectionState::READ)
-        events |= EPOLLIN;
+    uint32_t events = EPOLLIN;
 
-    if (state == ConnectionState::WRITE)
+    if (!write_buffer.empty())
         events |= EPOLLOUT;
 
     return events;
@@ -30,13 +30,96 @@ uint32_t Connection::get_events() const
 
 void Connection::handle_event(uint32_t events)
 {
-    (void)events;
-    std::cout << "Connection event" << std::endl;
+    // ---- Error handling ----
+    if (events & (EPOLLERR | EPOLLHUP | EPOLLRDHUP))
+    {
+        state = ConnectionState::CLOSE;
+        return;
+    }
+
+    // =========================
+    // READ
+    // =========================
+    if (events & EPOLLIN)
+    {
+        while (true)
+        {
+            char buffer[4096];
+
+            ssize_t n = ::read(fd.get(), buffer, sizeof(buffer));
+
+            if (n > 0)
+            {
+                read_buffer.append(buffer, n);
+            }
+            else if (n == 0)
+            {
+                // peer closed
+                state = ConnectionState::CLOSE;
+                return;
+            }
+            else
+            {
+                if (errno == EAGAIN || errno == EWOULDBLOCK)
+                    break;
+
+                state = ConnectionState::CLOSE;
+                return;
+            }
+        }
+
+        // ---- Minimal demo response ----
+        // For now: respond once we receive anything
+        if (!read_buffer.empty() && write_buffer.empty())
+        {
+            write_buffer =
+                "HTTP/1.1 200 OK\r\n"
+                "Content-Length: 5\r\n"
+                "Connection: close\r\n"
+                "\r\n"
+                "Hello";
+
+            // enable EPOLLOUT
+            update_epoll_events();
+        }
+    }
+
+    // =========================
+    // WRITE
+    // =========================
+    if (events & EPOLLOUT)
+    {
+        while (!write_buffer.empty())
+        {
+            ssize_t n = ::write(fd.get(), write_buffer.data(), write_buffer.size());
+
+            if (n > 0)
+            {
+                write_buffer.erase(0, n);
+            }
+            else
+            {
+                if (errno == EAGAIN || errno == EWOULDBLOCK)
+                    break;
+
+                state = ConnectionState::CLOSE;
+                return;
+            }
+        }
+
+        // Finished writing
+        if (write_buffer.empty())
+        {
+            state = ConnectionState::CLOSE;
+        }
+
+        update_epoll_events();
+    }
 }
 
 bool Connection::should_close() const
 {
-    return false;
+    return state == ConnectionState::CLOSE;
 }
 
 std::string Connection::to_string() const
