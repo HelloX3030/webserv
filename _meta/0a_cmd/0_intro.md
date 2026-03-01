@@ -14,38 +14,42 @@ max. 3 people
 ## version
 24.0
 
-## keywords
-(domains, categories, tags, skills)
+## domains, keywords
 Network
 Object-oriented programming
 Unix
 Network & system administration
 
-## Summary
+## summary
 write your own HTTP server and test it with a browser.
 
-## Introduction
+## introduction
 
-The Hypertext Transfer Protocol (HTTP) is an application protocol for distributed,
-collaborative, hypermedia information systems.
+the World Wide Web is a distributed, collaborative, hypermedia
+information system. these 3 words capture what made it revolutionary:
 
-HTTP is the foundation of data communication for the World Wide Web,
-where hypertext documents include hyperlinks to other resources that the user can easily access. 
-For example, by clicking a mouse button or tapping the screen on a web browser.
-HTTP was developed to support hypertext functionality and the growth of the World Wide Web.
+- distributed: resources live across millions of machines worldwide.
+  no central authority owns or controls the system.
+- collaborative: anyone can publish, anyone can link. the web grows
+  through participation, not permission.
+- hypermedia: documents contain references to other documents.
+  a user follows links, navigating a web of interconnected resources.
 
-The primary function of a web server is to store, process, and deliver web pages to clients.
-Client-server communication occurs through the Hypertext Transfer Protocol (HTTP).
-Pages delivered are most frequently HTML documents, which may include images, style
-sheets, and scripts in addition to the text content.
+HTTP (Hypertext Transfer Protocol) is the language that enables this.
+it defines how clients request resources and how servers respond.
 
-Multiple web servers may be used for a high-traffic website,
-splitting traffic between multiple physical machines.
-A user agent, commonly a web browser or web crawler, initiates communication
-by requesting a specific resource using HTTP, and the server responds with the content of that
-resource or an error message if unable to do so. The resource may be a file on
-the server’s storage, or the result of a program.
+the protocol emerged from Tim Berners-Lee's work at CERN (1989-1991),
+designed to let physicists share research documents across networks.
+HTTP/0.9 was minimal: a single method (GET), no headers, plain text.
+HTTP/1.0 (1996) introduced headers, status codes, content types.
+HTTP/1.1 (1997, RFC 2068; revised 1999, RFC 2616) added persistent
+connections, chunked transfer, virtual hosting—the version that
+carried the web through its explosive growth.
 
-Although its primary function is to serve content, 
-HTTP also enables clients to send data. 
-This feature is used for submitting web forms, including the uploading of files.
+HTTP became infrastructure. every browser, every API, every connected
+device speaks it. to build a web server is to implement the protocol
+that underlies modern networked computation.
+
+this project: implement a web server conforming to HTTP/1.1, handling
+multiple simultaneous connections, serving static and dynamic content,
+managing errors—from raw sockets to complete responses.
