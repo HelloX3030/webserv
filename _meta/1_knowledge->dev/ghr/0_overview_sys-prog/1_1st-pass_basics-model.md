@@ -3,7 +3,7 @@
 
 ## situation
 
-you type a URL into your browser & a webpage appears.
+type a URL into your browser & a webpage appears.
 
 ```
     You                           Somewhere else

@@ -1,6 +1,6 @@
 ## what problem does HTTP solve?
 
-crazy Gedankenexperiment: person in Zürich wants to read a document stored
+imagine: a person in Zürich wants to read a document stored
 on a computer in Edinburgh. different machines, different OSs,
 different memory spaces. how to communicate?
 
