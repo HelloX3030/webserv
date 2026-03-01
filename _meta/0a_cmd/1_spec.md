@@ -3,27 +3,25 @@
 ## 1. invariants
 
 ### process stability
-- server must not crash or terminate unexpectedly
-under any circumstances
-    includes: memory exhaustion, invalid input, resource limits
-- failed compliance results in project failure
+server must not crash or terminate unexpectedly under any circumstances.
+    includes: memory exhaustion, invalid input, resource limits.
+    failed compliance results in project failure.
 
 ### non-blocking I/O architecture
-- all I/O operations on sockets, pipes, and FIFOs
-  must be non-blocking
-- single `poll()` (or `select()`, `epoll()`, `kqueue()`)
-  multiplexes all I/O operations
-- multiplexer monitors both read and write events simultaneously
+- all I/O operations on sockets, pipes, and FIFOs must be non-blocking.
+- single `poll()` (or `select()`, `epoll()`, `kqueue()`) 
+multiplexes all I/O operations.
+- multiplexer monitors both read and write events simultaneously.
 - never call `read()`/`recv()` or `write()`/`send()`
-  on non-blocking descriptors without prior readiness notification
-    exception: regular disk files exempt from multiplexer requirement
+on non-blocking descriptors without prior readiness notification.
+exception: regular disk files exempt from multiplexer requirement.
 - `errno` inspection after read/write operations
-  to adjust behavior is forbidden
+to adjust behaviour is forbidden.
 
 ### request lifecycle
-- no client request may hang indefinitely
-- timeout mechanism required
-- server must handle client disconnections gracefully
+- no client request may hang indefinitely.
+- timeout mechanism required.
+- server must handle client disconnections gracefully.
 
 ### operational continuity
 - server remains available under stress testing,
