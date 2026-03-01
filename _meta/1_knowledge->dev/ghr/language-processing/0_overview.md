@@ -3,7 +3,7 @@
 
 ## essence
 
-the fundamental problem:
+fundamental problem:
 
 ```
 linear sequence of characters → structured representation
@@ -13,7 +13,7 @@ characters have no inherent structure. a program that must act on
 textual input cannot reason about characters — it needs typed values,
 hierarchical relationships, semantic constraints.
 
-the transformation from linearity to structure is **language processing**.
+**language processing**: the transformation from linearity to structure.
 
 
 ---
@@ -29,7 +29,7 @@ the transformation succeeds iff the input belongs to the language.
 failure means the input is not a valid sentence in that language.
 
 this framing — input as language membership — connects the practical
-problem (parse this config file) to the mathematical foundation
+problem (e.g. parse this config file) to the mathematical foundation
 (formal language theory, automata theory, type theory).
 
 
@@ -68,15 +68,15 @@ each phase has a distinct:
 
 the phases are not arbitrary engineering choices.
 they correspond to levels in the Chomsky hierarchy —
-fundamentally different classes of computational problems.
+different classes of computational problems.
 
 
 ---
 
 
-## where this exists
+## where this exists, manifests
 
-the pipeline manifests wherever text becomes structure:
+wherever text becomes structure, e.g.:
 
 compilers and interpreters:
     source code → executable / evaluated result
@@ -101,8 +101,6 @@ query languages:
 markup processors:
     marked-up text → rendered output
     (LaTeX, Markdown, HTML)
-
-the domain changes. the structure persists.
 
 
 ---

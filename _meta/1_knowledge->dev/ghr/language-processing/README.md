@@ -1,2 +1,4 @@
 created after implementation of WebServ : ConfigFrontend.
-generalise.
+
+[] generalise
+[] apply to HTTP Request Frontend

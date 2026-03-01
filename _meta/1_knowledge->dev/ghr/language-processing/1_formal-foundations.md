@@ -76,11 +76,11 @@ type 0 — recursively enumerable:
 the language processing pipeline corresponds to hierarchy levels:
 
 ```
-phase               language type     automaton    typical complexity
-────────────────────────────────────────────────────────────────────
-lexical analysis    type 3 (regular)  DFA          O(n)
-syntactic analysis  type 2 (CF)       PDA          O(n) to O(n³)
-semantic analysis   type 1 (CS)       (ad hoc)     varies
+phase                   language type       automaton       typical complexity
+──────────────────────────────────────────────────────────────────────────────
+lexical analysis        type 3 (regular)    DFA             O(n)
+syntactic analysis      type 2 (CF)         PDA             O(n) to O(n³)
+semantic analysis       type 1 (CS)         (ad hoc)        varies
 ```
 
 lexical analysis handles type 3 (regular) structure:
