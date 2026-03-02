@@ -51,7 +51,7 @@ struct ListenAddress
 
 /*
 Derived from location_block and location_dir productions.
-One `Location` per location {} block within a server block.
+1 `Location` per location {} block within a server block.
 
 `client_max_body_size` is std::optional<size_t>: it overrides the
 server-level default when present. std::nullopt means inherit.
@@ -64,8 +64,8 @@ rejected: too restrictive for an evaluation server where the evaluator
 expects all methods unless explicitly limited. explicit restriction
 via allowed_methods directive is the opt-in.
 
-`cgi_extension` and `cgi_path` are semantically coupled: either both set
-or both absent. Validator enforces.
+`cgi_extension` and `cgi_path` are semantically coupled: 
+either both set or both absent. Validator enforces.
 
 `upload_enable` / `upload_store`: upload_enable=true requires upload_store
 to be non-empty. Validator enforces.
@@ -92,17 +92,18 @@ struct Location
 
 /*
 Derived from server_block and server_dir productions.
-Named ServerConfig, not Server, to distinguish this pure data record
-from the operational Server class (Server.hpp).
-ServerConfig is passive: it holds operator intent.
-Server is an actor: it has lifecycle and behaviour.
+
+Named ServerConfig, not Server.
+    ServerConfig is passive: it holds operator intent.
+    Server class is operational, an actor: 
+    has lifecycle & behaviour.
 
 `listen` is a vector: the grammar permits multiple listen_dir within
 1 server block — 1 server may listen on multiple addresses.
 
 `error_pages` maps HTTP status code to path.
 uint16_t key: status codes are non-negative, maximum 599, requiring
-more than 8 bits (2^8 = 256 < 599). uint16_t is the minimal standard
+> 8 bits (2^8 = 256 < 599). uint16_t is the minimal standard
 width that fits [100, 599]. Valid range enforced at parse time and
 confirmed in validator.
 
