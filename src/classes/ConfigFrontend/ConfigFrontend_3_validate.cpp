@@ -14,7 +14,7 @@ parse time: range checks on numeric values (port, status code, size).
 validate time: confirms those constraints held across every code path,
   checks mandatory field presence, and checks semantic couplings between
   fields that have no individual syntax error but are invalid in combination. */
-void ConfigParser::validate(const std::vector<ServerConfig>& servers)
+void ConfigFrontend::validate(const std::vector<ServerConfig>& servers)
 {
     if (servers.empty())
         throw std::runtime_error(
@@ -25,7 +25,7 @@ void ConfigParser::validate(const std::vector<ServerConfig>& servers)
 }
 
 /* mandatory fields & per-location checks */
-void ConfigParser::validate_server(const ServerConfig& s)
+void ConfigFrontend::validate_server(const ServerConfig& s)
 {
     if (s.listen.empty())
         throw std::runtime_error(
@@ -75,7 +75,7 @@ upload coupling: upload_enable true requires upload_store non-empty.
 
 return coupling: return_code set requires return_path non-empty.
   a redirect without a target URI is malformed. */
-void ConfigParser::validate_location(const std::string& path,
+void ConfigFrontend::validate_location(const std::string& path,
                                      const Location& loc)
 {
     if (loc.root.empty())

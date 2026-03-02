@@ -6,7 +6,7 @@
 /* top-level production.
 grammar: config = server_block, { server_block } ;
 at least 1 server block required — an empty config is rejected. */
-std::vector<ServerConfig> ConfigParser::parse_config()
+std::vector<ServerConfig> ConfigFrontend::parse_config()
 {
     std::vector<ServerConfig> result;
 
@@ -30,7 +30,7 @@ std::vector<ServerConfig> ConfigParser::parse_config()
 "server" already consumed by parse_config.
 struct initialised with defaults before the directive loop —
 any directive present in config overrides. */
-ServerConfig ConfigParser::parse_server_block()
+ServerConfig ConfigFrontend::parse_server_block()
 {
     ServerConfig s;
     s.client_max_body_size = 1048576; // 1m default
@@ -71,7 +71,7 @@ specific parser enters with pos_ at the 1st value token.
 the specific parser owns values and the terminating semicolon.
 violating this contract (specific parser re-consuming its own name)
 produces off-by-1 token errors throughout. */
-void ConfigParser::parse_server(ServerConfig& s)
+void ConfigFrontend::parse_server(ServerConfig& s)
 {
     Token name = consume();
 
@@ -93,7 +93,7 @@ void ConfigParser::parse_server(ServerConfig& s)
 /* grammar: location_block = "location", path, "{", { location_dir }, "}" ;
 "location" and path already consumed by parse_server_block.
 defaults applied before directive loop. */
-Location ConfigParser::parse_location_block()
+Location ConfigFrontend::parse_location_block()
 {
     Location loc;
     loc.allowed_methods = {HttpMethod::GET, HttpMethod::POST, HttpMethod::DELETE};
@@ -118,7 +118,7 @@ Location ConfigParser::parse_location_block()
 
 /* same contract as parse_server: 
 consumes name, specific parser owns values. */
-void ConfigParser::parse_location(Location& loc)
+void ConfigFrontend::parse_location(Location& loc)
 {
     Token name = consume();
 

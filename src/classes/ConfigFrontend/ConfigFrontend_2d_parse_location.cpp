@@ -4,7 +4,7 @@
 #include <string>
 
 /* grammar: "root", path, ";" */
-void ConfigParser::parse_root(Location& loc)
+void ConfigFrontend::parse_root(Location& loc)
 {
     loc.root = expect_STRING().value;
     expect_SEMICOLON();
@@ -12,7 +12,7 @@ void ConfigParser::parse_root(Location& loc)
 
 /* grammar: "index", filename, { filename }, ";" ;
 grammar requires at least 1 filename. */
-void ConfigParser::parse_index(Location& loc)
+void ConfigFrontend::parse_index(Location& loc)
 {
     if (peek().type != TokenType::STRING)
         throw std::runtime_error(
@@ -28,7 +28,7 @@ void ConfigParser::parse_index(Location& loc)
 /* grammar: "allowed_methods", method, { method }, ";" ;
 clears the default {GET, POST, DELETE} — this directive is an explicit
 override, not additive. */
-void ConfigParser::parse_methods(Location& loc)
+void ConfigFrontend::parse_methods(Location& loc)
 {
     loc.allowed_methods.clear();
 
@@ -54,7 +54,7 @@ void ConfigParser::parse_methods(Location& loc)
 
 /* grammar: "autoindex", boolean, ";" ;
 boolean = "on" | "off" */
-void ConfigParser::parse_autoindex(Location& loc)
+void ConfigFrontend::parse_autoindex(Location& loc)
 {
     Token t = expect_STRING();
     if      (t.value == "on")  loc.autoindex = true;
@@ -67,14 +67,14 @@ void ConfigParser::parse_autoindex(Location& loc)
 }
 
 /* grammar: "cgi_extension", extension, ";" */
-void ConfigParser::parse_cgi_ext(Location& loc)
+void ConfigFrontend::parse_cgi_ext(Location& loc)
 {
     loc.cgi_extension = expect_STRING().value;
     expect_SEMICOLON();
 }
 
 /* grammar: "cgi_path", path, ";" */
-void ConfigParser::parse_cgi_path(Location& loc)
+void ConfigFrontend::parse_cgi_path(Location& loc)
 {
     loc.cgi_path = expect_STRING().value;
     expect_SEMICOLON();
@@ -84,7 +84,7 @@ void ConfigParser::parse_cgi_path(Location& loc)
 wraps in std::optional — std::nullopt means inherit server default.
 present value overrides server default for this location only.
 overload resolved at the call site in parse_location by argument type. */
-void ConfigParser::parse_body_size(Location& loc)
+void ConfigFrontend::parse_body_size(Location& loc)
 {
     Token t = expect_STRING();
     loc.client_max_body_size = parse_size(t);
@@ -92,7 +92,7 @@ void ConfigParser::parse_body_size(Location& loc)
 }
 
 /* grammar: "upload_enable", boolean, ";" */
-void ConfigParser::parse_upload_enable(Location& loc)
+void ConfigFrontend::parse_upload_enable(Location& loc)
 {
     Token t = expect_STRING();
     if      (t.value == "on")  loc.upload_enable = true;
@@ -105,7 +105,7 @@ void ConfigParser::parse_upload_enable(Location& loc)
 }
 
 /* grammar: "upload_store", path, ";" */
-void ConfigParser::parse_upload_store(Location& loc)
+void ConfigFrontend::parse_upload_store(Location& loc)
 {
     loc.upload_store = expect_STRING().value;
     expect_SEMICOLON();
@@ -115,7 +115,7 @@ void ConfigParser::parse_upload_store(Location& loc)
 return_code: std::optional<uint16_t> — nullopt means no redirect.
 valid range [300, 399] enforced here; validator confirms.
 couplings (return_code set ↔ return_path non-empty) enforced in validator. */
-void ConfigParser::parse_return(Location& loc)
+void ConfigFrontend::parse_return(Location& loc)
 {
     Token code_tok = expect_STRING();
     Token path_tok = expect_STRING();

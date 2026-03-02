@@ -1,6 +1,4 @@
-plan:
+[] process: simplify
 
-    simplify
-
-    integrate into source to create "literate program"
-    (no separation of src & doc)
+[] integrate into source code to create "literate program"
+(no separation of src & doc)

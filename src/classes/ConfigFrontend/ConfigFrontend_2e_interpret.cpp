@@ -6,7 +6,7 @@
 
 /*  STRING token → ListenAddress.
 host_port = port | host, ":", port ;    */
-ListenAddress ConfigParser::parse_host_port(const Token& tok)
+ListenAddress ConfigFrontend::parse_host_port(const Token& tok)
 {
     ListenAddress addr;
     addr.host = "0.0.0.0"; // default: bind to all interfaces
@@ -34,7 +34,7 @@ stoul silently accepts leading whitespace and some edge inputs.
 interpretation leaf fn, receives str + line instead of passed `Token`
 — `token-agnostic, could be used on any str.
 flexibility not necessary here just personal preference */
-uint16_t ConfigParser::parse_port(const std::string& s, size_t line)
+uint16_t ConfigFrontend::parse_port(const std::string& s, size_t line)
 {
     int n;
     try { n = std::stoi(s); }
@@ -61,7 +61,7 @@ stoull over stoul: on 32-bit platforms size_t is 32 bits; stoull gives
 64-bit precision before the cast, catching overflow stoul would truncate.
 static_cast<unsigned char> on isdigit: char may be signed; passing a
 negative value to isdigit is undefined behaviour. */
-size_t ConfigParser::parse_size(const Token& tok)
+size_t ConfigFrontend::parse_size(const Token& tok)
 {
     const std::string& s = tok.value;
     size_t i = 0;

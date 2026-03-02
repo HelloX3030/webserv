@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-class ConfigParser
+class ConfigFrontend
 {
     enum class TokenType { STRING, LBRACE, RBRACE, SEMICOLON, END };
 
@@ -68,11 +68,11 @@ class ConfigParser
     void validate_location(const std::string& path, const Location& loc);
 
 public:
-    ConfigParser() = default;
+    ConfigFrontend() = default;
 
     /* this obj has identity, no val. semantics. cpy mid-parse = bug */
-    ConfigParser(const ConfigParser&)            = delete;
-    ConfigParser& operator=(const ConfigParser&) = delete;
+    ConfigFrontend(const ConfigFrontend&)            = delete;
+    ConfigFrontend& operator=(const ConfigFrontend&) = delete;
 
     [[nodiscard]] std::vector<ServerConfig> parse(const std::string& filepath);
 };

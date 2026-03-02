@@ -7,21 +7,21 @@
 const: pure observation, no state change.
 safe at stream exhaustion: tokenise() postcondition guarantees
 tokens_.back() is END. */
-ConfigParser::Token ConfigParser::peek() const
+ConfigFrontend::Token ConfigFrontend::peek() const
 {
     return tokens_[pos_];
 }
 
 /* true if current token is STRING with exactly this value.
 used for named dispatch: at_STRING("location") in parse_server_block. */
-bool ConfigParser::at_STRING(const std::string& value) const
+bool ConfigFrontend::at_STRING(const std::string& value) const
 {
     return peek().type == TokenType::STRING && peek().value == value;
 }
 
 /* advance pos_, return the token that was current.
 does not check type — caller is responsible for context. */
-ConfigParser::Token ConfigParser::consume()
+ConfigFrontend::Token ConfigFrontend::consume()
 {
     return tokens_[pos_++];
 }
@@ -36,7 +36,7 @@ already in scope in expect().
 a better name would be t — except t is also used in expect() 
 for the consumed token. tok_type could be cleaner and more explicit. 
 */
-ConfigParser::Token ConfigParser::expect(TokenType type)
+ConfigFrontend::Token ConfigFrontend::expect(TokenType type)
 {
     auto type_name = [](TokenType tp) -> std::string
     {
@@ -64,7 +64,7 @@ ConfigParser::Token ConfigParser::expect(TokenType type)
 /* consume STRING or throw with grammar-position context.
 error says "expected directive value" — what the grammar requires —
 not "expected STRING", which is an implementation detail. */
-ConfigParser::Token ConfigParser::expect_STRING()
+ConfigFrontend::Token ConfigFrontend::expect_STRING()
 {
     Token t = consume();
     if (t.type == TokenType::STRING)
@@ -77,7 +77,7 @@ ConfigParser::Token ConfigParser::expect_STRING()
 
 /* consume SEMICOLON or throw.
 every directive ends with ';'. single enforcement point. */
-void ConfigParser::expect_SEMICOLON()
+void ConfigFrontend::expect_SEMICOLON()
 {
     Token t = consume();
     if (t.type == TokenType::SEMICOLON)

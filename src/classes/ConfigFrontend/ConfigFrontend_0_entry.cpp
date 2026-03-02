@@ -5,7 +5,7 @@
 #include <iterator>
 #include <stdexcept>
 
-std::vector<ServerConfig> ConfigParser::parse(const std::string& filepath)
+std::vector<ServerConfig> ConfigFrontend::parse(const std::string& filepath)
 {
     std::string source = read(filepath);
     tokenise(source);
@@ -24,7 +24,7 @@ deleting chars would shift line numbers, breaking err msgs.
 
 precondition: src uses unix line endings (\n only).
 \r\n (windows crlf) not handled */
-std::string ConfigParser::read(const std::string& filepath)
+std::string ConfigFrontend::read(const std::string& filepath)
 {
     std::ifstream file(filepath);
     if (!file.is_open())

@@ -18,7 +18,7 @@ line is incremented on \n only. structural chars and whitespace other
 than \n do not change line. every token receives the line at the
 moment of its emission (line token was on, not a line relative
 to a block or directive) */
-void ConfigParser::tokenise(const std::string& source)
+void ConfigFrontend::tokenise(const std::string& source)
 {
     tokens_.clear();
 
