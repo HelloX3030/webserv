@@ -94,7 +94,7 @@ this tells nothing — not where, not what, not why.
 ## error recovery strategies
 
 **fail-fast**: stop at first error, report, exit.
-    simple, precise, but only one error per run.
+    simple, precise, but only 1 error per run.
 
 **panic mode**: skip tokens until a synchronisation point.
     e.g., skip to next `;` or `}` and resume.
@@ -108,9 +108,11 @@ this tells nothing — not where, not what, not why.
     `if_stmt → IF expr THEN stmt | IF expr stmt  # missing THEN`
     explicitly anticipate mistakes.
 
-the ConfigFrontend uses fail-fast.
+
+WebServ:
+ConfigFrontend uses fail-fast.
 rationale: config errors are fatal — the server cannot start.
-one precise error is better than many cascading ones.
+1 precise error is better than many cascading ones.
 
 
 ---
@@ -118,7 +120,8 @@ one precise error is better than many cascading ones.
 
 ## exception vs return value
 
-two models for propagating errors:
+2 models for propagating errors:
+
 
 **exceptions**: throw at error site, catch at top level.
 ```cpp
@@ -130,6 +133,11 @@ if (port < 1 || port > 65535)
 try { config = parser.parse(path); }
 catch (const std::exception& e) { log::error(e.what()); exit(1); }
 ```
+    + no boilerplate at each call site
+    + automatic propagation through deep call chains
+    − control flow is non-local, harder to trace
+    − resource cleanup requires RAII or finally blocks
+
 
 **return values**: return error type, propagate explicitly.
 ```rust
@@ -139,20 +147,17 @@ fn parse_port(s: &str, line: usize) -> Result<u16, ParseError> {
     Ok(n as u16)
 }
 ```
-
-exceptions:
-    + no boilerplate at each call site
-    + automatic propagation through deep call chains
-    − control flow is non-local, harder to trace
-    − resource cleanup requires RAII or finally blocks
-
-return values:
     + explicit control flow, visible in types
     + forces caller to handle or propagate
     − boilerplate at every call site (mitigated by `?` in Rust)
     − easy to forget to check (in languages without `Result` types)
 
+
+
 C++ standard practice: exceptions for truly exceptional conditions.
+
+
+WebServ:
 config parsing errors are fatal startup failures — exceptions fit.
 
 
@@ -180,9 +185,12 @@ accumulation requires:
 - not letting one error corrupt subsequent state
 - filtering out cascading errors (errors caused by previous errors)
 
+
+WebServ:
 for a config parser, fail-fast is appropriate.
 the operator fixes one error, re-runs, sees the next.
 the feedback loop is fast.
+
 
 for a compiler processing large files, accumulation is valuable.
 fix all errors in one edit/compile cycle.
@@ -241,6 +249,8 @@ example with context:
   |
 ```
 
+
+WebServ:
 the ConfigFrontend does not include snippets — it reports line only.
 for more complex languages, visual context aids comprehension.
 
@@ -280,3 +290,53 @@ data ParseResult (A : Set) : Set where
 
 in dependently typed languages, the error structure is explicit
 in the types. the type system documents what errors are possible.
+
+
+
+---
+
+
+## information to add to doc
+
+Ontological gaps:
+
+Partiality as foundation - errors ARE partiality. 
+Parser: String → Maybe Tree. 
+Lexer: String → Maybe [Token]. 
+Error handling is making partiality explicit in types and control flow. This grounds everything.
+
+Error as value vs error as effect - the fundamental dichotomy. 
+Either E A (error is data, first-class) vs throw/catch (error is control flow, effect). 
+Different ontological status. Different composition laws.
+
+Algebra of failure - how partial computations compose. Monad laws. 
+Short-circuit semantics. e1 >>= e2 fails if either fails.
+Applicative vs monadic error accumulation.
+
+Error provenance / causality - errors cause errors. Causal chains. 
+"Caused by" relation. Currently no structure for multi-level failure.
+
+Recoverability criteria - document lists strategies but not the decision function. 
+What makes an error recoverable? Domain knowledge encoded how?
+
+
+Mechanical gaps:
+
+Typed error hierarchies - sum types reflecting failure modes. 
+LexError | ParseError | SemanticError. Exhaustiveness checking.
+
+Context accumulation - Writer-like threading of diagnostic context. 
+How stack traces work. Source spans carried through transformations.
+
+
+
+Re: more general term than "error-handling":
+
+Partiality - the upstream mathematical concept. 
+A partial function may not yield a value for all inputs. 
+Error handling is the discipline of making partiality explicit and manageable.
+
+Failure semantics - PL theory level. What does failure mean? 
+What information accompanies it? How does it propagate?
+
+"Error handling" is downstream, implementation-flavoured. "Partiality" is the ontology.
