@@ -1,10 +1,9 @@
-# configuration parser — overview
+# config frontend — overview
 
 
 ## essence
 
 pure function:
-
 ```
 bytes (config file) → std::vector<ServerConfig>
 ```
@@ -17,24 +16,22 @@ reads text, produces data structures.
 
 
 ## position in system
-
 ```
-phase 1: PARSE     config file → std::vector<ServerConfig>
-phase 2: INIT      configs → sockets, epoll registration
-phase 3: RUN       event loop — accept, read, route, write
+phase 1: FRONTEND   config file → std::vector<ServerConfig>
+phase 2: INIT       configs → sockets, epoll registration
+phase 3: RUN        event loop — accept, read, route, write
 ```
 
-the parser owns phase 1 entirely.
+the frontend owns phase 1 entirely.
 hands off structured configuration to the runtime.
-
 ```
 config file
     │
     v
-ConfigParser::parse()
+ConfigFrontend::parse()
     │
     v
-std::vector<ServerConfig>   ← parser's sole output
+std::vector<ServerConfig>   ← frontend's sole output
     │
     v
 WebServ                     ← runtime takes over
@@ -75,18 +72,10 @@ input:
     path to config file (NGINX-style syntax).
 
 output:
+    validated configuration objects.
+```cpp
     std::vector<ServerConfig>
-
-    each ServerConfig holds:
-        listen addresses (host, port)
-        server_names
-        client_max_body_size
-        error_pages map
-        locations map
-
-    each Location holds:
-        root, index files, allowed methods,
-        autoindex, CGI config, upload config, return directive.
+```
 
 on error:
     throw std::runtime_error with line-numbered message.
