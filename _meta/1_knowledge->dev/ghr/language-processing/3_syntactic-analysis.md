@@ -9,7 +9,7 @@ token stream → syntax tree
 
 the parser transforms a linear sequence of tokens into a
 hierarchical structure that represents the grammatical
-organization of the input.
+organisation of the input.
 
 "syntax" means arrangement. the parser discovers how tokens
 are arranged according to the grammar's rules.
@@ -56,8 +56,8 @@ the parser's specification is a **context-free grammar** (CFG).
 a CFG consists of:
 - terminals: tokens (the leaves)
 - non-terminals: structural categories (internal nodes)
-- productions: rules of the form `A → α` where A is a
-  non-terminal and α is a sequence of terminals and non-terminals
+- productions: rules of the form `A → α` where A is a non-terminal 
+and α is a sequence of terminals and non-terminals
 - start symbol: the top-level non-terminal
 
 example (simplified config grammar):
@@ -105,7 +105,7 @@ they are handled by semantic analysis, not parsing.
 
 ## parsing algorithms
 
-two families:
+2 families:
 
 top-down: start from the start symbol, predict what to expand.
     - recursive descent (LL)
@@ -115,6 +115,7 @@ bottom-up: start from tokens, reduce to non-terminals.
     - LR parsing (SLR, LALR, canonical LR)
     - shift-reduce with parse tables
 
+in WebServ:
 the ConfigFrontend uses **recursive descent**.
 
 
@@ -158,7 +159,8 @@ via recursive function calls.
 
 recursive descent implements **LL parsing**.
 
-LL(k) means: read input Left-to-right, produce Leftmost derivation,
+LL(k) means: 
+read input Left-to-right, produce Leftmost derivation,
 using k tokens of lookahead.
 
 LL(1) is the most common: one token of lookahead.
@@ -240,7 +242,9 @@ error recovery:
     report multiple errors in one pass.
     complex, can produce confusing cascading errors.
 
-the ConfigFrontend uses fail-fast.
+
+WebServ:
+ConfigFrontend uses fail-fast.
 for a config file, one error is usually enough —
 the operator will fix it and re-run.
 
@@ -324,3 +328,41 @@ syntactic analysis:
 
 the parser is the boundary between sequences and trees.
 everything before is linear. everything after is hierarchical.
+
+
+---
+
+
+## next pass through this doc, info to add:
+
+Derivations - the document jumps from grammar to recogniser without making derivations explicit. 
+A derivation IS what parsing discovers. Leftmost vs rightmost derivation. 
+The derivation tree as the mathematical object the parser constructs.
+
+FIRST/FOLLOW sets - the actual mechanism behind "how does LL(1) decide?" 
+the above doc says "peek at next token and decide" but doesn't show the mathematical structure that makes this possible. 
+These sets ARE the compiled form of the grammar's prediction logic.
+
+Ambiguity - what it means for a grammar to admit multiple parse trees for one input. 
+Why this matters (semantic indeterminacy). 
+The undecidability of ambiguity detection. Disambiguation strategies.
+
+Grammar transformations - left factoring, left recursion elimination. 
+Currently I mention "not LL(1)" as a problem but not the systematic solutions. 
+These transforms preserve the language while changing the grammar's form.
+
+
+Mechanical gaps:
+
+Bottom-up in any depth - shift-reduce mechanics, handles, viable prefixes. You name LR but don't illuminate it.
+
+Complexity analysis - why O(n) for LL/LR, why O(n³) for general CFG (CYK/Earley). 
+derive it.
+
+Parser combinators as algebra - the Haskell example shows syntax, 
+but not the monadic structure that makes composition work. 
+Parsers form a monad; this is upstream to the code.
+
+
+Suggested priority for next pass: derivations → FIRST/FOLLOW → ambiguity. 
+These three complete the ontological picture before descending into mechanics.
