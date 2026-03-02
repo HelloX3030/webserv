@@ -33,7 +33,7 @@ file
  v
 raw string
  │
- │ tokenise
+ │ tokenise (strip comments: # to end of line)
  v
 [Token, Token, Token, ...]
  │
