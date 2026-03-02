@@ -13,7 +13,6 @@ Server &Server::operator=(const Server &other)
 {
     if (this != &other)
     {
-        listener = other.listener;
     }
     return *this;
 }
