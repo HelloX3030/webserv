@@ -11,8 +11,6 @@ appropriate for ctx:
     used in compiler textbooks, language specs. 
 . simple (ideal for ghr as beginner informatics student)
 
-(upcoming: for HTTP parsing: ABNF — to keep direct correspondence with
-HTTP spec (RFC 7230/9110), which is written in ABNF)
 
 
 Terminals are quoted strings. 
