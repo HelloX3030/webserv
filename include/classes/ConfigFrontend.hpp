@@ -99,9 +99,17 @@ class ConfigFrontend
     void                      tokenise(const std::string& source);
     void                      validate(const std::vector<ServerConfig>& result);
 
+
     /* grammar productions — recursive descent: 1 method per production rule.
     call hierarchy mirrors grammar nesting. grammar is specification;
-    methods are direct transliteration. */
+    methods are direct transliteration.
+
+    [[nodiscard]] on pure transformations.
+    these fns exist solely to produce their return value.
+    a caller that discards the return has accomplished nothing —
+    that is a logic error detectable at compile time.
+    not applied to void methods or methods whose purpose is
+    side-effect (parse_server, parse_listen, etc.). */
     [[nodiscard]] std::vector<ServerConfig> parse_config();
     [[nodiscard]] ServerConfig              parse_server_block();
     [[nodiscard]] Location                  parse_location_block();
@@ -140,5 +148,15 @@ public:
     ConfigFrontend(const ConfigFrontend&)            = delete;
     ConfigFrontend& operator=(const ConfigFrontend&) = delete;
 
+    /* entry point. bytes → validated config.
+    
+    returns std::vector<ServerConfig> by value.
+    caller owns the result — no ownership ambiguity, no pointer
+    lifetime questions.
+    
+    C++17 NRVO (named return value optimisation) mandates the
+    vector is constructed directly in caller's destination.
+    zero copy cost. return by value is both ownership-correct
+    and performance-correct. */
     [[nodiscard]] std::vector<ServerConfig> parse(const std::string& filepath);
 };

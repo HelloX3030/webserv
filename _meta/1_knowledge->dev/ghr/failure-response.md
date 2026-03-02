@@ -1,7 +1,8 @@
 # failure semantics & response ("error handling")
 
 program-wide
-to extract from ConfigFrontend & integrate to _meta
+
+currently using examples only from ConfigFrontend
 
 
 ## propagation contract

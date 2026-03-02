@@ -19,7 +19,10 @@ conversion, throwing with line number on failure. */
 suffixes: k/K (×1024), m/M (×1024²), g/G (×1024³).
 no suffix: bytes.
 
-used for client_max_body_size at both server and location level. */
+used for client_max_body_size at both server and location level. 
+
+stoull over stoul: on 32-bit platforms size_t is 32 bits.
+stoul would truncate before cast. stoull gives 64-bit precision. */
 size_t ConfigFrontend::parse_size(const Token& t)
 {
     const std::string& s = t.value;
