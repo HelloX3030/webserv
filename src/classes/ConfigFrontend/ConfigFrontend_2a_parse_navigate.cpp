@@ -3,39 +3,56 @@
 #include <stdexcept>
 #include <string>
 
-/* return current token without advancing pos_.
-const: pure observation, no state change.
-safe at stream exhaustion: tokenise() postcondition guarantees
-tokens_.back() is END. */
+/* navigation primitives.
+
+these functions navigate the token stream. every parse_* function
+calls them. they are the interface between the parser and the
+token vector.
+
+the peek/consume asymmetry:
+
+    peek()    — const. pure observation. returns current token
+                without advancing. calling 10 times returns same token.
+                
+    consume() — not const. returns current token AND advances pos_.
+                a side-effecting read.
+
+peek() is used when a decision is needed before commitment:
+    at_STRING("location") checks before consuming.
+    
+consume() is used when the token is known correct:
+    after dispatch, the directive name is consumed and spent.
+
+both are safe at stream exhaustion: tokenise() postcondition
+guarantees tokens_.back() is END. no bounds check needed. */
+
+
+/* return current token without advancing.
+const: pure observation, no state change. */
 ConfigFrontend::Token ConfigFrontend::peek() const
 {
     return tokens_[pos_];
 }
 
 /* true if current token is STRING with exactly this value.
-used for named dispatch: at_STRING("location") in parse_server_block. */
+used for keyword dispatch: at_STRING("location"), at_STRING("server"). */
 bool ConfigFrontend::at_STRING(const std::string& value) const
 {
     return peek().type == TokenType::STRING && peek().value == value;
 }
 
-/* advance pos_, return the token that was current.
-does not check type — caller is responsible for context. */
+/* return current token, advance pos_.
+does not check type — caller responsible for context.
+not const: mutates pos_. */
 ConfigFrontend::Token ConfigFrontend::consume()
 {
     return tokens_[pos_++];
 }
 
-/* consume and return token, throw if type mismatches.
-error names the token structurally for operator-facing messages,
-not by enum constant name. 
+/* consume token, throw if type mismatches.
 
-`tp`: shortened form for `type`
-lambda's parameter should be named differently from outer type parameter
-already in scope in expect().
-a better name would be t — except t is also used in expect() 
-for the consumed token. tok_type could be cleaner and more explicit. 
-*/
+error message names the token structurally for operator-facing output,
+not by enum constant. operator sees "expected '{'" not "expected LBRACE". */
 ConfigFrontend::Token ConfigFrontend::expect(TokenType type)
 {
     auto type_name = [](TokenType tp) -> std::string
@@ -62,8 +79,13 @@ ConfigFrontend::Token ConfigFrontend::expect(TokenType type)
 }
 
 /* consume STRING or throw with grammar-position context.
+
+expect_STRING() is not an alias for expect(TokenType::STRING).
+it carries semantic context from the grammar position.
+
 error says "expected directive value" — what the grammar requires —
-not "expected STRING", which is an implementation detail. */
+not "expected STRING" — an implementation detail the operator
+should not see. */
 ConfigFrontend::Token ConfigFrontend::expect_STRING()
 {
     Token t = consume();
@@ -76,7 +98,9 @@ ConfigFrontend::Token ConfigFrontend::expect_STRING()
 }
 
 /* consume SEMICOLON or throw.
-every directive ends with ';'. single enforcement point. */
+
+every directive ends with ';'. this is the single enforcement point.
+error message is operator-facing: "expected ';'". */
 void ConfigFrontend::expect_SEMICOLON()
 {
     Token t = consume();

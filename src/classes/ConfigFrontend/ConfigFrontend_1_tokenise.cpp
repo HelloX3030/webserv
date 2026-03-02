@@ -2,22 +2,57 @@
 
 #include <string>
 
-/* tokenise src string into tokens_.
+/* tokenise source string into tokens_.
 
-the lexer is a finite automaton with 2 states: 
-accumulating a STRING | not. 
-whitespace & structural characters are the state transitions.
+the lexer is a finite automaton with 2 states:
+    accumulating a STRING | not.
+whitespace and structural characters are the state transitions.
 
-structural chars ({, }, ;) are boundary events: 
-they terminate any STRING in progress, then emit their own token.
+lexer rules:
+    {            → LBRACE
+    }            → RBRACE
+    ;            → SEMICOLON
+    anything else → STRING (accumulate until boundary)
 
-this ordering is the flush-before-emit invariant — 
-no accumulated char is silently dropped.
+structural chars are boundary events: they terminate any STRING
+in progress, then emit their own token. this is the flush-before-emit
+invariant — no accumulated char is silently dropped.
 
-line is incremented on \n only. structural chars and whitespace other
-than \n do not change line. every token receives the line at the
-moment of its emission (line token was on, not a line relative
-to a block or directive) */
+
+why no NUMBER type:
+
+"8080" after "listen" means port. "8080" after "server_name" would
+be a hostname. the token does not carry its own meaning — grammar
+position determines interpretation. a NUMBER type would require the
+lexer to classify digit-leading strings as semantically special,
+violating sgl-responsibility: the lexer would be doing partial
+meaning-assignment, which belongs to the parser.
+
+consequence: directive parsers that expect numeric values consume
+a STRING token and interpret via std::stoi. if conversion fails,
+the parser throws with line number.
+
+
+what the lexer does not do:
+. validate values (port range, path existence)
+. classify tokens by semantic meaning
+. interpret size suffixes (10m, 1k)
+. distinguish directive names from values or paths
+
+
+line tracking:
+
+line is incremented on \n only. every token receives the line number
+at the moment of emission — the line the token appeared on, not
+relative to block or directive.
+
+
+END sentinel postcondition:
+
+tokenise() unconditionally appends Token{END, "", last_line}.
+this makes peek() safe at stream exhaustion — no bounds check needed.
+the parser loop terminates on END rather than testing pos_ against
+tokens_.size(). postcondition: tokens_.back() is always END. */
 void ConfigFrontend::tokenise(const std::string& source)
 {
     tokens_.clear();
@@ -62,7 +97,7 @@ void ConfigFrontend::tokenise(const std::string& source)
         }
         else
         {
-            current += c;   // accumulate
+            current += c;
         }
     }
 

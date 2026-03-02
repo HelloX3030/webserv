@@ -3,9 +3,37 @@
 #include <stdexcept>
 #include <string>
 
+/* grammar productions: config, server_block, location_block.
+
+recursive descent: each grammar production becomes a function.
+the call hierarchy mirrors the grammar nesting:
+
+    grammar:
+        config → server_block → { server_dir | location_block }
+                                     location_block → { location_dir }
+
+    call tree:
+        parse_config
+          └─ parse_server_block
+               ├─ parse_server          (flat directives)
+               │    └─ parse_listen / parse_server_name / ...
+               └─ parse_location_block  (nested block)
+                    └─ parse_location
+                         └─ parse_root / parse_methods / ...
+
+"descent": parser begins at top-level production (parse_config)
+and descends toward terminal tokens.
+
+"recursive": the structural mirroring, not self-calls. self-calls
+would appear only if grammar were self-referential (e.g. nested
+location blocks). this grammar has no such nesting. */
+
+
 /* top-level production.
 grammar: config = server_block, { server_block } ;
-at least 1 server block required — an empty config is rejected. */
+
+at least 1 server block required — empty config rejected.
+loop terminates on END sentinel. */
 std::vector<ServerConfig> ConfigFrontend::parse_config()
 {
     std::vector<ServerConfig> result;
@@ -27,13 +55,18 @@ std::vector<ServerConfig> ConfigFrontend::parse_config()
 }
 
 /* grammar: server_block = "server", "{", { server_dir }, "}" ;
+
 "server" already consumed by parse_config.
-struct initialised with defaults before the directive loop —
-any directive present in config overrides. */
+
+defaults applied before directive loop:
+    client_max_body_size = 1048576 (1M)
+    
+any directive present in config overrides. absence of directive
+means default persists. see Config.hpp for full defaults table. */
 ServerConfig ConfigFrontend::parse_server_block()
 {
     ServerConfig s;
-    s.client_max_body_size = 1048576; // 1m default
+    s.client_max_body_size = 1048576;
 
     expect(TokenType::LBRACE);
 
@@ -65,12 +98,25 @@ ServerConfig ConfigFrontend::parse_server_block()
     return s;
 }
 
-/* dispatch a server-level directive.
-consumes the directive name — spent as the dispatch key.
-specific parser enters with pos_ at the 1st value token.
-the specific parser owns values and the terminating semicolon.
-violating this contract (specific parser re-consuming its own name)
-produces off-by-1 token errors throughout. */
+/* directive dispatch for server-level directives.
+
+directive consumption contract:
+    this function consumes the directive name token.
+    the name is spent as the dispatch decision.
+    specific parser (parse_listen, etc.) enters with pos_ at 1st value token.
+    specific parser owns values and terminating semicolon.
+
+dispatch mechanism: if-chain.
+
+alternatives considered:
+    std::map<std::string, std::function> — adds indirection (std::function
+    involves allocation and virtual call) and noise (map construction).
+    
+    switch on hash — fast but requires collision-free compile-time hash.
+    fragile under directive additions.
+
+if-chain chosen: readable, debuggable (each branch visible), correct.
+performance irrelevant — parser runs once at startup with ~10 directives. */
 void ConfigFrontend::parse_server(ServerConfig& s)
 {
     Token name = consume();
@@ -91,8 +137,18 @@ void ConfigFrontend::parse_server(ServerConfig& s)
 }
 
 /* grammar: location_block = "location", path, "{", { location_dir }, "}" ;
+
 "location" and path already consumed by parse_server_block.
-defaults applied before directive loop. */
+
+defaults applied before directive loop:
+    allowed_methods = {GET, POST, DELETE}   (all methods permitted)
+    autoindex       = false                  (no directory listing)
+    upload_enable   = false                  (uploads disabled)
+
+allowed_methods default rationale: all methods permitted unless
+explicitly restricted. alternative considered: default {GET} (silence
+means GET only). rejected: too restrictive for evaluation server where
+evaluator expects all methods unless explicitly limited. */
 Location ConfigFrontend::parse_location_block()
 {
     Location loc;
@@ -116,8 +172,8 @@ Location ConfigFrontend::parse_location_block()
     return loc;
 }
 
-/* same contract as parse_server: 
-consumes name, specific parser owns values. */
+/* directive dispatch for location-level directives.
+same contract as parse_server: consumes name, specific parser owns values. */
 void ConfigFrontend::parse_location(Location& loc)
 {
     Token name = consume();

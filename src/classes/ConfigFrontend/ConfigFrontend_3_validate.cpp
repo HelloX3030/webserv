@@ -5,11 +5,6 @@
 
 /* validate the completed std::vector<ServerConfig>.
 
-check semantic constraints the grammar cannot express & 
-the parser cannot check locally — 
-constraints that require fully built struct.
-
-
 2-layer enforcement strategy for constrained values:
 
 layer 1 — parse-time rejection:
@@ -21,17 +16,28 @@ layer 2 — validator confirmation:
     checks all constrained fields in completed structs.
     belt-and-suspenders: ensures no code path bypassed layer 1.
 
-    
 design decision: 2-layer enforcement chosen over wrapper types
 (e.g. HttpStatusCode with throwing constructor). wrapper types
 add boilerplate without proportionate benefit at this scale.
 enforcement is explicit; sites are documented.
 
 constraints checked here:
-. mandatory field presence (listen, root, locations)
-. value ranges (port [1, 65535], status codes [100, 599])
-. semantic couplings (cgi_extension ↔ cgi_path, return_code ↔ return_path,
-  upload_enable ↔ upload_store) */
+
+    mandatory presence:
+        server: at least 1 listen address
+        server: at least 1 location block
+        location: root directive
+
+    value ranges:
+        port: [1, 65535]
+        error_page code: [100, 599]
+        return_code: [300, 399]
+        client_max_body_size: > 0
+
+    semantic couplings:
+        cgi_extension ↔ cgi_path: both or neither
+        upload_enable ↔ upload_store: enable=true requires store non-empty
+        return_code ↔ return_path: code set requires path non-empty */
 void ConfigFrontend::validate(const std::vector<ServerConfig>& servers)
 {
     if (servers.empty())
@@ -42,7 +48,7 @@ void ConfigFrontend::validate(const std::vector<ServerConfig>& servers)
         validate_server(s);
 }
 
-/* mandatory fields & per-location checks */
+/* mandatory fields and per-location delegation. */
 void ConfigFrontend::validate_server(const ServerConfig& s)
 {
     if (s.listen.empty())
@@ -79,42 +85,44 @@ void ConfigFrontend::validate_server(const ServerConfig& s)
 
 /* mandatory fields and semantic couplings.
 
-root: mandatory — without it the server cannot resolve any file path.
-  the validator enforces this rather than the parser because root
-  is grammatically optional (location_dir = root_dir | ...) and
-  absence is only an error in the completed struct.
+root: mandatory. without it the server cannot resolve any file path.
+grammatically optional (location_dir = root_dir | ...), semantically required.
 
 cgi coupling: cgi_extension and cgi_path are co-dependent.
-  either both must be set or both must be absent. server cannot invoke CGI
-  without both an extension to trigger on and a path to the interpreter.
+server cannot invoke CGI without both extension and interpreter path.
 
 upload coupling: upload_enable true requires upload_store non-empty.
-  enabling upload without a destination path is an incomplete directive.
+enabling upload without destination path is incomplete.
 
 return coupling: return_code set requires return_path non-empty.
-  a redirect without a target URI is malformed. */
-void ConfigFrontend::validate_location(const std::string& path,
-                                     const Location& loc)
+redirect without target URI is malformed. */
+void ConfigFrontend::validate_location(const std::string& path, const Location& loc)
 {
     if (loc.root.empty())
         throw std::runtime_error(
-            "[config] validation error: location '" + path +
-            "' has no root directive");
+            "[config] validation error: location '" + path + "' has no root directive");
 
     bool has_cgi_ext  = !loc.cgi_extension.empty();
     bool has_cgi_path = !loc.cgi_path.empty();
     if (has_cgi_ext != has_cgi_path)
         throw std::runtime_error(
-            "[config] validation error: location '" + path +
-            "': cgi_extension and cgi_path must both be set or both absent");
+            "[config] validation error: location '" + path + "': "
+            "cgi_extension and cgi_path must both be set or both absent");
 
     if (loc.upload_enable && loc.upload_store.empty())
         throw std::runtime_error(
-            "[config] validation error: location '" + path +
-            "': upload_enable is on but upload_store is not set");
+            "[config] validation error: location '" + path + "': "
+            "upload_enable requires upload_store");
 
-    if (loc.return_code.has_value() && loc.return_path.empty())
+    bool has_return_code = loc.return_code.has_value();
+    bool has_return_path = !loc.return_path.empty();
+    if (has_return_code != has_return_path)
         throw std::runtime_error(
-            "[config] validation error: location '" + path +
-            "': return code set but return path is empty");
+            "[config] validation error: location '" + path + "': "
+            "return_code and return_path must both be set or both absent");
+
+    if (has_return_code && (*loc.return_code < 300 || *loc.return_code > 399))
+        throw std::runtime_error(
+            "[config] validation error: location '" + path + "': "
+            "return_code out of range [300, 399]");
 }

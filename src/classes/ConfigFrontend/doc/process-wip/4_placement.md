@@ -11,13 +11,8 @@ include/classes/
     Config.hpp          — data records (ghr ownership)
     ConfigParser.hpp    — parser declaration (ghr ownership)
 src/classes/ConfigParser/
-    ConfigParser_1_read.cpp
-    ConfigParser_2_tokenise.cpp
-    ConfigParser_3_parse.cpp
-    ConfigParser_4_validate.cpp
+    .cpp files          — file numbering reflects pipeline order explicitly.
 ```
-
-file numbering reflects pipeline order explicitly.
 
 ---
 

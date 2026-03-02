@@ -1,102 +1,116 @@
 #include "../../../include/classes/ConfigFrontend.hpp"
 
-#include <cctype>
 #include <stdexcept>
 #include <string>
 
-/*  STRING token → ListenAddress.
-host_port = port | host, ":", port ;    */
-ListenAddress ConfigFrontend::parse_host_port(const Token& tok)
+/* interpretation leaves.
+
+these functions interpret STRING token values as typed values.
+they are the boundary between text (token.value) and semantics
+(port number, byte size, host:port pair).
+
+the parser consumes STRING tokens everywhere — the lexer has no
+NUMBER type. these functions perform the string → typed value
+conversion, throwing with line number on failure. */
+
+
+/* interpret size with optional suffix.
+
+suffixes: k/K (×1024), m/M (×1024²), g/G (×1024³).
+no suffix: bytes.
+
+used for client_max_body_size at both server and location level. */
+size_t ConfigFrontend::parse_size(const Token& t)
+{
+    const std::string& s = t.value;
+    if (s.empty())
+        throw std::runtime_error(
+            "[config] line " + std::to_string(t.line) +
+            ": empty size value");
+
+    size_t multiplier = 1;
+    std::string digits = s;
+
+    char last = s.back();
+    if (last == 'k' || last == 'K')
+    {
+        multiplier = 1024;
+        digits = s.substr(0, s.size() - 1);
+    }
+    else if (last == 'm' || last == 'M')
+    {
+        multiplier = 1024 * 1024;
+        digits = s.substr(0, s.size() - 1);
+    }
+    else if (last == 'g' || last == 'G')
+    {
+        multiplier = 1024 * 1024 * 1024;
+        digits = s.substr(0, s.size() - 1);
+    }
+
+    size_t value;
+    try { value = std::stoull(digits); }
+    catch (...)
+    {
+        throw std::runtime_error(
+            "[config] line " + std::to_string(t.line) +
+            ": invalid size '" + s + "'");
+    }
+
+    return value * multiplier;
+}
+
+/* interpret port number.
+
+valid range [1, 65535]. 0 is technically valid TCP but not useful
+for a server to bind. range enforced here (parse-time rejection)
+and confirmed in validator (belt-and-suspenders).
+
+type: uint16_t. port space is [0, 65535]. 2^16 = 65536 > 65535.
+uint16_t is the minimal standard width that fits. */
+uint16_t ConfigFrontend::parse_port(const std::string& s, size_t line)
+{
+    int val;
+    try { val = std::stoi(s); }
+    catch (...)
+    {
+        throw std::runtime_error(
+            "[config] line " + std::to_string(line) +
+            ": expected port number, got '" + s + "'");
+    }
+
+    if (val < 1 || val > 65535)
+        throw std::runtime_error(
+            "[config] line " + std::to_string(line) +
+            ": port out of range [1, 65535]: '" + s + "'");
+
+    return static_cast<uint16_t>(val);
+}
+
+/* interpret host:port or bare port.
+
+formats:
+    "8080"           → host = "0.0.0.0", port = 8080
+    "127.0.0.1:8080" → host = "127.0.0.1", port = 8080
+
+host defaults to "0.0.0.0" (all interfaces) when absent.
+colon presence distinguishes the two forms. */
+ListenAddress ConfigFrontend::parse_host_port(const Token& t)
 {
     ListenAddress addr;
-    addr.host = "0.0.0.0"; // default: bind to all interfaces
+    const std::string& s = t.value;
 
-    if (auto pos = tok.value.find(':'); pos != std::string::npos)
+    size_t colon = s.find(':');
+    if (colon == std::string::npos)
     {
-        // extract both sides of split pt `:`
-        addr.host = tok.value.substr(0, pos);
-        addr.port = parse_port(tok.value.substr(pos + 1), tok.line);
+        addr.host = "0.0.0.0";
+        addr.port = parse_port(s, t.line);
     }
     else
     {
-        addr.port = parse_port(tok.value, tok.line);
+        addr.host = s.substr(0, colon);
+        addr.port = parse_port(s.substr(colon + 1), t.line);
     }
+
     return addr;
-}
-
-/* decimal string → uint16_t.
-valid range [1, 65535]: 0 excluded because uint16_t admits it but
-no valid service binds port 0.
-
-stoi over stoul: stoi throws std::invalid_argument on non-numeric input;
-stoul silently accepts leading whitespace and some edge inputs. 
-
-interpretation leaf fn, receives str + line instead of passed `Token`
-— `token-agnostic, could be used on any str.
-flexibility not necessary here just personal preference */
-uint16_t ConfigFrontend::parse_port(const std::string& s, size_t line)
-{
-    int n;
-    try { n = std::stoi(s); }
-    catch (...)
-    {
-        throw std::runtime_error(
-            "[config] line " + std::to_string(line) +
-            ": port parse failed — value provided: '" + s +
-            "', expected: integer in range [1, 65535]");
-    }
-    if (n < 1 || n > 65535)
-        throw std::runtime_error(
-            "[config] line " + std::to_string(line) +
-            ": port out of range — value provided: " + std::to_string(n) +
-            ", valid range: [1, 65535]");
-    return static_cast<uint16_t>(n);
-}
-
-/* STRING token value → size_t in bytes.
-size = digit, { digit }, [ size_suffix ] ;
-size_suffix = "k" | "K" | "m" | "M" | "g" | "G" ;
-
-stoull over stoul: on 32-bit platforms size_t is 32 bits; stoull gives
-64-bit precision before the cast, catching overflow stoul would truncate.
-static_cast<unsigned char> on isdigit: char may be signed; passing a
-negative value to isdigit is undefined behaviour. */
-size_t ConfigFrontend::parse_size(const Token& tok)
-{
-    const std::string& s = tok.value;
-    size_t i = 0;
-    while (i < s.size() && std::isdigit(static_cast<unsigned char>(s[i])))
-        ++i;
-
-    if (i == 0)
-        throw std::runtime_error(
-            "[config] line " + std::to_string(tok.line) +
-            ": invalid size value '" + s + "'");
-
-    unsigned long long n;
-    try { n = std::stoull(s.substr(0, i)); }
-    catch (...)
-    {
-        throw std::runtime_error(
-            "[config] line " + std::to_string(tok.line) +
-            ": size value out of range '" + s + "'");
-    }
-
-    if (i == s.size())
-        return static_cast<size_t>(n);
-
-    if (i == s.size() - 1)
-    {
-        switch (s[i])
-        {
-            case 'k': case 'K': return static_cast<size_t>(n * 1024ULL);
-            case 'm': case 'M': return static_cast<size_t>(n * 1024ULL * 1024ULL);
-            case 'g': case 'G': return static_cast<size_t>(
-                                    n * 1024ULL * 1024ULL * 1024ULL);
-        }
-    }
-
-    throw std::runtime_error(
-        "[config] line " + std::to_string(tok.line) +
-        ": invalid size suffix in '" + s + "'");
 }
