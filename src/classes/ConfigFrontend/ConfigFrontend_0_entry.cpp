@@ -1,9 +1,18 @@
 #include "../../../include/classes/ConfigFrontend.hpp"
 
+#include <string>
 #include <fstream>
 #include <iterator>
 #include <stdexcept>
-#include <string>
+
+std::vector<ServerConfig> ConfigParser::parse(const std::string& filepath)
+{
+    std::string source = read(filepath);
+    tokenise(source);
+    std::vector<ServerConfig> result = parse_config();
+    validate(result);
+    return result;
+}
 
 /* read file into memory & strip comments.
 
@@ -13,7 +22,7 @@ this preserves line numbers — every token produced
 by lexer carries its line of origin. 
 deleting chars would shift line numbers, breaking err msgs. 
 
-precondition: source uses unix line endings (\n only).
+precondition: src uses unix line endings (\n only).
 \r\n (windows crlf) not handled */
 std::string ConfigParser::read(const std::string& filepath)
 {

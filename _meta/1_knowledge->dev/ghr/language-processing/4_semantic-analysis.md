@@ -16,7 +16,8 @@ into a semantically valid structure.
 
 ## what syntax cannot express
 
-context-free grammars cannot express:
+context-free grammars cannot express **context-sensitive** constraints.
+these depend on information not available at the local parse site, e.g.:
 
 "variable x must be declared before use":
     requires tracking declarations across the tree.
@@ -30,16 +31,13 @@ context-free grammars cannot express:
 "port number must be in range [1, 65535]":
     requires interpreting the value, not just its form.
 
-these are **context-sensitive** constraints.
-they depend on information not available at the local parse site.
-
 
 ---
 
 
-## two sub-phases
+## 2 sub-phases
 
-semantic analysis divides into two distinct operations:
+semantic analysis divides into 2 distinct operations:
 
 **interpretation**: token value → typed value
     STRING("8080") → uint16_t(8080)
@@ -92,7 +90,7 @@ uint16_t parse_port(const std::string& s, size_t line) {
 the range check [1, 65535] is not type-level — `uint16_t` admits 0.
 it is domain-level — port 0 is not a valid service binding.
 
-interpretation is **local**: one token, one value, one check.
+interpretation is **local**: 1 token, 1 value, 1 check.
 it produces typed values that populate the structure.
 
 
@@ -232,6 +230,8 @@ these structures enable:
 - scope checking: "is 'x' visible here?"
 - type checking: "what is the type of 'x + y'?"
 
+
+WebServ:
 the ConfigFrontend has no symbolic names in this sense.
 directive names are fixed keywords, not user-defined symbols.
 
@@ -314,6 +314,6 @@ semantic analysis:
 - transforms syntax tree to verified structure
 - handles context-sensitive constraints
 - no uniform automaton — ad hoc algorithms
-- two sub-phases: interpretation and validation
+- 2 sub-phases: interpretation and validation
 - interpretation: local, during parsing, has line numbers
 - validation: global, after parsing, checks relationships
