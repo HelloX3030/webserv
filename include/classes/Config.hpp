@@ -19,20 +19,6 @@ The dependency arrow is: Server.hpp → Config.hpp → stdlib only.
 */
 
 /*
-defaults (applied at parse time when directive absent):
-
-    ListenAddress::host             "0.0.0.0"
-    ServerConfig::client_max_body_size   1048576 (1M)
-    Location::autoindex             false
-    Location::client_max_body_size  std::nullopt (inherit)
-    Location::allowed_methods       {GET, POST, DELETE}
-    Location::upload_enable         false
-    Location::return_code           std::nullopt
-
-(delete this overview when all info integrated into sections below)
-*/
-
-/*
 The grammar's methods_dir terminals form a closed set: GET, POST, DELETE.
 enum class enforces membership at compile time - 
 an unknown method cannot be represented, no runtime string comparison required.
