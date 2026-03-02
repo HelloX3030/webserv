@@ -7,8 +7,7 @@
 linear input → lexical → syntactic → semantic → verified structure
 ```
 
-this pattern recurs wherever text must become structure.
-the domain changes. the form persists.
+this pattern recurs across domains, wherever text must become structure.
 
 
 ---
@@ -74,6 +73,7 @@ bytes on wire
 
 examples: HTTP, SMTP, DNS, FTP, TLS handshake.
 
+
 HTTP request parsing:
 ```
 GET /index.html HTTP/1.1\r\n
@@ -110,8 +110,7 @@ config file
 ```
 
 examples: NGINX, Apache, systemd, SSH config.
-
-the ConfigFrontend is this archetype instantiated for webserv.
+WebServ's ConfigFrontend.
 
 
 ---
