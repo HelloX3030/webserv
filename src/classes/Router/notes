@@ -1,0 +1,3 @@
+ghr will implement after HttpRequestFrontend
+Pure function: (HttpRequest, ServerConfig) → HandlerDecision{type, params}
+No I/O. Just matching URI against location blocks, determining handler type.
