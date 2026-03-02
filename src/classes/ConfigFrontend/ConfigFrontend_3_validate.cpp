@@ -4,16 +4,34 @@
 #include <string>
 
 /* validate the completed std::vector<ServerConfig>.
+
 check semantic constraints the grammar cannot express & 
 the parser cannot check locally — 
 constraints that require fully built struct.
 
-2-layer enforcement strategy:
-parse time: range checks on numeric values (port, status code, size).
-  illegal values rejected before they enter the structs.
-validate time: confirms those constraints held across every code path,
-  checks mandatory field presence, and checks semantic couplings between
-  fields that have no individual syntax error but are invalid in combination. */
+
+2-layer enforcement strategy for constrained values:
+
+layer 1 — parse-time rejection:
+    directive helpers (parse_port, parse_error_page, parse_return)
+    call std::stoi, range-check immediately, throw with line number.
+    illegal value never enters the struct.
+
+layer 2 — validator confirmation:
+    checks all constrained fields in completed structs.
+    belt-and-suspenders: ensures no code path bypassed layer 1.
+
+    
+design decision: 2-layer enforcement chosen over wrapper types
+(e.g. HttpStatusCode with throwing constructor). wrapper types
+add boilerplate without proportionate benefit at this scale.
+enforcement is explicit; sites are documented.
+
+constraints checked here:
+. mandatory field presence (listen, root, locations)
+. value ranges (port [1, 65535], status codes [100, 599])
+. semantic couplings (cgi_extension ↔ cgi_path, return_code ↔ return_path,
+  upload_enable ↔ upload_store) */
 void ConfigFrontend::validate(const std::vector<ServerConfig>& servers)
 {
     if (servers.empty())
