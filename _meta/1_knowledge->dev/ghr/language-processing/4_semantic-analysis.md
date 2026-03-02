@@ -317,3 +317,39 @@ semantic analysis:
 - 2 sub-phases: interpretation and validation
 - interpretation: local, during parsing, has line numbers
 - validation: global, after parsing, checks relationships
+
+
+---
+
+
+## Information to add to document:
+
+Ontological gaps:
+
+Type theory foundations - what IS a type? Type as set, as proposition, as constraint. 
+The typing judgment Γ ⊢ e : τ is the core formal object. Document uses "typed" without grounding it.
+
+Attribute grammars - the upstream formalism for semantic analysis, as CFG is for parsing. 
+Synthesized vs inherited attributes. Currently absent; semantic analysis appears ad hoc when it has formal theory.
+
+Semantic domains - denotational semantics answers "what does this mean?" 
+by mapping syntax to mathematical objects. 
+The document says "semantic" without defining what semantics IS.
+
+Symbol tables / environments - mentioned in passing but no structure. 
+What IS an environment? Env = Name → Value. 
+The threading pattern. Scope as environment nesting.
+
+
+Mechanical gaps:
+
+Name resolution / scoping - lexical vs dynamic scope. 
+Scope graphs as the modern formalism. 
+How "declared before use" is actually checked.
+
+Type inference vs type checking - the Haskell example shows typeCheck 
+and mentions unify but doesn't distinguish checking (verify given types) 
+from inference (discover types). Hindley-Milner absent.
+
+Constraint satisfaction view - validation as constraint solving. 
+Connection to SAT/SMT when constraints get complex.
