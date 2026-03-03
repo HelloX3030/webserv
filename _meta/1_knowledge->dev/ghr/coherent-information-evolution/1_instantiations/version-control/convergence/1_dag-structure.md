@@ -1,3 +1,20 @@
+notes - thoughts, Qs - to clarify:
+
+    ctx, knowledge on SHA
+
+    "Old commits remain (until garbage collected)"
+    what does this mean?
+    how does this relate with the maintenance of a full git history?
+    doesn't this include all the commits made?
+
+    "Even after reset --hard, orphaned commits remain in object store. 
+    Reflog lets you recover them (default retention: 90 days)"
+    really need to look into git's object store, gc...
+
+    "Never rebase shared branches (cardinal rule)"
+    why? what could happen if attempted?
+
+
 # The DAG: Structure and Mechanics
 
 ## Git's Object Model
