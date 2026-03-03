@@ -1,12 +1,12 @@
-# built executables
+# Executables
 webserv
 webserv_debug
+webserv_leaks
 
 # build dirs + obj artifacts
 obj/
 obj_debug/
-
-*.pdf
+obj_leaks/
 
 # runtime-generated files
 www/uploads/*
@@ -16,3 +16,5 @@ www/uploads/*
 # local dev env: editor settings
 # .vscode/
 # uncomment @ of team dev process, pre-evals
+
+*.pdf

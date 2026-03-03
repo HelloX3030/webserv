@@ -10,12 +10,8 @@ class Server
     // Server Config
 
     // Server Vars
-    std::vector<Listener> listener;
 
     // Functions
-    void start();
-    void respond();
-    void stop();
 
   public:
     Server();
@@ -25,5 +21,4 @@ class Server
 
     // Public Functions
     void parse(const std::string &file_path);
-    void run();
 };
