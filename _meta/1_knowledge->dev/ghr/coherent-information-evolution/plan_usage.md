@@ -1,6 +1,6 @@
 for any given piece of work: 
     campaign, mission, project
-    in the form of a repository...
+where the work's source information is in a repository :
 
 establish, determine the appropriate workflow
 e.g. 
