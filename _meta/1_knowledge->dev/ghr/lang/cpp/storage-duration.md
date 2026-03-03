@@ -1,3 +1,7 @@
+Qs
+. why "static"? weird term
+
+
 # storage duration
 
 ## what it is
