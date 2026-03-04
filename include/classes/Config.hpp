@@ -10,12 +10,12 @@
 /*
 Config.hpp — pure data types produced by the config parser.
 No methods, no behaviour. Describes operator intent as extracted from
-the config file. All other components consume these types; none are
-depended upon here.
+the config file. All other components consume these types; 
+none are depended upon here.
 
 Does not include base/base.hpp. That header pulls in sockets, signals,
 and POSIX I/O — none of which belong in a data type definition. 
-The dependency arrow is: Server.hpp → Config.hpp → stdlib only.
+dependencies: Server.hpp → Config.hpp → stdlib only.
 */
 
 /*
@@ -38,7 +38,7 @@ when absent, parser assigns default host "0.0.0.0".
 must contain full TCP port space [0, 65535].
     2^8 = 256 < 65535
     2^16 = 65536 > 65535
-∴ uint16_t chosen (unsigned integer type w/ width 16 bits).
+∴ uint16_t chosen (unsigned integer type w/ width 16 bits)
 as minimal std width.
 
 valid range enforced at parse time in parse_port() 

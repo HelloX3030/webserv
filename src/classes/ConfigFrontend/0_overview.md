@@ -68,11 +68,9 @@ not a general-purpose config system:
 
 ## input / output contract
 
-input:
-    path to config file (NGINX-style syntax).
+input: path to config file (NGINX-style syntax).
 
-output:
-    validated configuration objects.
+output: validated configuration objects.
 ```cpp
     std::vector<ServerConfig>
 ```

@@ -65,8 +65,8 @@ STRING("8080")    SEMICOLON  RBRACE
 ```
 
 `8080` tokenises as STRING, not NUMBER. grammar position determines
-meaning — the parser interprets "8080" as a port when it follows
-"listen". the lexer classifies structure, not semantics.
+meaning — the parser interprets "8080" as a port when it follows "listen". 
+the lexer classifies structure, not semantics.
 
 
 ---

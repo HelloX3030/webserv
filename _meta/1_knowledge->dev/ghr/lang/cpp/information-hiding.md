@@ -22,15 +22,18 @@ into Modules" (1972). the paper that founded modular programming.
 
 3 concrete consequences of exposing implementation:
 
-coupling: clients depend on internals. changing internals breaks clients.
-the more exposed, the more breakage per change.
+    coupling: 
+    clients depend on internals. changing internals breaks clients.
+    the more exposed, the more breakage per change.
 
-recompilation: in C++, any change to a header triggers recompilation of
-all translation units that include it. exposed internals = more header
-changes = slower builds.
+    recompilation: 
+    in C++, any change to a header triggers recompilation of
+    all translation units that include it. 
+    exposed internals = more header changes = slower builds.
 
-cognitive load: readers must distinguish "what i can use" from "what
-exists." exposed internals obscure the actual interface.
+    cognitive load: readers must distinguish "what I can use" from "what
+    exists." exposed internals obscure the actual interface.
+
 
 the inverse: hidden implementation can change freely. no client breakage,
 no recompilation, no cognitive noise.
@@ -55,8 +58,9 @@ private:
 
 `private` hides members from clients. they cannot name or use them.
 
-limitation: private members still appear in the header. clients cannot
-use them, but clients see them. changes trigger recompilation.
+limitation: private members still appear in the header. 
+clients cannot use them, but can see them. 
+changes trigger recompilation.
 
 
 ### anonymous namespace
@@ -140,15 +144,15 @@ choose based on:
 
 the boundary is not syntactic but semantic.
 
-interface: what the module promises. stable contract. clients depend on
-this.
+interface: what the module promises. stable contract. 
+clients depend on this.
 
-implementation: how the promise is fulfilled. can change. clients must
-not depend on this.
+implementation: how the promise is fulfilled. can change. 
+clients must not depend on this.
 
 a private member in a header is syntactically hidden (cannot use) but
-not physically hidden (can see, triggers recompilation). PIMPL achieves
-both.
+not physically hidden (can see, triggers recompilation). 
+PIMPL achieves both.
 
 
 ---
@@ -191,7 +195,7 @@ cannot construct invalid states if constructors are hidden.
 
 ## the deeper point
 
-information hiding is not about secrecy. it is about freedom.
+information hiding is not about secrecy, but about freedom.
 
 hidden implementation = freedom to change without coordination.
 exposed implementation = every change requires client agreement.

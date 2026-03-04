@@ -28,8 +28,6 @@ www/
         index.html          default landing page — served at GET /
         upload.html         file upload form — served at GET / under uploads.conf
         errors/
-            404.html        not found
-            500.html        internal server error
     uploads/
         README.md           tracks the directory in git; uploaded files excluded
 ```
