@@ -1,5 +1,5 @@
 # Compiler and flags
-CXX := c++
+CXX := clang++
 CXXFLAGS := -Wall -Wextra -Werror -std=c++17
 NAME := webserv
 
