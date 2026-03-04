@@ -26,6 +26,10 @@ void init(const std::vector<ServerConfig> &configs)
     for (const ServerConfig &config : configs)
     {
         servers.emplace_back(config);
+        for (const ListenAddress &listen_adress : config.listen)
+        {
+            add_listener(listen_adress.port);
+        }
     }
 }
 

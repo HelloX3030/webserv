@@ -1,6 +1,7 @@
 #pragma once
 
 #include "base/base.hpp"
+#include "classes/Config.hpp"
 #include "interfaces/EPollHandler.hpp"
 
 class Listener final : public EpollHandler

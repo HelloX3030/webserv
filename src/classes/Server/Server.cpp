@@ -14,7 +14,7 @@ Server::Server(ServerConfig config)
 
 std::string Server::to_string() const
 {
-    std::string result;
+    std::string result = "    ";
     for (auto &name : config.server_names)
     {
         result += name + " ";
