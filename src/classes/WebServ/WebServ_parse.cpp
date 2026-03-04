@@ -22,7 +22,7 @@ std::vector<ServerConfig> parse(int argc, char **argv)
     // Args Error
     else
     {
-        throw std::runtime_error("You need to provide exactly one config file path!");
+        throw std::runtime_error("You need to provide exactly one config file path");
     }
 }
 

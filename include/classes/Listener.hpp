@@ -3,7 +3,7 @@
 #include "base/base.hpp"
 #include "interfaces/EPollHandler.hpp"
 
-class Listener : public EpollHandler
+class Listener final : public EpollHandler
 {
   private:
     in_port_t port;
