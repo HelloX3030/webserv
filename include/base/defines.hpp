@@ -38,6 +38,7 @@ constexpr const char *SERVER = "Server";
 constexpr const char *LISTENER = "Listener";
 constexpr const char *CONNECTION = "Connection";
 constexpr const char *HTTP_PARSER = "HttpParser";
+constexpr const char *EPOLL_HANDLER = "EPollHandler";
 
 // Log Msg
 constexpr const char *PARSE_SERVER_CONFIG = "Parse Server Config";

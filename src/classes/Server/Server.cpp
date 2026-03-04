@@ -1,22 +1,23 @@
 #include "classes/Server.hpp"
 
-Server::Server()
+namespace WebServ
+{
+
+std::vector<Server> servers;
+
+} // namespace WebServ
+
+Server::Server(ServerConfig config)
+    : config(config)
 {
 }
 
-Server::Server(const Server &other)
+std::string Server::to_string() const
 {
-    *this = other;
-}
-
-Server &Server::operator=(const Server &other)
-{
-    if (this != &other)
+    std::string result;
+    for (auto &name : config.server_names)
     {
+        result += name + " ";
     }
-    return *this;
-}
-
-Server::~Server()
-{
+    return result;
 }

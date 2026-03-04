@@ -12,7 +12,7 @@ enum class ConnectionState
 };
 std::string to_string(ConnectionState state);
 
-class Connection : public EpollHandler
+class Connection final : public EpollHandler
 {
   private:
     Fd fd;

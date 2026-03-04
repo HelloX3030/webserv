@@ -21,11 +21,11 @@ void init(const std::vector<ServerConfig> &configs)
         throw std::system_error(errno, std::generic_category(), "epoll_create1");
     }
 
-    // Handle Configs
+    // Create Servers
+    servers.reserve(configs.size());
     for (const ServerConfig &config : configs)
     {
-        (void)config;
-        std::cout << "config" << std::endl;
+        servers.emplace_back(config);
     }
 }
 
