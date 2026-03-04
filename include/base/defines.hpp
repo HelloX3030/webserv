@@ -43,7 +43,7 @@ constexpr const char *HTTP_PARSER = "HttpParser";
 constexpr const char *PARSE_SERVER_CONFIG = "Parse Server Config";
 
 // defaults
-constexpr const char *DEFAULT_CONFIG_PATH = "default/path";
+constexpr const char *DEFAULT_CONFIG_PATH = "config/default.conf";
 
 // Branch Prediction
 #if defined(__GNUC__) || defined(__clang__)

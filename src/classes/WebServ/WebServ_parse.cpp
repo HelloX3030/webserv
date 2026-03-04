@@ -3,26 +3,27 @@
 namespace WebServ
 {
 
-void parse(int argc, char **argv)
+std::vector<ServerConfig> parse(int argc, char **argv)
 {
-    (void)argc;
-    (void)argv;
-    // // Parse Default Path
-    // if (argc == 1)
-    // {
-    //     servers.emplace_back();
-    //     servers[0].parse(DEFAULT_CONFIG_PATH);
-    // }
+    ConfigFrontend config_frontend;
 
-    // // Parse Configs
-    // else
-    // {
-    //     servers.resize(argc - 1);
-    //     for (int i = 1; i < argc; i++)
-    //     {
-    //         servers[i].parse(argv[i]);
-    //     }
-    // }
+    // Parse Default Path
+    if (argc == 1)
+    {
+        return config_frontend.parse(DEFAULT_CONFIG_PATH);
+    }
+
+    // Parse Configs
+    else if (argc == 2)
+    {
+        return config_frontend.parse(argv[1]);
+    }
+
+    // Args Error
+    else
+    {
+        throw std::runtime_error("You need to provide exactly one config file path!");
+    }
 }
 
 } // namespace WebServ

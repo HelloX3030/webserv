@@ -3,7 +3,7 @@
 namespace WebServ
 {
 
-void init()
+void init(const std::vector<ServerConfig> &configs)
 {
 
 #ifdef DEBUG
@@ -19,6 +19,13 @@ void init()
     if (epfd < 0)
     {
         throw std::system_error(errno, std::generic_category(), "epoll_create1");
+    }
+
+    // Handle Configs
+    for (const ServerConfig &config : configs)
+    {
+        (void)config;
+        std::cout << "config" << std::endl;
     }
 }
 

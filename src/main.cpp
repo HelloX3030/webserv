@@ -12,10 +12,9 @@ int main(int argc, char **argv)
     // Parse
     try
     {
-        WebServ::parse(argc, argv);
-        WebServ::init();
+        std::vector<ServerConfig> configs = WebServ::parse(argc, argv);
+        WebServ::init(configs);
 #ifdef DEBUG
-        WebServ::add_test_data();
         WebServ::display();
 #endif
         WebServ::run();
