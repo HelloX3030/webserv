@@ -7,7 +7,6 @@
 class Listener final : public EpollHandler
 {
   private:
-    in_port_t port;
     Fd fd;
 
   public:
@@ -17,7 +16,7 @@ class Listener final : public EpollHandler
     ~Listener();
 
     // Custom Constructors
-    Listener(in_port_t port);
+    Listener(ListenAddress adress);
 
     // Overrides
     int get_fd() const override;
@@ -31,6 +30,6 @@ std::ostream &operator<<(std::ostream &os, const Listener &e);
 namespace WebServ
 {
 
-void add_listener(in_port_t port);
+void add_listener(ListenAddress adress);
 
 }
