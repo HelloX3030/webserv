@@ -64,9 +64,9 @@ namespace WebServ {
 declarations (not definitions) of the server-level registry and its
 operations. placed here so that every file including `EPollHandler.hpp`
 — i.e. every concrete handler — gets access to `add_epoll_handler` and
-`remove_epoll_handler` without an additional include. a convenience
-coupling: the abstraction header carries the infrastructure declarations
-its implementors need.
+`remove_epoll_handler` without an additional include. 
+a convenience coupling: the abstraction header carries 
+the infrastructure declarations its implementors need.
 
 
 ---
@@ -105,9 +105,4 @@ registration, deregistration, destruction — passes through them.
 
 ## further reading
 
-```
-architecture/event-driven/1_reactor-pattern.md   — structural roles
-architecture/event-driven/3_polymorphic-dispatch.md — vtable mechanics
-architecture/event-driven/4_contracts.md          — contract analysis, language comparison
-architecture/directory-structure.md              — why interfaces/ is a misnomer (in ghr's opinion)
-```
+_meta/1_knowledge->dev/ghr/architecture/
