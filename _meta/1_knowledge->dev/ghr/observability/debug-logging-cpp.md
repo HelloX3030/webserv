@@ -1,0 +1,1 @@
+C++ idioms: debug builds, macros, conditional compilation, stderr
