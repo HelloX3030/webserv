@@ -11,9 +11,14 @@ programmer-facing: complete field coverage, labelled and indented.
 does not reconstruct valid nginx syntax — renders state for inspection.
 
 2 access points, 1 rendering path:
-    to_string(x)  → std::string, for embedding in log messages or errors.
+    to_string(x)     → std::string, for embedding in log messages or errors.
     operator<<(os, x) → delegates to to_string. single definition,
-    no divergence.
+                        no divergence.
+
+maintenance liability: each to_string function manually enumerates
+its struct's fields. C++17 has no reflection — the compiler cannot
+detect a field added to a struct but omitted here. divergence is
+silent. update to_string whenever the corresponding struct changes.
 */
 
 
