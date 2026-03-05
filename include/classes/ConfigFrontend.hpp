@@ -82,7 +82,7 @@ class ConfigFrontend
 
     /* shared cursor state. see header comment on tramp data elimination. */
     std::vector<Token> tokens_;
-    size_t             pos_;
+    size_t             pos_ = 0;    // in-class initialisation. born in valid state
 
     /* navigation — observations (const) */
     Token peek()                              const;

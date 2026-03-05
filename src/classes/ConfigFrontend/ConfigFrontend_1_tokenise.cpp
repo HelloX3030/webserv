@@ -14,15 +14,16 @@ lexer rules:
     ;            → SEMICOLON
     anything else → STRING (accumulate until boundary)
 
-structural chars are boundary events: they terminate any STRING
-in progress, then emit their own token. this is the flush-before-emit
+structural chars are boundary events: they terminate any STRING in progress, 
+then emit their own token. this is the flush-before-emit
 invariant — no accumulated char is silently dropped.
 
 
 why no NUMBER type:
 
-"8080" after "listen" means port. "8080" after "server_name" would
-be a hostname. the token does not carry its own meaning — grammar
+"8080" after "listen" means port. 
+"8080" after "server_name" would be a hostname. 
+the token does not carry its own meaning — grammar
 position determines interpretation. a NUMBER type would require the
 lexer to classify digit-leading strings as semantically special,
 violating sgl-responsibility: the lexer would be doing partial
@@ -43,8 +44,8 @@ what the lexer does not do:
 line tracking:
 
 line is incremented on \n only. every token receives the line number
-at the moment of emission — the line the token appeared on, not
-relative to block or directive.
+at the moment of emission — the line the token appeared on, 
+not relative to block or directive.
 
 
 END sentinel postcondition:
@@ -56,6 +57,8 @@ tokens_.size(). postcondition: tokens_.back() is always END. */
 void ConfigFrontend::tokenise(const std::string& source)
 {
     tokens_.clear();
+    pos_ = 0;   // reset for this parse
+    // in this ctx, defensive, not necessary, as parse() not reused on same obj
 
     size_t      line = 1;
     std::string current;
