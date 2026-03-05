@@ -10,7 +10,7 @@ void log(std::string title, std::string msg, std::string value, LogType type)
 #ifdef DEBUG
     if (title.length() > log_title_width - 2)
     {
-        std::cout << "LOG TITLE TO LONG!" << std::endl;
+        std::cout << "LOG TITLE TOO LONG!" << std::endl;
     }
 #endif
 
