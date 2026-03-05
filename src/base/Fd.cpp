@@ -6,8 +6,12 @@ Fd::Fd()
 }
 
 Fd::Fd(Fd &&other) noexcept
-    : fd(other.fd)
 {
+    if (fd >= 0)
+    {
+        close(fd);
+    }
+    fd = other.fd;
     other.fd = -1;
 }
 
@@ -15,8 +19,10 @@ Fd &Fd::operator=(Fd &&other) noexcept
 {
     if (this != &other)
     {
-        if (fd != -1)
+        if (fd >= 0)
+        {
             close(fd);
+        }
 
         fd = other.fd;
         other.fd = -1;
@@ -26,7 +32,7 @@ Fd &Fd::operator=(Fd &&other) noexcept
 
 Fd::~Fd()
 {
-    if (fd != -1)
+    if (fd >= 0)
     {
         close(fd);
     }
@@ -39,7 +45,7 @@ Fd::Fd(int fd)
 
 void Fd::set(int fd)
 {
-    if (this->fd != -1)
+    if (this->fd >= 0)
     {
         close(this->fd);
     }

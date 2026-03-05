@@ -8,21 +8,21 @@ Listener::~Listener()
 Listener::Listener(ListenAddress address)
 {
     // Create Socket
-    int fd = socket(AF_INET, SOCK_STREAM, 0);
-    if (fd < 0)
+    fd.set(socket(AF_INET, SOCK_STREAM, 0));
+    if (fd.get() < 0)
         throw std::system_error(errno, std::generic_category(), "socket");
 
     // make socket non-blocking
-    int flags = fcntl(fd, F_GETFL, 0);
+    int flags = fcntl(fd.get(), F_GETFL, 0);
     if (flags == -1)
         throw std::system_error(errno, std::generic_category(), "fcntl(F_GETFL)");
 
-    if (fcntl(fd, F_SETFL, flags | O_NONBLOCK) == -1)
+    if (fcntl(fd.get(), F_SETFL, flags | O_NONBLOCK) == -1)
         throw std::system_error(errno, std::generic_category(), "fcntl(F_SETFL)");
 
     // Reuse Address
     int opt = 1;
-    if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
+    if (setsockopt(fd.get(), SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
         throw std::system_error(errno, std::generic_category(), "setsockopt");
 
     // Resolve address
@@ -43,7 +43,7 @@ Listener::Listener(ListenAddress address)
     addr.sin_port = htons(address.port);
 
     // Bind
-    if (bind(fd, (struct sockaddr *)&addr, sizeof(addr)) < 0)
+    if (bind(fd.get(), (struct sockaddr *)&addr, sizeof(addr)) < 0)
     {
         freeaddrinfo(result);
         throw std::system_error(errno, std::generic_category(), "bind");
@@ -52,10 +52,8 @@ Listener::Listener(ListenAddress address)
     freeaddrinfo(result);
 
     // Listen
-    if (listen(fd, SOMAXCONN) < 0)
+    if (listen(fd.get(), SOMAXCONN) < 0)
         throw std::system_error(errno, std::generic_category(), "listen");
-
-    this->fd.set(fd);
 }
 
 // Overrides
