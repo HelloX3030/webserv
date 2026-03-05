@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <iosfwd>
 #include <map>
 #include <optional>
 #include <set>
@@ -83,7 +84,7 @@ struct Location
     bool                        autoindex;       // default: false
     std::string                 cgi_extension;
     std::string                 cgi_path;
-    std::optional<size_t>client_max_body_size; // default: std::nullopt (inherit)
+    std::optional<size_t>       client_max_body_size; // default: std::nullopt (inherit)
     bool                        upload_enable;
     std::string                 upload_store;
     std::optional<uint16_t>     return_code;
@@ -122,3 +123,27 @@ struct ServerConfig
     std::map<uint16_t, std::string> error_pages;
     std::map<std::string, Location> locations;
 };
+
+/*
+display serialisation — Config.cpp
+
+free functions, not methods: 
+Config.hpp contracts "no methods, no behaviour". t
+o_string is orthogonal to data definition —
+it is observation of state, not state or behaviour itself.
+
+<iosfwd> provides the std::ostream forward declaration.
+a forward declaration is sufficient here: the signatures take
+std::ostream& but do not construct, destruct, or access its members.
+the full definition (<ostream>) lives in Config.cpp.
+
+operator<< delegates to to_string — single rendering path,
+2 call sites: stream output & string embedding.
+*/
+std::string   to_string(const ListenAddress& addr);
+std::string   to_string(const Location& loc);
+std::string   to_string(const ServerConfig& cfg);
+
+std::ostream& operator<<(std::ostream& os, const ListenAddress& addr);
+std::ostream& operator<<(std::ostream& os, const Location& loc);
+std::ostream& operator<<(std::ostream& os, const ServerConfig& cfg);
