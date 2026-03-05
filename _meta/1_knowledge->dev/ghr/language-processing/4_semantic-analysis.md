@@ -7,8 +7,8 @@
 syntax tree → verified, typed structure
 ```
 
-semantic analysis transforms the syntactically valid structure
-into a semantically valid structure.
+semantic analysis transforms 
+syntactically valid structure -> semantically valid structure
 
 
 ---
@@ -87,8 +87,9 @@ uint16_t parse_port(const std::string& s, size_t line) {
 }
 ```
 
-the range check [1, 65535] is not type-level — `uint16_t` admits 0.
-it is domain-level — port 0 is not a valid service binding.
+the range check [1, 65535] 
+is not type-level — `uint16_t` admits 0, but
+domain-level — port 0 is not a valid service binding.
 
 interpretation is **local**: 1 token, 1 value, 1 check.
 it produces typed values that populate the structure.
