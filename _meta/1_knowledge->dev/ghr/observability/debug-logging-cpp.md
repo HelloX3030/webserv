@@ -5,7 +5,7 @@ rendering runtime state as human-readable output to assist the
 programmer in understanding system behaviour.
 
 C++ provides no standard logging facility. the programmer assembles
-1 from primitives. the idioms below are the stable building blocks.
+one from primitives. the idioms below are the stable building blocks.
 
 
 ---
