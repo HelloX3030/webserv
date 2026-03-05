@@ -4,9 +4,12 @@
 #include "classes/Config.hpp"
 #include "interfaces/EPollHandler.hpp"
 
+class Server;
+
 class Listener final : public EpollHandler
 {
   private:
+    std::unordered_map<std::string, Server *> host_to_server;
     Fd fd;
 
   public:
@@ -16,7 +19,13 @@ class Listener final : public EpollHandler
     ~Listener();
 
     // Custom Constructors
-    Listener(ListenAddress adress);
+    Listener(ListenAddress listen_adress);
+
+    // Getter
+    const ServerConfig &get_server_config(const std::string &host) const;
+
+    // Setters
+    void add_host(const std::string &new_host, Server &server);
 
     // Overrides
     int get_fd() const override;
@@ -30,6 +39,6 @@ std::ostream &operator<<(std::ostream &os, const Listener &e);
 namespace WebServ
 {
 
-void add_listener(ListenAddress adress);
+void add_listener(ListenAddress adress, const std::vector<std::string> &hosts, Server &server);
 
 }

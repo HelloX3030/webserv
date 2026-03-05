@@ -24,8 +24,10 @@ class Server final
     // Special Constructor
     Server(ServerConfig config);
 
+    // Getter
+    const ServerConfig &get_config() const;
+
     // Public Functions
-    void parse(const std::string &file_path);
     std::string to_string() const;
 };
 

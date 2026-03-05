@@ -1,11 +1,12 @@
 #include "classes/Connection.hpp"
+#include "classes/Listener.hpp"
 
 Connection::~Connection()
 {
 }
 
-Connection::Connection(int fd)
-    : fd(fd), state(ConnectionState::READ)
+Connection::Connection(Listener &listener, int fd)
+    : listener(listener), fd(fd), state(ConnectionState::READ)
 {
 }
 
@@ -138,12 +139,17 @@ std::string to_string(ConnectionState state)
     }
 }
 
+const ServerConfig &Connection::get_server_config(const std::string &host)
+{
+    return listener.get_server_config(host);
+}
+
 namespace WebServ
 {
 
-void add_connection(int fd)
+void add_connection(Listener &listener, int fd)
 {
-    auto new_connection = std::make_unique<Connection>(fd);
+    auto new_connection = std::make_unique<Connection>(listener, fd);
     add_epoll_handler(std::move(new_connection));
 }
 

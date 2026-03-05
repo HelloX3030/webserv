@@ -12,6 +12,11 @@ Server::Server(ServerConfig config)
 {
 }
 
+const ServerConfig &Server::get_config() const
+{
+    return config;
+}
+
 std::string Server::to_string() const
 {
     std::string result = "    ";

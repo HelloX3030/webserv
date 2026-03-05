@@ -1,9 +1,14 @@
 #pragma once
 
 #include "base/base.hpp"
+#include "classes/Config.hpp"
 #include "classes/HttpParser.hpp"
 #include "interfaces/EPollHandler.hpp"
 
+// Forward Declarations
+class Listener;
+
+// State
 enum class ConnectionState
 {
     READ,
@@ -15,6 +20,7 @@ std::string to_string(ConnectionState state);
 class Connection final : public EpollHandler
 {
   private:
+    Listener &listener;
     Fd fd;
     ConnectionState state;
     HttpParser http_parser;
@@ -27,7 +33,7 @@ class Connection final : public EpollHandler
     ~Connection();
 
     // Special Constructors
-    Connection(int fd);
+    Connection(Listener &listener, int fd);
 
     // Overrides
     int get_fd() const override;
@@ -35,12 +41,15 @@ class Connection final : public EpollHandler
     void handle_event(uint32_t events) override;
     bool should_close() const override;
     std::string to_string() const override;
+
+    // Functions
+    const ServerConfig &get_server_config(const std::string &host);
 };
 std::ostream &operator<<(std::ostream &os, const Connection &connection);
 
 namespace WebServ
 {
 
-void add_connection(int fd);
+void add_connection(Listener &listener, int fd);
 
 }

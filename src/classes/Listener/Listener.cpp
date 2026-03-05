@@ -1,11 +1,20 @@
 #include "classes/Listener.hpp"
+#include "classes/Config.hpp"
 #include "classes/Connection.hpp"
+#include "classes/Server.hpp"
+
+namespace
+{
+
+std::unordered_map<ListenAddress, Listener *> adress_to_listener;
+
+}
 
 Listener::~Listener()
 {
 }
 
-Listener::Listener(ListenAddress address)
+Listener::Listener(ListenAddress listen_adress)
 {
     // Create Socket
     fd.set(socket(AF_INET, SOCK_STREAM, 0));
@@ -34,13 +43,13 @@ Listener::Listener(ListenAddress address)
     hints.ai_socktype = SOCK_STREAM; // TCP
     hints.ai_flags = AI_PASSIVE;     // suitable for bind()
 
-    int ret = getaddrinfo(address.host.c_str(), NULL, &hints, &result);
+    int ret = getaddrinfo(listen_adress.host.c_str(), NULL, &hints, &result);
     if (ret != 0)
         throw std::runtime_error(gai_strerror(ret));
 
     // Extract sockaddr_in and set port
     struct sockaddr_in addr = *(struct sockaddr_in *)result->ai_addr;
-    addr.sin_port = htons(address.port);
+    addr.sin_port = htons(listen_adress.port);
 
     // Bind
     if (bind(fd.get(), (struct sockaddr *)&addr, sizeof(addr)) < 0)
@@ -54,6 +63,30 @@ Listener::Listener(ListenAddress address)
     // Listen
     if (listen(fd.get(), SOMAXCONN) < 0)
         throw std::system_error(errno, std::generic_category(), "listen");
+}
+
+const ServerConfig &Listener::get_server_config(const std::string &host) const
+{
+    auto it = host_to_server.find(host);
+
+    if (it == host_to_server.end())
+        // TODO: return default server
+        throw std::runtime_error("Host not found");
+
+    return it->second->get_config();
+}
+
+void Listener::add_host(const std::string &new_host, Server &server)
+{
+    auto it = host_to_server.find(new_host);
+    if (it != host_to_server.end())
+    {
+        log::log(WARNING, "Duplicated server_name");
+    }
+    else
+    {
+        host_to_server[new_host] = &server;
+    }
 }
 
 // Overrides
@@ -105,7 +138,7 @@ void Listener::handle_event(uint32_t events)
             throw std::system_error(errno, std::generic_category(), "fcntl");
         }
 
-        WebServ::add_connection(connection_fd);
+        WebServ::add_connection(*this, connection_fd);
     }
 }
 
@@ -127,10 +160,26 @@ std::ostream &operator<<(std::ostream &os, const Listener &e)
 namespace WebServ
 {
 
-void add_listener(ListenAddress adress)
+void add_listener(ListenAddress adress, const std::vector<std::string> &hosts, Server &server)
 {
-    auto new_listener = std::make_unique<Listener>(adress);
-    add_epoll_handler(std::move(new_listener));
+    Listener *listener;
+    auto it = adress_to_listener.find(adress);
+    if (it == adress_to_listener.end())
+    {
+        auto new_listener = std::make_unique<Listener>(adress);
+        add_epoll_handler(std::move(new_listener));
+        listener = new_listener.get();
+    }
+    else
+    {
+        listener = it->second;
+    }
+
+    // Add Hosts to Map
+    for (auto &host : hosts)
+    {
+        listener->add_host(host, server);
+    }
 }
 
 } // namespace WebServ

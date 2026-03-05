@@ -19,6 +19,7 @@ constexpr const char *ELLIPSIS = "...";
 
 // Defines
 constexpr const char *DEFAULT = "Default";
+constexpr const char *WARNING = "Warning";
 constexpr const char *ERROR = "Error";
 constexpr const char *LIST = "List";
 constexpr const char *INFORMATION = "Information";

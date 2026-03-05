@@ -1,3 +1,6 @@
-- Add Connection <=> Listener Map for http parsing
-- Add Server Name <=> Server Id Map To listener (Connections can identify server by name)
-- Error Handling => Listener fd leaks!
+=> debug get_server_config from Name
+
+- TODOS
+=> Actualy close connections
+=> Recoverabble Errors, vs unrecoverable.
+=> Log Namespace

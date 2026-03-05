@@ -47,7 +47,24 @@ struct ListenAddress
 {
     std::string host; // default: "0.0.0.0"
     uint16_t    port;
+
+    bool operator==(const ListenAddress& other) const;
 };
+
+// ListenAdress now Hashable
+namespace std
+{
+    template<>
+    struct hash<ListenAddress>
+    {
+        size_t operator()(const ListenAddress& a) const noexcept
+        {
+            size_t h1 = hash<std::string>{}(a.host);
+            size_t h2 = hash<uint16_t>{}(a.port);
+            return h1 ^ (h2 << 1);
+        }
+    };
+}
 
 /*
 Derived from location_block and location_dir productions.
