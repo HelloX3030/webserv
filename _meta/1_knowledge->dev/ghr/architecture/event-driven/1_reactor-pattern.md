@@ -6,27 +6,29 @@ a server must respond to events arriving on multiple I/O sources simultaneously
 — listen sockets becoming acceptable, client fds becoming readable or writable,
 CGI pipes delivering output. these events are temporally unpredictable.
 
-two naive responses:
+2 naive responses:
 
-    blocking sequentially — read from each fd in turn. problem: one fd that
-    never becomes ready blocks all others. structurally wrong.
+    blocking sequentially — read from each fd in turn. 
+    problem: 1 fd that never becomes ready blocks all others. 
+    structurally wrong.
 
-    one thread per source — blocks per fd, but multiplied overhead, shared
-    state hazards, and scale ceiling. rejected in the event-driven model.
+    one thread per source — blocks per fd, but multiplied overhead, 
+    shared state hazards, and scale ceiling. 
+    rejected in the event-driven model.
 
 the requirement is: wait efficiently on many sources, dispatch to the correct
 handler when any source is ready, without blocking on any individual source.
 
-this requirement has one structural solution.
+this requirement has 1 structural solution.
 
 
 ---
 
 
-## the pattern: five structural roles
+## the pattern: 5 structural roles
 
-the reactor pattern (Schmidt, 1995) defines five roles. these are not
-implementation details — they are logical necessities given the requirement.
+the reactor pattern (Schmidt, 1995) defines 5 roles -
+logical necessities given the requirement.
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
@@ -36,18 +38,18 @@ implementation details — they are logical necessities given the requirement.
 │   │              synchronous event demultiplexer            │    │
 │   │                   (epoll_wait)                          │    │
 │   │                        │                                │    │
-│   │   handle_set: { fd₁, fd₂, fd₃, ... }                   │    │
+│   │   handle_set: { fd₁, fd₂, fd₃, ... }                    │    │
 │   └─────────────────────────────────────────────────────────┘    │
 │                            │                                     │
-│              on event for fdᵢ:                                   │
+│                    on event for fdᵢ:                             │
 │                            │                                     │
-│   handler_registry[fdᵢ]────► concrete_handler.handle_event()    │
+│   handler_registry[fdᵢ]────► concrete_handler.handle_event()     │
 │                                                                  │
 └──────────────────────────────────────────────────────────────────┘
                   ▲                            ▲
         ┌─────────┴────────┐       ┌───────────┴──────────┐
-        │ concrete handler │       │  concrete handler     │
-        │   (Listener)     │       │   (Connection)        │
+        │ concrete handler │       │  concrete handler    │
+        │   (Listener)     │       │   (Connection)       │
         └──────────────────┘       └──────────────────────┘
 ```
 
@@ -63,12 +65,12 @@ int client_fd;    // read/write events
 int cgi_pipe_fd;  // read events (CGI stdout)
 ```
 
-handles are opaque integers from userspace's perspective. the demultiplexer
-is what makes them meaningful.
+handles are opaque integers from userspace's perspective. 
+the demultiplexer is what makes them meaningful.
 
 ### synchronous event demultiplexer
 
-a syscall that blocks until at least one handle in a registered set is ready,
+a syscall that blocks until at least 1 handle in a registered set is ready,
 then returns the ready subset. synchronous means: the call blocks the caller,
 but the underlying wait is multiplexed — it watches all handles at once.
 
@@ -288,7 +290,7 @@ Gamma et al. Design Patterns. "Template Method" and "Strategy."
 
 ### dual-tracking: data.ptr and registry — is one redundant?
 
-the dispatcher holds two references to each handler simultaneously:
+the dispatcher holds 2 references to each handler simultaneously:
     - data.ptr embedded in the epoll event (delivered by the kernel at dispatch)
     - epoll_handlers[fd] (the owning unique_ptr in the registry)
 
