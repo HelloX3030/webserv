@@ -120,7 +120,7 @@ happened" now say what they mean.
 ---
 
 
-## toward GNUnet
+## toward GNUnet (ghr: v2)
 
 a GNUnet-style server requires structured, machine-parseable logs.
 the path from this interface to that is a backend change only:
