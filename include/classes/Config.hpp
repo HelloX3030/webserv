@@ -128,8 +128,8 @@ struct ServerConfig
 display serialisation — Config.cpp
 
 free functions, not methods: 
-Config.hpp contracts "no methods, no behaviour". t
-o_string is orthogonal to data definition —
+Config.hpp contracts "no methods, no behaviour". 
+to_string is orthogonal to data definition —
 it is observation of state, not state or behaviour itself.
 
 <iosfwd> provides the std::ostream forward declaration.
@@ -137,7 +137,7 @@ a forward declaration is sufficient here: the signatures take
 std::ostream& but do not construct, destruct, or access its members.
 the full definition (<ostream>) lives in Config.cpp.
 
-operator<< delegates to to_string — single rendering path,
+operator<< delegates to to_string — sgl rendering path,
 2 call sites: stream output & string embedding.
 */
 std::string   to_string(const ListenAddress& addr);
