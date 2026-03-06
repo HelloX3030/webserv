@@ -128,7 +128,7 @@ it must be self-sufficient:
   (validate-time), fd or address (runtime)
 - state what was expected and what was found
 
-see: 2_error-formats.md
+see: failure-response/2_error-formats.md
 
 
 ---
@@ -136,7 +136,7 @@ see: 2_error-formats.md
 
 ## propagation mechanism
 
-`std::runtime_error`, the exception hierarchy, and the throw/catch
-pattern in detail:
+`std::runtime_error`, the exception hierarchy, 
+and the throw/catch pattern in detail:
 
-see: 1_propagation.md
+see: failure-response/1_propagation.md

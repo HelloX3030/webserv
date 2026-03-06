@@ -1,3 +1,7 @@
+# clang tooling
+compile_commands.json
+.cache/
+
 # build dirs + obj artifacts
 obj/
 obj_debug/

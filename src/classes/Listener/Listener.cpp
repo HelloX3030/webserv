@@ -97,7 +97,7 @@ void Listener::handle_event(uint32_t events)
             throw std::system_error(errno, std::generic_category(), "accept");
         }
 
-        log::log(LISTENER, "Accepted client fd=" + std::to_string(connection_fd));
+        logging::log(LISTENER, "Accepted client fd=" + std::to_string(connection_fd));
 
         // Make client non-blocking
         int flags = fcntl(connection_fd, F_GETFL, 0);

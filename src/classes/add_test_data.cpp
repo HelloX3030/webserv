@@ -5,7 +5,7 @@ namespace WebServ
 
 void add_test_data()
 {
-    log::log(FUNCTION, "WebServ::add_test_data()");
+    logging::log(FUNCTION, "WebServ::add_test_data()");
 
     add_listener(8000);
     add_listener(8100);

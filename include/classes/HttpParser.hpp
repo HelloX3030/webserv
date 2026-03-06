@@ -1,5 +1,4 @@
-// temp from Lukas, to update
-// I assume these are the fns he's started interfacing with? why? how?
+// temp from Lukas, to replace with ghr's HttpResponseFrontend.hpp
 
 #pragma once
 

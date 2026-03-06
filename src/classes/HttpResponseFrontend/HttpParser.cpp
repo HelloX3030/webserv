@@ -1,5 +1,5 @@
-currently in usage in Lukas' branch
-to be replaced by my implementation of HttpResponseFrontend
+// currently in usage in Lukas' branch, needed for current build
+// to be replaced by my implementation of HttpResponseFrontend
 
 
 

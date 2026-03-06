@@ -100,15 +100,15 @@ void parse(...) {
 ```
 
 with return values: every intermediate layer must explicitly check
-and forward the error. the failure path is as verbose as the success
-path. one forgotten check silently swallows the failure.
+and forward the error. the failure path is as verbose as the success path. 
+1 forgotten check silently swallows the failure.
 
 with exceptions: intermediate layers are transparent. the throw site
 and the catch site are coupled directly. the call chain between them
 requires no changes.
 
 the cost: non-local control flow. reading a function, you cannot
-see which calls may throw. this is the genuine trade-off — exceptions
+see which calls may throw. this is the trade-off — exceptions
 buy propagation simplicity at the cost of visible control flow.
 
 for deep call chains with fatal failures, as in config parsing,

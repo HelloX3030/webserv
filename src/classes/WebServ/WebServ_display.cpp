@@ -5,7 +5,7 @@ namespace WebServ
 
 void display()
 {
-    log::log(DISPLAY, WEB_SERV);
+    logging::log(DISPLAY, WEB_SERV);
     std::size_t len = epoll_handlers.size();
     for (std::size_t i = 0; i < len; i++)
     {

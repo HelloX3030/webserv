@@ -22,7 +22,7 @@ int main(int argc, char **argv)
     }
     catch (const std::exception &e)
     {
-        log::log(WEB_SERV, e.what(), log::LogType::ERROR);
+        logging::log(WEB_SERV, e.what(), logging::LogType::ERROR);
         WebServ::quit();
         return 1;
     }
