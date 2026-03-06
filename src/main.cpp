@@ -3,7 +3,7 @@
 int main(int argc, char **argv)
 {
 #ifdef DEBUG
-    log::log(INFORMATION, "DEBUG MODE ENABLED");
+    logging::log(INFORMATION, "DEBUG MODE ENABLED");
 #endif
 
     // Signals Handling

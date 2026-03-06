@@ -7,7 +7,7 @@ void init()
 {
 
 #ifdef DEBUG
-    log::log(FUNCTION, "WebServ::init()");
+    logging::log(FUNCTION, "WebServ::init()");
     if (epfd != -1)
     {
         throw SetupError("Multiple Calls to WebServ::init()!");
