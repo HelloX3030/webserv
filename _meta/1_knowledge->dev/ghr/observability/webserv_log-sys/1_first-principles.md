@@ -42,10 +42,12 @@ ERROR   failure. the system could not do what was asked.
         recoverable (bad request → 400) or not (socket error).
 ```
 
-4 levels. why not fewer?
+4 levels. 
 
-    DEBUG vs INFO: DEBUG is a compile-time category, not a runtime
-    one. collapsing them would mean either: debug output in release
+why not fewer?
+
+    DEBUG vs INFO: DEBUG is a compile-time category, not a runtime one. 
+    collapsing them would mean either: debug output in release
     binaries, or suppressing INFO in debug builds. neither is acceptable.
 
     WARN vs ERROR: a recoverable anomaly is not a failure. collapsing

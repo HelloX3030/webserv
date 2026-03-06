@@ -1,6 +1,11 @@
-# observability/webserv_log-sys
+# _meta/1_knowledge->dev/ghr/observability/webserv_log-sys/debugging-logging-cpp.md
 
-## 0_current-sys.md
+
+
+
+
+# _meta/1_knowledge->dev/ghr/observability/webserv_log-sys/0_current-sys.md
+
 
 understand:
 
