@@ -9,15 +9,14 @@ what this document does is elevate: extract the invariants,
 name the principles, and state them as the checklist against
 which any Makefile can be judged.
 
-a Makefile is not a script. it is a formal declaration of
-the dependency structure of a software system. the standards
-to which it is held follow from that fact.
+a Makefile is not a script, but a formal declaration of
+the dependency structure of a software system. therefore is held
+to high standards.
 
 
-## the 3 invariants (from 0_telos-ontology.md, restated as law)
+## the 3 invariants (from 0_telos-ontology.md)
 
-these are not preferences. a Makefile that violates any of
-them is incorrect, regardless of how clean it looks.
+a Makefile that violates any of them is incorrect.
 
 **invariant 1 — correctness.**
 every produced artifact must be consistent with the current
