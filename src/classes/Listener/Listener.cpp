@@ -70,8 +70,17 @@ const ServerConfig &Listener::get_server_config(const std::string &host) const
     auto it = host_to_server.find(host);
 
     if (it == host_to_server.end())
-        // TODO: return default server
-        throw std::runtime_error("Host not found");
+    {
+
+#ifdef DEBUG
+        if (!WebServ::default_server)
+        {
+            throw SetupError("Default Server not Set");
+        }
+#endif
+
+        return WebServ::default_server->get_config();
+    }
 
     return it->second->get_config();
 }
