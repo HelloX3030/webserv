@@ -399,6 +399,86 @@ for the common workflow of iterating on a single non-release
 variant without paying the cost of a full 3-variant clean.
 
 
+## decision 9: precondition guard
+
+`rwildcard` returns an empty string if `SRC_DIR` does not exist,
+is empty, or contains no .cpp files. without a guard, the build
+proceeds: `REL_OBJS`, `DBG_OBJS`, `LKS_OBJS` are all empty; the
+link rule receives an empty `$^`; the linker produces a hollow
+binary (or errors, depending on the linker). Make reports success.
+
+the guard:
+
+```makefile
+ifeq ($(SRC_FILES),)
+  $(error no source files found under $(SRC_DIR)/)
+endif
+```
+
+this runs at parse time (phase 1), immediately after `SRC_FILES`
+is derived. if `SRC_FILES` is empty, Make aborts before evaluating
+any rule, with a message identifying the exact variable and path.
+the failure is loud, immediate, and unambiguous.
+
+it is placed after `SRC_FILES :=` and before the object list
+derivations — the earliest point at which the emptiness is
+detectable and the latest point at which catching it still
+prevents all downstream silent failures.
+
+
+## decision 10: verbosity model
+
+the output model follows the linux kernel convention: silent by
+default, fully verbose on `V=1`.
+
+```makefile
+V ?= 0
+ifeq ($(V),0)
+  Q := @
+else
+  Q :=
+endif
+```
+
+3 categories of output, each with a distinct treatment:
+
+**infrastructure** (`mkdir`, `rm`, `valgrind` preamble): always `@`.
+these commands do not convey build progress; their output is not
+reproducible-failure information. they are suppressed unconditionally,
+regardless of V.
+
+**build commands** (compiler, linker): gated by `$(Q)`. in V=0,
+`Q := @` suppresses them. in V=1, `Q :=` echoes them in full —
+the complete compiler invocation, every flag, every path. this is
+the mode for diagnosing a compilation failure: copy the echoed
+command, run it manually, inspect the output.
+
+**informative echo lines**: always visible, never gated by Q.
+format: 2-space indent, fixed-width label, then the relevant name.
+
+```
+  CXX  src/classes/HttpRequestFrontend.cpp
+  LD   webserv_debug
+  RM   obj obj_debug obj_leaks
+```
+
+in V=0, these lines are the complete output — a clean record of
+what the build did. in V=1, they appear above the full command,
+providing the same readable summary while the raw commands are
+also visible.
+
+the echo line for compilation shows `$<` (the source file) rather
+than `$@` (the object file). the source file is what the developer
+has mental context for; the object file path is derivable and adds
+no information.
+
+the label width (4 chars, right-padded to 5 with trailing space)
+is chosen to align naturally with 2-char labels like `LD` — the
+column after the label is consistently at position 7. this is
+aesthetic, but deliberate: output that is read repeatedly should
+be scannable.
+
+
 ## known limits
 
 **non-self-tracking.** Make does not detect changes to
@@ -432,6 +512,18 @@ CXX      := c++
 CXXFLAGS := -Wall -Wextra -Werror -std=c++17 -MMD -MP
 LDFLAGS  :=
 
+# ─── verbosity ────────────────────────────────────────────────
+# V=0 (default): silent build with informative one-line progress.
+# V=1: full command echo — every flag visible, for build debugging.
+# usage: make V=1        make V=1 debug
+
+V ?= 0
+ifeq ($(V),0)
+  Q := @
+else
+  Q :=
+endif
+
 # ─── paths ────────────────────────────────────────────────────
 
 SRC_DIR  := src
@@ -458,6 +550,14 @@ rwildcard = $(foreach d,$(wildcard $1*),\
               $(filter $(subst *,%,$2),$d))
 
 SRC_FILES := $(call rwildcard,$(SRC_DIR)/,*.cpp)
+
+# ─── precondition guard ───────────────────────────────────────
+# fail at parse time if no sources found — prevents a silent
+# hollow-binary build from an empty or mislocated src tree.
+
+ifeq ($(SRC_FILES),)
+  $(error no source files found under $(SRC_DIR)/)
+endif
 
 # ─── derived object and dependency lists ──────────────────────
 # := ensures immediate expansion after all inputs are defined.
@@ -494,42 +594,50 @@ $(LKS_NAME): EXTRA_LDFLAGS :=
 all: $(NAME)
 
 clean:
-	$(RM) -r $(OBJ_DIR) $(DBG_OBJ_DIR) $(LKS_OBJ_DIR)
+	@echo "  RM   $(OBJ_DIR) $(DBG_OBJ_DIR) $(LKS_OBJ_DIR)"
+	@$(RM) -r $(OBJ_DIR) $(DBG_OBJ_DIR) $(LKS_OBJ_DIR)
 
 fclean: clean
-	$(RM) -f $(NAME) $(DBG_NAME) $(LKS_NAME)
+	@echo "  RM   $(NAME) $(DBG_NAME) $(LKS_NAME)"
+	@$(RM) -f $(NAME) $(DBG_NAME) $(LKS_NAME)
 
 re: fclean all
 
 # ─── link rules ───────────────────────────────────────────────
-# CXXFLAGS is absent: it carries compilation-phase flags only.
+# CXXFLAGS absent: compilation-phase flags do not belong here.
 # LDFLAGS and EXTRA_LDFLAGS carry the link-phase flags.
 # $^ expands to the full object list for this variant.
+# echo line always visible; full command gated by Q.
 
 $(NAME): $(REL_OBJS)
-	$(CXX) $(LDFLAGS) $(EXTRA_LDFLAGS) $^ -o $@
+	@echo "  LD   $@"
+	$(Q)$(CXX) $(LDFLAGS) $(EXTRA_LDFLAGS) $^ -o $@
 
 $(DBG_NAME): $(DBG_OBJS)
-	$(CXX) $(LDFLAGS) $(EXTRA_LDFLAGS) $^ -o $@
+	@echo "  LD   $@"
+	$(Q)$(CXX) $(LDFLAGS) $(EXTRA_LDFLAGS) $^ -o $@
 
 $(LKS_NAME): $(LKS_OBJS)
-	$(CXX) $(LDFLAGS) $(EXTRA_LDFLAGS) $^ -o $@
+	@echo "  LD   $@"
+	$(Q)$(CXX) $(LDFLAGS) $(EXTRA_LDFLAGS) $^ -o $@
 
 # ─── compilation rule body ────────────────────────────────────
-# define/endef stores text; expansion is deferred to phase 2.
+# define/endef stores text; expansion deferred to phase 2.
 # EXTRA_CFLAGS expands with the target-specific value active.
-# @mkdir -p $(@D) creates the subdirectory under each objdir
-# mirroring the source tree before the compiler writes to it.
+# mkdir: always @, pure infrastructure.
+# echo: always visible — the readable progress signal in V=0.
+# compiler invocation: gated by Q; fully visible in V=1.
 
 define COMPILE_OBJ
 @mkdir -p $(@D)
-$(CXX) $(CXXFLAGS) $(EXTRA_CFLAGS) $(INCLUDES) -c $< -o $@
+@echo "  CXX  $<"
+$(Q)$(CXX) $(CXXFLAGS) $(EXTRA_CFLAGS) $(INCLUDES) -c $< -o $@
 endef
 
 # ─── pattern rules ────────────────────────────────────────────
 # 3 heads required: Make's pattern matching is syntactic;
 # the directory prefix cannot be a variable. shared body
-# via COMPILE_OBJ; EXTRA_CFLAGS provides the variant-specific
+# via COMPILE_OBJ; EXTRA_CFLAGS provides variant-specific
 # flags at expansion time.
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
@@ -559,14 +667,16 @@ leaks: $(LKS_NAME)
 # without paying the cost of cleaning all 3.
 
 debugclean:
-	$(RM) -r $(DBG_OBJ_DIR)
-	$(RM) -f $(DBG_NAME)
+	@echo "  RM   $(DBG_OBJ_DIR) $(DBG_NAME)"
+	@$(RM) -r $(DBG_OBJ_DIR)
+	@$(RM) -f $(DBG_NAME)
 
 debugre: debugclean debug
 
 leaksclean:
-	$(RM) -r $(LKS_OBJ_DIR)
-	$(RM) -f $(LKS_NAME)
+	@echo "  RM   $(LKS_OBJ_DIR) $(LKS_NAME)"
+	@$(RM) -r $(LKS_OBJ_DIR)
+	@$(RM) -f $(LKS_NAME)
 
 leaksre: leaksclean leaks
 
@@ -579,6 +689,6 @@ debugrun: $(DBG_NAME)
 	./$(DBG_NAME)
 
 leaksrun: $(LKS_NAME)
-	valgrind --leak-check=full --track-fds=yes --show-leak-kinds=all \
+	@valgrind --leak-check=full --track-fds=yes --show-leak-kinds=all \
 	  --error-exitcode=1 ./$(LKS_NAME)
 ```
