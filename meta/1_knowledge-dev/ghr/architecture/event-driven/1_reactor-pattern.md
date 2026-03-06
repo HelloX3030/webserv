@@ -168,8 +168,8 @@ so the round-trip is:
 
 ## handler registry
 
-the dispatcher must maintain a mapping from fd to handler. webserv uses a
-vector indexed by fd:
+the dispatcher must maintain a mapping from fd to handler. 
+webserv uses a vector indexed by fd:
 
 ```cpp
 std::vector<std::unique_ptr<EpollHandler>> epoll_handlers;
@@ -255,7 +255,7 @@ from epoll before destruction is necessary — epoll will error on closed fds.
 the reactor pattern is synchronous-reactive: the demultiplexer reports
 readiness (fd is ready to read), and the handler performs the I/O itself.
 
-the proactor pattern (the other half of the duality) is asynchronous-proactive:
+the proactor pattern is asynchronous-proactive:
 the application initiates an I/O operation, and is called back when the
 operation completes (not merely when the fd is ready).
 

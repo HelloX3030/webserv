@@ -9,7 +9,7 @@ overlapping in time. the server must not block 1 client while serving another.
 ---
 
 
-## the ontological situation
+## situation
 
 ```
 client_1  ──request──▶  ┌────────┐
@@ -40,7 +40,7 @@ data, overlapping I/O waits with useful work and utilising hardware more fully.
 ---
 
 
-## the models — taxonomy
+## models — taxonomy
 
 3 fundamental approaches, each answering differently: 
 where does the concurrency live?
@@ -142,11 +142,10 @@ historical context:
     nginx (2004), Node.js (2009), Redis.
 
 appropriate when:
-    connection counts are high, workloads are I/O-bound, and blocking
-    operations can be avoided or offloaded.
+    connection counts are high, workloads are I/O-bound, 
+    and blocking operations can be avoided or offloaded.
 
-webserv uses this model — the epoll-based event loop is the architectural
-centre.
+webserv uses this model — epoll-based event loop is architectural centre
 
 
 ---

@@ -95,7 +95,7 @@ the standard C++ pattern for namespace-scoped variables shared across
 translation units: declare with `extern` in the header, define once in
 one `.cpp` file.
 
-`add_epoll_handler` and `remove_epoll_handler` are the only two mutation
+`add_epoll_handler` and `remove_epoll_handler` are the only 2 mutation
 points for the handler registry. all handler lifecycle — creation,
 registration, deregistration, destruction — passes through them.
 

@@ -1,4 +1,4 @@
-# directory structure
+# current directory structure from Lukas
 
 ## the layout
 
@@ -13,7 +13,8 @@ src/
     interfaces/
 ```
 
-three categories. the question is whether the categories are principled.
+3 categories
+are they principled?
 
 
 ---
@@ -49,12 +50,12 @@ the category's role, not its syntactic form.
 
 ## interfaces/
 
-contains one entity: EpollHandler.
+contains 1 entity: EpollHandler.
 
 the word "interfaces" is imported from Java, where it names a specific
 language construct: a type with method signatures and no implementation.
 C++ has no such construct. what C++ has is abstract classes — classes with
-at least one pure virtual method. abstract classes can also contain:
+at least 1 pure virtual method. abstract classes can also contain:
 
     non-virtual methods with implementations
     data members
@@ -62,8 +63,8 @@ at least one pure virtual method. abstract classes can also contain:
 
 EpollHandler uses this. it contains `update_epoll_events()`, a non-virtual
 method with a full implementation in EPollHandler.cpp. it is therefore not
-an interface in the Java sense — it is an abstract base class with shared
-behaviour.
+an interface in the Java sense — 
+it is an abstract base class with shared behaviour.
 
 the directory name imports a concept that does not exist in C++ and then
 violates even that concept's definition by housing implementation code.
@@ -74,8 +75,9 @@ violates even that concept's definition by housing implementation code.
 
 ## engineering assessment
 
-the separation of concerns is correct: abstract base class separated from
-concrete implementations. that is sound.
+the separation of concerns is sound: abstract base class separated from
+concrete implementations.
+
 
 the problems:
 
@@ -133,7 +135,7 @@ the C++ mechanism, though it names the mechanism rather than the intent.
 
 ## forward: redesign from first principles
 
-when webserv is redone — including as a GNUnet server — the directory
+when webserv is to be redone by ghr as a GNUnet server, the directory
 structure should be derived from the architecture, not inherited from Java
 conventions. questions to reason through at that point:
 
@@ -159,8 +161,8 @@ does C++ remain the right language for the redo?
     GNUnet is a C codebase. a C++ server interfacing with GNUnet will have
     a FFI boundary. Rust would give memory safety and a richer type system
     for expressing contracts (traits are cleaner than abstract base classes
-    for this pattern). this is worth reasoning through before the redo
-    begins.
+    for this pattern).
+    
 
 how would the contract look in Rust?
 

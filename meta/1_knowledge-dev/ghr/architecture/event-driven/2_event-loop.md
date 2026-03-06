@@ -1,18 +1,18 @@
 # event loop
 
-## what the event loop is
+## what is it?
 
-the event loop is the concrete instantiation of the reactor pattern's
-dispatcher. where the reactor-pattern document describes structure in the
-abstract, this document describes what actually exists in webserv: the
-precise sequence of phases, the epoll_wait mechanics, and the real hazards
+the concrete instantiation of the reactor pattern's dispatcher. 
+where the reactor-pattern document describes structure in the abstract, 
+this document describes what actually exists in webserv: the
+sequence of phases, the epoll_wait mechanics, and the real hazards
 present in the running code.
 
 
 ---
 
 
-## lifecycle: three phases
+## lifecycle: 3 phases
 
 the complete lifecycle of the server, as orchestrated by main.cpp:
 
@@ -56,14 +56,14 @@ epfd = epoll_create1(0);
 a file descriptor representing it. this fd is the handle through which all
 subsequent `epoll_ctl` and `epoll_wait` calls operate.
 
-after init, listeners are registered — one per configured port. each
-`add_listener()` call:
+after init, listeners are registered — one per configured port. 
+each `add_listener()` call:
     constructs a Listener (binds and listens on the port)
     calls add_epoll_handler(), which calls epoll_ctl(EPOLL_CTL_ADD)
     places the Listener in epoll_handlers[fd]
 
-at the end of init, the epoll instance watches a set of listen fds. no
-client fds exist yet.
+at the end of init, the epoll instance watches a set of listen fds. 
+no client fds exist yet.
 
 
 ### phase 3: run
@@ -133,8 +133,9 @@ int epoll_wait(int epfd, struct epoll_event *events, int maxevents, int timeout)
 
 the call suspends the thread in the kernel. the kernel's internal data
 structure for epfd tracks all registered fds and their interest masks.
-when any registered fd satisfies any watched condition (EPOLLIN, EPOLLOUT,
-etc.), the kernel wakes the thread, populates the events array with up to
+when any registered fd satisfies any watched condition 
+(EPOLLIN, EPOLLOUT, etc.), the kernel wakes the thread, 
+populates the events array with up to
 maxevents entries, and returns the count.
 
 the events array is stack-allocated with fixed capacity 64. if more than 64
