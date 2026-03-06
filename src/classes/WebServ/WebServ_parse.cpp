@@ -5,25 +5,57 @@ namespace WebServ
 
 std::vector<ServerConfig> parse(int argc, char **argv)
 {
-    ConfigFrontend config_frontend;
+    (void)argc;
+    (void)argv;
+    // TODO: uncomment, when frontend working
+    // ConfigFrontend config_frontend;
 
-    // Parse Default Path
-    if (argc == 1)
-    {
-        return config_frontend.parse(DEFAULT_CONFIG_PATH);
-    }
+    // // Parse Default Path
+    // if (argc == 1)
+    // {
+    //     return config_frontend.parse(DEFAULT_CONFIG_PATH);
+    // }
 
-    // Parse Configs
-    else if (argc == 2)
-    {
-        return config_frontend.parse(argv[1]);
-    }
+    // // Parse Configs
+    // else if (argc == 2)
+    // {
+    //     return config_frontend.parse(argv[1]);
+    // }
 
-    // Args Error
-    else
-    {
-        throw std::runtime_error("You need to provide exactly one config file path");
-    }
+    // // Args Error
+    // else
+    // {
+    //     throw std::runtime_error("You need to provide exactly one config file path");
+    // }
+
+    ServerConfig config;
+
+    config.listen = {
+        ListenAddress{"127.0.0.1", 8080}
+    };
+
+    config.server_names = {
+        "localhost"
+    };
+
+    config.client_max_body_size = 1048576;
+
+    config.error_pages = {
+        {404, "/errors/404.html"},
+        {500, "/errors/500.html"}
+    };
+
+    Location root_location;
+    root_location.root = "./www/html";
+    root_location.index_files = {"index.html"};
+    root_location.allowed_methods = {HttpMethod::GET};
+    root_location.autoindex = false;
+    root_location.upload_enable = false;
+
+    config.locations = {
+        {"/", root_location}
+    };
+    return std::vector<ServerConfig>({config});
 }
 
 } // namespace WebServ
