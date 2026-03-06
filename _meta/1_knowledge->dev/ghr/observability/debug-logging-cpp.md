@@ -44,7 +44,7 @@ the debug mode for the full program — `log::log` calls in the event loop,
 
 ## stderr vs stdout
 
-2 output streams exist for a reason:
+2 output streams exist for a reason:    // in Unix-based systems
 
 - `stdout` (`std::cout`): program output — the data the program produces.
 - `stderr` (`std::cerr`): diagnostic output — events, errors, state.
