@@ -72,6 +72,7 @@ _meta/1_knowledge->dev/ghr/build-systems/0_general
 │       performance (minimal work, maximal parallelism),
 │       maintainability (structural clarity, no magic),
 │       the invariants a Makefile must preserve.
- 
-  7_staleness-and-correctness-models.md   ← mtime vs hashing,
-                                              what can/cannot be guaranteed
+│
+├── 7_staleness-and-correctness-models.md
+        mtime vs hashing,
+        what can/cannot be guaranteed
