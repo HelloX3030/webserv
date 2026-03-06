@@ -6,6 +6,8 @@
 #include <set>
 #include <string>
 #include <vector>
+#include <string_view>
+#include <sstream>
 
 /*
 Config.hpp — pure data types produced by the config parser.
@@ -29,6 +31,7 @@ enum class HttpMethod
     POST,
     DELETE
 };
+std::string_view to_string(HttpMethod method);
 
 /* derived from the host_port grammar production.
 host is optional — bare port (`listen 8080;`) is valid.
@@ -50,6 +53,7 @@ struct ListenAddress
 
     bool operator==(const ListenAddress& other) const;
 };
+std::string to_string(const ListenAddress& address);
 
 // ListenAdress now Hashable
 namespace std
@@ -106,6 +110,7 @@ struct Location
     std::optional<uint16_t>     return_code;
     std::string                 return_path;
 };
+std::string to_string(const Location& location);
 
 /*
 Derived from server_block and server_dir productions.
@@ -139,3 +144,4 @@ struct ServerConfig
     std::map<uint16_t, std::string> error_pages;
     std::map<std::string, Location> locations;
 };
+std::string to_string(const ServerConfig& config);

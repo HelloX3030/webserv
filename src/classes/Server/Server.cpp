@@ -19,10 +19,10 @@ const ServerConfig &Server::get_config() const
 
 std::string Server::to_string() const
 {
-    std::string result = "    ";
-    for (auto &name : config.server_names)
-    {
-        result += name + " ";
-    }
+    std::string result;
+    
+    // Config
+    result += ::to_string(config);
+
     return result;
 }
