@@ -45,8 +45,7 @@ debug build silently uses an old include path. this class of
 error is undetectable at build time.
 
 the correct architecture — target-specific variables with a
-shared pattern rule body via define/endef, as developed in
-5_build-variant-architectures.md — writes the invariant once
+shared pattern rule body via define/endef — writes the invariant once
 and the variant configuration once per variant. the triplication
 is the foundational structural error from which the other
 defects follow.
@@ -65,9 +64,7 @@ H_FILES is every header in the include/ tree, collected
 recursively. every .o file in the release build depends on
 every header. the same holds for the debug and leaks builds.
 
-this is the blunt prerequisite (documented in
-4_make-idioms-and-folklore.md and named as always wrong in
-6_elite-makefile-principles.md). its intent is to ensure that
+this is the blunt prerequisite. its intent is to ensure that
 .o files are recompiled when headers change — a real
 requirement. its mechanism is to declare a dependency that is
 never true: no single .o file depends on all headers. the
