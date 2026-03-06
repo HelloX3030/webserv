@@ -1,4 +1,4 @@
-# Executables
+# executable binaries
 webserv
 webserv_debug
 webserv_leaks
@@ -13,8 +13,12 @@ www/uploads/*
 # keep dir struct in repo
 !www/uploads/README.md
 
+
+# uncomment / remove @ of team dev process, pre-evals:
+
 # local dev env: editor settings
 # .vscode/
-# uncomment @ of team dev process, pre-evals
 
 *.pdf
+
+_meta/1_knowledge-dev/ghr/tmp.md
