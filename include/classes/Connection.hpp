@@ -20,11 +20,11 @@ std::string to_string(ConnectionState state);
 class Connection final : public EpollHandler
 {
   private:
-    Listener &listener;
     Fd fd;
     ConnectionState state;
     HttpParser http_parser;
     std::string write_buffer;
+    Listener &listener;
 
   public:
     Connection() = delete;

@@ -149,7 +149,19 @@ bool Listener::should_close() const
 
 std::string Listener::to_string() const
 {
-    return "Listener(fd=" + std::to_string(fd.get()) + ")";
+    std::string result = "Listener(fd=" + std::to_string(fd.get()) + ", hosts=[";
+
+    bool first = true;
+    for (const auto& [host, _] : host_to_server)
+    {
+        if (!first)
+            result += ", ";
+        result += host;
+        first = false;
+    }
+
+    result += "])";
+    return result;
 }
 
 std::ostream &operator<<(std::ostream &os, const Listener &e)

@@ -6,7 +6,7 @@ Connection::~Connection()
 }
 
 Connection::Connection(Listener &listener, int fd)
-    : listener(listener), fd(fd), state(ConnectionState::READ)
+    : fd(fd), state(ConnectionState::READ), listener(listener)
 {
 }
 
@@ -116,7 +116,7 @@ bool Connection::should_close() const
 
 std::string Connection::to_string() const
 {
-    return "Connection(fd=" + std::to_string(get_fd()) + ", state=" + ::to_string(state) + ", read_buffer_size=" + std::to_string(http_parser.get_buffer_size()) + ", write_buffer_size=" + std::to_string(write_buffer.size()) + ")";
+    return "Connection(fd=" + std::to_string(get_fd()) + ", state=" + ::to_string(state) + ", read_buffer_size=" + std::to_string(http_parser.get_buffer_size()) + ", write_buffer_size=" + std::to_string(write_buffer.size()) + ", listener=" + listener.to_string() + ")";
 }
 
 std::ostream &operator<<(std::ostream &os, const Connection &connection)
