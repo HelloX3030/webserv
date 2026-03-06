@@ -1,24 +1,25 @@
-# executable binaries
-webserv
-webserv_debug
-webserv_leaks
-
 # build dirs + obj artifacts
 obj/
 obj_debug/
 obj_leaks/
+
+# executable binaries
+webserv
+webserv_debug
+webserv_leaks
 
 # runtime-generated files
 www/uploads/*
 # keep dir struct in repo
 !www/uploads/README.md
 
-
-# uncomment / remove @ of team dev process, pre-evals:
+# UNCOMMENT / REMOVE AT END OF DEV PROCESS, PRE-EVALS:
 
 # local dev env: editor settings
 # .vscode/
 
+# (Lukas includes 42 subject in pdf form in root)
 *.pdf
 
+# ghr's tmp notes during dev proc (extension of working memory)
 _meta/1_knowledge-dev/ghr/tmp.md
