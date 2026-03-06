@@ -128,7 +128,7 @@ it must be self-sufficient:
   (validate-time), fd or address (runtime)
 - state what was expected and what was found
 
-see: failure-response/2_error-formats.md
+see: observability/webserv_log-sys/2_error-formats.md
 
 
 ---
