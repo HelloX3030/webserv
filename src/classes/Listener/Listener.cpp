@@ -167,13 +167,21 @@ void add_listener(ListenAddress adress, const std::vector<std::string> &hosts, S
     if (it == adress_to_listener.end())
     {
         auto new_listener = std::make_unique<Listener>(adress);
-        add_epoll_handler(std::move(new_listener));
         listener = new_listener.get();
+        adress_to_listener[adress] = listener;
+        add_epoll_handler(std::move(new_listener));
     }
     else
     {
         listener = it->second;
     }
+
+#ifdef DEBUG
+    if (!listener)
+    {
+        throw SetupError("Listener is nullptr");
+    }
+#endif
 
     // Add Hosts to Map
     for (auto &host : hosts)
