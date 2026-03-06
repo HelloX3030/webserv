@@ -1,0 +1,10 @@
+knowledge I want to explore:
+
+The ontological layers of a build system:
+
+Telos — what a build system is for. What problem does it solve? What is its essential function in the universe of software construction? (This is upstream of all concrete systems.)
+Abstract model — what logical entities, relations and operations does any build system, in principle, require? (Targets, dependencies, rules, actions — but stated precisely, not assumed.)
+The declarative-functional paradigm — Make belongs to a specific computational family. Understanding which family, and why, illuminates everything downstream: why Make behaves as it does, what it can and cannot express elegantly, where its pathologies come from.
+Make specifically — its realisation of the abstract model. Its syntax, semantics, evaluation model, variable system, implicit rules, POSIX vs GNU extensions, idiosyncrasies, folklore.
+Build variant architectures — the design space of how to organise multi-configuration builds (debug/release/sanitiser/etc.) within a single system. Pattern families, their trade-offs.
+Elite Makefile craft — concrete idioms, anti-patterns, and principles that separate a noetically pure, performant Makefile from an ad-hoc script.
