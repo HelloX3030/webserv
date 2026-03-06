@@ -1,3 +1,5 @@
+# original/v1 from Lukas
+
 # Compiler and flags
 CXX := c++
 CXXFLAGS := -Wall -Wextra -Werror -std=c++17
