@@ -1,0 +1,58 @@
+# observability/webserv_log-sys
+
+## 0_current-sys.md
+
+understand:
+
+```
+what the 3 overloads provide
+
+the 3 `log()` overloads are format variants, not semantic variants:
+
+- `(title, msg, value, type)` — full form: msg + labelled value
+- `(title, msg, type)` — message only; 
+delegates to full form with `value = ""`
+- `(title, i, msg, type)` — index form; converts `size_t` to string,
+  delegates to full form. default type: `LIST`
+
+all 3 route to the 4-argument form. the overloads exist to spare
+call sites from manual `std::to_string(i)` and empty-string arguments.
+```
+
+
+
+```
+ADL would not find it
+inside the `log` namespace from that call site without qualification
+```
+
+
+
+
+
+
+(from 20260305-4_logging-debugging_observability)
+knowledge creation:
+
+```
+source identifiers — what they are and why
+cppconstexpr const char* WEB_SERV    = "WebServ";
+constexpr const char* CONNECTION  = "Connection";
+constexpr const char* HTTP_PARSER = "HttpParser";
+These are named string constants — not macros. The distinction matters: #define WEB_SERV "WebServ" is textual substitution by the preprocessor before compilation. constexpr const char* is a typed, scoped, compile-time constant processed by the compiler itself.
+Why not write "WebServ" inline at every call site?
+
+a string literal has no name. if you write "WebServ" in 30 places and later rename the component, you change 30 sites and risk missing one. with a named constant: change 1 line.
+a typo in a string literal ("WebSrv") is silent — no compiler error, broken log output. a typo in the constant name (WEB_SRV) is a compile error.
+reading log::log(CONNECTION, "bytes read") at a call site is semantically clear. reading log::log("Connection", "bytes read") requires the reader to trust the string is correct.
+
+Why constexpr const char* and not std::string?
+std::string is heap-allocated at runtime. const char* to a string literal is a pointer into the read-only data segment — zero runtime cost, exists for the lifetime of the program. for values that are fixed at compile time and used in a hot path (every log call), const char* is the correct choice.
+This is a narrow application of a broad principle: give names to the vocabulary of your system. the component names are part of the system's semantic vocabulary. name them once, in one place.
+```
+
+
+
+
+
+

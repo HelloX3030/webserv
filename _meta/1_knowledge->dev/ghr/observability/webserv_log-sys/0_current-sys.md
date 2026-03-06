@@ -21,7 +21,7 @@ defined in `include/base/defines.hpp`:
 
     WEB_SERV, LISTENER, CONNECTION, HTTP_PARSER, DISPLAY, ...
 
-these are passed as the `title` argument at every call site.
+passed as the `title` argument at every call site.
 
 
 ---
@@ -52,18 +52,17 @@ reading `log.cpp` against the enum:
     ERROR    →  stderr,  format: [title] ERROR: msg: value
     LIST     →  stdout,  format: [title] value: msg  (args swapped)
 
-2 distinct effects are present:
+2 distinct effects are present: routing (ERROR → stderr; DEFAULT and
+LIST → stdout) and argument order (DEFAULT → msg first; LIST →
+value first).
 
-1. routing: ERROR → stderr; DEFAULT and LIST → stdout
-2. argument order: DEFAULT → msg first; LIST → value first
-
-`LogType` conflates these. `ERROR` encodes a routing + prefix
+`LogType` conflates these. `ERROR` encodes a routing and prefix
 decision. `DEFAULT` vs `LIST` encodes a formatting preference.
 these are orthogonal axes collapsed into 1 enum — a category error.
 
 `LIST` is not a severity or a kind of event. it is a call-site
-presentational preference ("I want the index before the message").
-naming it as a `LogType` peer of `ERROR` misrepresents its nature.
+presentational preference. naming it as a `LogType` peer of `ERROR`
+misrepresents its nature.
 
 
 ---
@@ -73,18 +72,16 @@ naming it as a `LogType` peer of `ERROR` misrepresents its nature.
 
 the system has no severity gradient.
 
-`ERROR` signals failure and routes to stderr.
-`DEFAULT` and `LIST` are equivalent in severity — they signal
-"something happened" and route to stdout.
+`ERROR` signals failure and routes to stderr. `DEFAULT` and `LIST`
+are equivalent in severity — both signal "something happened" and
+route to stdout.
 
-absent: any distinction between:
-- normal operational events (connection accepted, request parsed)
-- anomalies that are handled (malformed header, timeout)
-- failures (socket error, bad config)
+absent: any distinction between normal operational events (connection
+accepted, request parsed), anomalies that are handled (malformed
+header, timeout), and failures (socket error, bad config).
 
-in practice this means: in a debug session, all non-error output
-arrives at the same level of urgency, with no mechanism to suppress
-or filter by significance.
+in a debug session, all non-error output arrives at the same level
+of urgency, with no mechanism to suppress or filter by significance.
 
 
 ---
@@ -122,10 +119,14 @@ std::string to_string(log::LogType type);
 ```
 
 used in exactly 1 place: the `else` branch in `log.cpp` that throws
-when an unknown `LogType` is encountered. ADL would not find it
-inside the `log` namespace from that call site without qualification —
-placing it outside is consistent with how `to_string` for
-`ListenAddress`, `Location`, `ServerConfig` is also placed.
+when an unknown `LogType` is encountered.
+
+the call site is inside `namespace log`, so unqualified lookup would
+find the function there regardless of placement. the reason it sits
+at global scope is convention: all `to_string` overloads in this
+codebase (`ListenAddress`, `Location`, `ServerConfig`) are free
+functions at global scope, following the `std::to_string` pattern.
+placement is consistent, not driven by lookup mechanics.
 
 
 ---
@@ -134,30 +135,26 @@ placing it outside is consistent with how `to_string` for
 ## call site pattern
 
 ```cpp
-log::log(CONNECTION, "read", std::to_string(fd), log::LogType::DEFAULT);
-log::log(HTTP_PARSER, i, "header parsed");   // uses LIST default
+log::log(CONNECTION, "bytes read", n_str, log::LogType::DEFAULT);
+log::log(HTTP_PARSER, i, "header parsed");   // LIST default
 log::log(WEB_SERV, e.what(), log::LogType::ERROR);
 ```
 
 `LogType::DEFAULT` is the default argument — omitting the type
-argument implies DEFAULT. this makes DEFAULT the unmarked case,
-ERROR and LIST the marked cases.
+argument implies DEFAULT. DEFAULT is the unmarked case; ERROR and
+LIST are the marked cases.
 
 
 ---
 
 
-## summary assessment
+## assessment
 
-functional for a 42 project. 2 concrete deficiencies:
+functional for a 42 project. `LogType` conflates routing, formatting,
+and (implicitly) severity into 1 enum — the values are not members
+of the same noetic category. separately: no severity gradient exists;
+all non-error events are undifferentiated, with no mechanism to
+filter output by significance beyond the binary DEBUG/release split.
 
-1. `LogType` conflates routing, formatting, and (implicitly) severity
-   into 1 enum. the values are not members of the same noetic category.
-
-2. no severity gradient. all non-error events are undifferentiated.
-   no mechanism to filter output by significance at runtime or
-   compile time beyond the binary DEBUG/release split.
-
-these are not blocking — they are tolerable at current scale.
-they become liabilities as the system grows and the output volume
-increases.
+tolerable at current scale. both become liabilities as output volume
+grows.
