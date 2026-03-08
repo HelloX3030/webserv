@@ -74,7 +74,7 @@ to be non-empty. Validator enforces.
 return_code is std::optional<uint16_t>: std::nullopt means no redirect
 configured for this location. When set, return_path must be non-empty.
 Validator enforces coupling. Valid range [300, 399] enforced at parse
-time and confirmed in validator.
+time & confirmed in validator.
 */
 struct Location
 {
