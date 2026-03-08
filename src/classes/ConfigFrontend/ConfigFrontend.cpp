@@ -1,61 +1,121 @@
-#include "../../../include/classes/ConfigFrontend.hpp"
+#include "ConfigFrontend.hpp"
 
-#include <string>
 #include <fstream>
 #include <iterator>
 #include <stdexcept>
+#include <string>
 
-/* public entry point. the only public method.
+namespace {
 
-pipeline execution:
-    read      → std::string (raw content, comments stripped)
-    tokenise  → populates tokens_
-    parse     → std::vector<ServerConfig> (defaults applied)
-    validate  → confirms semantic constraints
+/*
+TokenType — structural character classes of the config lexer.
 
-failure at any phase throws std::runtime_error with located message.
-caller (main) catches once and exits. */
-std::vector<ServerConfig> ConfigFrontend::parse(const std::string& filepath)
+STRING:    any byte sequence not a delimiter or whitespace.
+LBRACE:    {
+RBRACE:    }
+SEMICOLON: ;
+END:       sentinel. tokenise() appends 1 END unconditionally.
+           consequence: peek() is safe at stream exhaustion —
+           tokens_[pos_] is always valid.
+*/
+enum class TokenType { STRING, LBRACE, RBRACE, SEMICOLON, END };
+
+struct Token
 {
-    std::string source = read(filepath);
-    tokenise(source);
-    std::vector<ServerConfig> result = parse_config();
-    validate(result);
+    TokenType   type;
+    std::string value;
+    size_t      line; // source line at emission — sole carrier of
+                      // location information for parse-time errors.
+};
+
+/*
+parse scope — the binding site for state shared across the recursive
+descent call tree. exists because the call tree requires it, not
+because the domain requires it. lifetime: 1 call to parse().
+*/
+struct Frontend
+{
+    /* token stream & read head — the complete mutable parse state. */
+    std::vector<Token> tokens_;
+    size_t             pos_ = 0;
+
+    /* source acquisition */
+    std::string read    (const std::string& filepath);
+    void        tokenise(const std::string& source);
+
+    /* navigation — observations */
+    Token peek()                              const;
+    bool  at_STRING(const std::string& value) const;
+
+    /* navigation — advancement */
+    Token consume();
+    Token expect       (TokenType type);
+    Token expect_STRING();
+    void  expect_SEMICOLON();
+
+    /* grammar productions.
+    [[nodiscard]] on functions that exist solely to produce a return value.
+    discarding the return is a logic error detectable at compile time.
+    not applied to void functions whose purpose is mutating their argument. */
+    [[nodiscard]] std::vector<ServerConfig> parse_config();
+    [[nodiscard]] ServerConfig              parse_server_block();
+    [[nodiscard]] Location                  parse_location_block();
+
+    void parse_server  (ServerConfig& s);
+    void parse_location(Location& loc);
+
+    void parse_listen     (ServerConfig& s);
+    void parse_server_name(ServerConfig& s);
+    void parse_error_page (ServerConfig& s);
+    void parse_body_size  (ServerConfig& s);
+    void parse_body_size  (Location& loc);
+
+    void parse_root         (Location& loc);
+    void parse_index        (Location& loc);
+    void parse_methods      (Location& loc);
+    void parse_autoindex    (Location& loc);
+    void parse_cgi_ext      (Location& loc);
+    void parse_cgi_path     (Location& loc);
+    void parse_upload_enable(Location& loc);
+    void parse_upload_store (Location& loc);
+    void parse_return       (Location& loc);
+
+    /* interpretation — STRING token value → typed value */
+    [[nodiscard]] size_t        parse_size     (const Token& t);
+    [[nodiscard]] uint16_t      parse_port     (const std::string& s, size_t line);
+    [[nodiscard]] ListenAddress parse_host_port(const Token& t);
+
+    /* validation */
+    void validate         (const std::vector<ServerConfig>& servers);
+    void validate_server  (const ServerConfig& s);
+    void validate_location(const std::string& path, const Location& loc);
+};
+
+} // anonymous namespace
+
+namespace ConfigFrontend {
+
+/*
+parse() sequences the pipeline. Frontend owns state and stage implementations.
+failure at any stage throws std::runtime_error with a located message.
+caller catches once.
+*/
+std::vector<ServerConfig> parse(const std::string& filepath)
+{
+    Frontend    f;
+    std::string source = f.read(filepath);
+    f.tokenise(source);
+    auto result = f.parse_config();
+    f.validate(result);
     return result;
 }
 
-/* phase 1: file read.
+} // namespace ConfigFrontend
 
-reads entire file into memory. strips comments.
-
-comment stripping: replace # to end-of-line with spaces, not deletion.
-whitespace replacement preserves line numbers — every token produced
-by the lexer carries its true source line. deletion would shift line
-numbers, breaking error messages.
-
-precondition: source uses unix line endings (\n only).
-\r\n (windows CRLF) not handled — would require normalisation pass.
-the server runs on Linux; this precondition is documented, not checked. */
-std::string ConfigFrontend::read(const std::string& filepath)
-{
-    std::ifstream file(filepath);
-    if (!file.is_open())
-        throw std::runtime_error(
-            "[config] cannot open file: '" + filepath + "'");
-
-    std::string source(std::istreambuf_iterator<char>(file),
-                       std::istreambuf_iterator<char>{});
-
-    bool in_comment = false;
-    for (char& c : source)
-    {
-        if (c == '#')
-            in_comment = true;
-        if (c == '\n')
-            in_comment = false;
-        if (in_comment && c != '\n')
-            c = ' ';
-    }
-
-    return source;
-}
+#include "ConfigFrontend_1_tokenise.cpp"
+#include "ConfigFrontend_2a_parse_navigate.cpp"
+#include "ConfigFrontend_2b_parse_blocks.cpp"
+#include "ConfigFrontend_2c_parse_server.cpp"
+#include "ConfigFrontend_2d_parse_location.cpp"
+#include "ConfigFrontend_2e_interpret.cpp"
+#include "ConfigFrontend_3_validate.cpp"

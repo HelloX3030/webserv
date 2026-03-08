@@ -82,64 +82,19 @@ lines. same pattern, same logic.
 
 ## applied: ConfigFrontend
 
-structure:
+ConfigFrontend.cpp is the only compilation target. it defines
+TokenType, Token, and struct Frontend in an anonymous namespace,
+then defines ConfigFrontend::parse() in the named namespace,
+then includes the fragment files.
 
-```
-ConfigFrontend.hpp
+fragment files contain method definitions for Frontend only.
+they carry no includes, no guards, no namespace declarations.
+they compile as part of ConfigFrontend.cpp's TU, not independently.
+if compiled independently, the compiler errors on the first
+reference to Frontend or TokenType — the correct failure mode.
 
-    namespace ConfigFrontend {
-        std::vector<ServerConfig> parse(const std::string& filepath);
-    }
-
-
-ConfigFrontend.cpp          ← the only compilation target
-
-    namespace {
-        enum class TokenType { ... };
-        struct Token { ... };       // lexeme + type
-
-        struct Frontend {
-            std::vector<Token> tokens_;
-            size_t             pos_ = 0;
-
-            std::string                read(const std::string&);
-            void                       tokenise(const std::string&);
-            std::vector<ServerConfig>  parse_config();
-            // ...
-            void                       validate(const std::vector<ServerConfig>&);
-        };
-    }
-
-    namespace ConfigFrontend {
-        std::vector<ServerConfig> parse(const std::string& filepath)
-        {
-            Frontend f;
-            std::string source = f.read(filepath);
-            f.tokenise(source);
-            auto result = f.parse_config();
-            f.validate(result);
-            return result;
-        }
-    }
-
-    #include "ConfigFrontend_1_tokenise.cpp"
-    #include "ConfigFrontend_2a_parse_navigate.cpp"
-    #include "ConfigFrontend_2b_parse_blocks.cpp"
-    #include "ConfigFrontend_2c_parse_server.cpp"
-    #include "ConfigFrontend_2d_parse_location.cpp"
-    #include "ConfigFrontend_2e_interpret.cpp"
-    #include "ConfigFrontend_3_validate.cpp"
-
-
-ConfigFrontend_1_tokenise.cpp    ← fragment: no includes, no guards
-
-    std::string Frontend::read(const std::string& filepath) { ... }
-    void Frontend::tokenise(const std::string& source) { ... }
-```
-
-`parse()` owns the pipeline sequence. `Frontend` owns the state and
-stage implementations. fragment files own their stage logic, in
-literate order.
+build system consequence: list ConfigFrontend.cpp only.
+the fragment files must not appear as build targets.
 
 
 ---
