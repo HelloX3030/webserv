@@ -96,7 +96,7 @@ struct Frontend
 namespace ConfigFrontend {
 
 /*
-parse() sequences the pipeline. Frontend owns state and stage implementations.
+parse() sequences the pipeline. Frontend owns state & stage implementations.
 failure at any stage throws std::runtime_error with a located message.
 caller catches once.
 */

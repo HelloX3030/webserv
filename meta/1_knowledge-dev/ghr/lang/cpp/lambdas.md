@@ -1,6 +1,5 @@
 # lambdas
 
-
 a lambda is C++'s syntax for a local procedure: an anonymous function
 object defined inline, optionally capturing bindings from the enclosing
 scope. see computation/local-procedures.md for the upstream concept.

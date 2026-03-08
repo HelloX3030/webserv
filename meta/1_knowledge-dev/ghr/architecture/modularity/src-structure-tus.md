@@ -25,13 +25,13 @@ those files are textually included into a single root.
 a large module benefits from being split across files: separate
 concerns, separate literate documents, separate editorial units.
 c++'s default model makes each file a TU, and TUs cannot share names
-from an anonymous namespace — anonymous namespace scope is precisely
-1 TU.
+from an anonymous namespace — anonymous namespace scope is precisely 1 TU.
 
 if a module's implementation state must remain invisible to all
 external TUs, it belongs in an anonymous namespace. if the
 implementation is split across files compiled as separate TUs, none
 of them can see the anonymous-namespace definitions of the others.
+
 
 the apparent solutions and their costs:
 
