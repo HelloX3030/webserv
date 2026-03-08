@@ -112,6 +112,7 @@ std::vector<ServerConfig> parse(const std::string& filepath)
 
 } // namespace ConfigFrontend
 
+#include "ConfigFrontend_0_read.cpp"
 #include "ConfigFrontend_1_tokenise.cpp"
 #include "ConfigFrontend_2a_parse_navigate.cpp"
 #include "ConfigFrontend_2b_parse_blocks.cpp"
