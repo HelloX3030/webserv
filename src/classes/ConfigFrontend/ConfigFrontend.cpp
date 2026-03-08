@@ -14,9 +14,7 @@ STRING:    any byte sequence not a delimiter or whitespace.
 LBRACE:    {
 RBRACE:    }
 SEMICOLON: ;
-END:       sentinel. tokenise() appends 1 END unconditionally.
-           consequence: peek() is safe at stream exhaustion —
-           tokens_[pos_] is always valid.
+END:       see 1_tokenise
 */
 enum class TokenType { STRING, LBRACE, RBRACE, SEMICOLON, END };
 
@@ -35,7 +33,9 @@ because the domain requires it. lifetime: 1 call to parse().
 */
 struct Frontend
 {
-    /* token stream & read head — the complete mutable parse state. */
+    /* token stream & read head:
+    2 shared cursors: the complete mutable parse state,
+    no tramp data */
     std::vector<Token> tokens_;
     size_t             pos_ = 0;
 
