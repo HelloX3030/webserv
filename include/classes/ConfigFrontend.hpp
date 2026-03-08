@@ -7,6 +7,10 @@
 #include <vector>
 
 /*
+file: module interface: 1 function declaration over those types. 
+only consumer is main.
+
+
 ConfigFrontend — compiler frontend for NGINX-style configuration files.
 
 pipeline:

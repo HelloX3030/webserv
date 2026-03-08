@@ -1,7 +1,7 @@
 # modules vs types
 
-the prior question, before any language mechanism is chosen:
-does this thing model an entity, or a process?
+before any language mechanism is chosen:
+does this thing model an entity or a process?
 
 
 ---
@@ -63,6 +63,8 @@ partially-built result — face a choice. passing state as a parameter
 through every level makes it tramp data: a passenger carried not because
 the immediate function uses it, but because something below does. tramp
 data falsely implies every function depends on every parameter.
+
+
 
 3 solutions:
 

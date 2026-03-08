@@ -37,7 +37,7 @@ when absent, parser assigns default host "0.0.0.0".
 
 `port` type:
 must contain full TCP port space [0, 65535].
-    2^8 = 256 < 65535
+    2^8 = 256 < 65535   
     2^16 = 65536 > 65535
 ∴ uint16_t chosen (unsigned integer type w/ width 16 bits)
 as minimal std width.
