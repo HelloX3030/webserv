@@ -53,10 +53,7 @@ struct Frontend
     Token expect_STRING();
     void  expect_SEMICOLON();
 
-    /* grammar productions.
-    [[nodiscard]] on functions that exist solely to produce a return value.
-    discarding the return is a logic error detectable at compile time.
-    not applied to void functions whose purpose is mutating their argument. */
+    /* grammar productions. */
     [[nodiscard]] std::vector<ServerConfig> parse_config();
     [[nodiscard]] ServerConfig              parse_server_block();
     [[nodiscard]] Location                  parse_location_block();
@@ -85,7 +82,6 @@ struct Frontend
     [[nodiscard]] uint16_t      parse_port     (const std::string& s, size_t line);
     [[nodiscard]] ListenAddress parse_host_port(const Token& t);
 
-    /* validation */
     void validate         (const std::vector<ServerConfig>& servers);
     void validate_server  (const ServerConfig& s);
     void validate_location(const std::string& path, const Location& loc);
