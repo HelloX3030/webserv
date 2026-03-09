@@ -104,15 +104,17 @@ uint32_t Listener::get_events() const
 
 void Listener::handle_event(uint32_t events)
 {
+    // epoll reported socket error
     if (events & (EPOLLERR | EPOLLHUP))
     {
         log::log(LISTENER, "EPOLLERR", log::LogType::ERROR);
     }
 
+    // listener only cares about readable events
     if (!(events & EPOLLIN))
         return;
 
-    // Accept all waiting Clients
+    // drain accept queue
     while (true)
     {
         sockaddr_in client_addr;
@@ -121,30 +123,35 @@ void Listener::handle_event(uint32_t events)
         int connection_fd = accept(fd.get(), (struct sockaddr *)&client_addr, &len);
         if (connection_fd < 0)
         {
-            // No more clients waiting
+            // accept queue empty
             if (errno == EAGAIN || errno == EWOULDBLOCK)
                 break;
-            
+
+            // syscall interrupted
             if (errno == EINTR)
                 continue;
-            
+
+            // client aborted before accept
             if (errno == ECONNABORTED)
                 continue;
-            
+
+            // fd limit reached
             if (errno == EMFILE || errno == ENFILE)
             {
                 log::log(LISTENER, "FD limit reached", log::LogType::ERROR);
                 break;
             }
 
+            // unexpected accept error
             int err = errno;
             log::log(LISTENER, "accept failed: " + std::string(strerror(err)), log::LogType::ERROR);
             continue;
         }
 
+        // new client connected
         log::log(LISTENER, "Accepted client fd=" + std::to_string(connection_fd));
 
-        // Make client non-blocking
+        // set client socket non-blocking
         int flags = fcntl(connection_fd, F_GETFL, 0);
         if (flags == -1 || fcntl(connection_fd, F_SETFL, flags | O_NONBLOCK) == -1)
         {
@@ -154,6 +161,7 @@ void Listener::handle_event(uint32_t events)
             continue;
         }
 
+        // register connection with server
         WebServ::add_connection(*this, connection_fd);
     }
 }
