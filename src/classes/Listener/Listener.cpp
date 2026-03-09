@@ -14,7 +14,8 @@ Listener::~Listener()
 {
 }
 
-Listener::Listener(ListenAddress listen_adress)
+Listener::Listener(ListenAddress listen_adress, Server& default_server)
+    : default_server(default_server)
 {
     // Create Socket
     fd.set(socket(AF_INET, SOCK_STREAM, 0));
@@ -71,15 +72,7 @@ const ServerConfig &Listener::get_server_config(const std::string &host) const
 
     if (it == host_to_server.end())
     {
-
-#ifdef DEBUG
-        if (!WebServ::default_server)
-        {
-            throw SetupError("Default Server not Set");
-        }
-#endif
-
-        return WebServ::default_server->get_config();
+        return default_server.get_config();
     }
 
     return it->second->get_config();
@@ -187,7 +180,7 @@ void add_listener(ListenAddress adress, const std::vector<std::string> &hosts, S
     auto it = adress_to_listener.find(adress);
     if (it == adress_to_listener.end())
     {
-        auto new_listener = std::make_unique<Listener>(adress);
+        auto new_listener = std::make_unique<Listener>(adress, server);
         listener = new_listener.get();
         adress_to_listener[adress] = listener;
         add_epoll_handler(std::move(new_listener));

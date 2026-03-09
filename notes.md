@@ -3,4 +3,3 @@
 - TODOS
 => Actualy close connections
 => Recoverabble Errors, vs unrecoverable.
-=> Log Namespace

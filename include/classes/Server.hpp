@@ -34,7 +34,6 @@ class Server final
 namespace WebServ
 {
 
-extern const Server* default_server;
 extern std::vector<Server> servers;
 void add_server(const ServerConfig& config);
 

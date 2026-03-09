@@ -9,6 +9,7 @@ class Server;
 class Listener final : public EpollHandler
 {
   private:
+    Server &default_server;
     std::unordered_map<std::string, Server *> host_to_server;
     Fd fd;
 
@@ -19,7 +20,7 @@ class Listener final : public EpollHandler
     ~Listener();
 
     // Custom Constructors
-    Listener(ListenAddress listen_adress);
+    Listener(ListenAddress listen_adress, Server& default_server);
 
     // Getter
     const ServerConfig &get_server_config(const std::string &host) const;
