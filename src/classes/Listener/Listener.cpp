@@ -106,7 +106,7 @@ void Listener::handle_event(uint32_t events)
 {
     if (events & (EPOLLERR | EPOLLHUP))
     {
-        // TODO => I guess close connection?
+        log::log(LISTENER, "EPOLLERR", log::LogType::ERROR);
     }
 
     if (!(events & EPOLLIN))
@@ -123,11 +123,23 @@ void Listener::handle_event(uint32_t events)
         {
             // No more clients waiting
             if (errno == EAGAIN || errno == EWOULDBLOCK)
+                break;
+            
+            if (errno == EINTR)
+                continue;
+            
+            if (errno == ECONNABORTED)
+                continue;
+            
+            if (errno == EMFILE || errno == ENFILE)
             {
+                log::log(LISTENER, "FD limit reached", log::LogType::ERROR);
                 break;
             }
 
-            throw std::system_error(errno, std::generic_category(), "accept");
+            int err = errno;
+            log::log(LISTENER, "accept failed: " + std::string(strerror(err)), log::LogType::ERROR);
+            continue;
         }
 
         log::log(LISTENER, "Accepted client fd=" + std::to_string(connection_fd));
@@ -136,8 +148,10 @@ void Listener::handle_event(uint32_t events)
         int flags = fcntl(connection_fd, F_GETFL, 0);
         if (flags == -1 || fcntl(connection_fd, F_SETFL, flags | O_NONBLOCK) == -1)
         {
+            int err = errno;
+            log::log(LISTENER, "fcntl failed: " + std::string(strerror(err)), log::LogType::ERROR);
             close(connection_fd);
-            throw std::system_error(errno, std::generic_category(), "fcntl");
+            continue;
         }
 
         WebServ::add_connection(*this, connection_fd);
