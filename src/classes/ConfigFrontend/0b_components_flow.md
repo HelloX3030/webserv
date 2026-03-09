@@ -1,7 +1,7 @@
 # config frontend — components & flow
 
 
-## concrete example
+## example
 
 input:
 ```
@@ -64,10 +64,6 @@ STRING("server")  LBRACE  STRING("listen")
 STRING("8080")    SEMICOLON  RBRACE
 ```
 
-`8080` tokenises as STRING, not NUMBER. grammar position determines
-meaning — the parser interprets "8080" as a port when it follows "listen". 
-the lexer classifies structure, not semantics.
-
 
 ---
 
@@ -80,4 +76,4 @@ parse:      does not check semantic constraints
 validate:   does not parse or interpret text
 ```
 
-each component has 1 job. a bug is localised to exactly 1 component.
+each component has 1 job.
