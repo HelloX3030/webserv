@@ -1,8 +1,7 @@
 # build
 
 webserv has 3 build variants. each produces a separate binary
-and a separate object directory, so they can coexist without
-interference.
+and a separate object directory.
 
 ---
 
@@ -11,10 +10,8 @@ interference.
 ### release — `make` or `make all`
 
 standard build. full warnings, errors-as-warnings, C++17.
-no debug instrumentation. use for:
-- running the server normally
-- performance-sensitive testing
-- final submission
+no debug instrumentation.
+normal server usage
 
 produces: `webserv`
 
@@ -76,7 +73,7 @@ make leaksclean   make leaksre
 
 ## verbosity
 
-by default the build is silent: one progress line per file.
+by default the build is silent: 1 progress line per file.
 
 ```
 make V=1          # full command echo for release build

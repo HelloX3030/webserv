@@ -96,7 +96,6 @@ fclean: clean
 re: fclean all
 
 # ─── link rules ───────────────────────────────────────────────
-# CXXFLAGS absent: compilation-phase flags do not belong here.
 # LDFLAGS and EXTRA_LDFLAGS carry the link-phase flags.
 # $^ expands to the full object list for this variant.
 # echo line always visible; full command gated by Q.
