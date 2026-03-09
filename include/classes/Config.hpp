@@ -8,6 +8,8 @@
 #include <string>
 #include <vector>
 
+constexpr size_t DEFAULT_CLIENT_MAX_BODY_SIZE = 1024 * 1024; // 1 MiB
+
 /*
 Config.hpp — pure data types produced by the config parser.
 No methods, no behaviour. Describes operator intent as extracted from

@@ -1,28 +1,17 @@
 #include "WebServ.hpp"
-
-namespace WebServ
-{
+#include "classes/ConfigFrontend.hpp"
 
 void parse(int argc, char **argv)
 {
-    (void)argc;
-    (void)argv;
-    // // Parse Default Path
-    // if (argc == 1)
-    // {
-    //     servers.emplace_back();
-    //     servers[0].parse(DEFAULT_CONFIG_PATH);
-    // }
+    if (argc > 2)
+        throw std::runtime_error("usage: webserv [config_file]");
 
-    // // Parse Configs
-    // else
-    // {
-    //     servers.resize(argc - 1);
-    //     for (int i = 1; i < argc; i++)
-    //     {
-    //         servers[i].parse(argv[i]);
-    //     }
-    // }
+    const std::string path = (argc == 2) ? argv[1] : DEFAULT_CONFIG_PATH;
+
+    try { servers = ConfigFrontend::parse(path); }
+    catch (const std::exception& e)
+    {
+        logging::log(CONFIG_FRONTEND, e.what(), logging::LogType::ERROR);
+        throw; // re-throw for main to catch and exit
+    }
 }
-
-} // namespace WebServ
