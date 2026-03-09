@@ -8,7 +8,7 @@
 /*
 file: ConfigFrontend.hpp
 module interface: 1 function over public types.
-only consumer: main (or whoever calls parse()).
+only consumer: main.
 
 pipeline (internal — not visible here):
 
