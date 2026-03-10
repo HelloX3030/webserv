@@ -6,7 +6,7 @@ Connection::~Connection()
 }
 
 Connection::Connection(Listener &listener, int fd)
-    : fd(fd), state(ConnectionState::READ), listener(listener), keep_alive(false)
+    : fd(fd), state(ConnectionState::READ), write_offset(0), listener(listener), keep_alive(false)
 {
 }
 
@@ -66,16 +66,17 @@ void Connection::handle_event(uint32_t events)
             else
             {
                 if (errno == EINTR)
-                    continue; // syscall interrupted → retry
+                    continue; // retry
 
                 if (errno == EAGAIN || errno == EWOULDBLOCK)
-                    break; // no more data right now
+                    break; // no more data
 
-                state = ConnectionState::CLOSE; // real error
+                state = ConnectionState::CLOSE; // read error
                 return;
             }
         }
 
+        // load response if ready
         if (write_buffer.empty() && http_parser.response_ready())
         {
             write_buffer = http_parser.take_response();
@@ -88,40 +89,44 @@ void Connection::handle_event(uint32_t events)
     // =========================
     if (events & EPOLLOUT)
     {
-        while (!write_buffer.empty())
+        while (write_offset < write_buffer.size())
         {
-            ssize_t n = ::write(fd.get(), write_buffer.data(), write_buffer.size());
+            // write remaining buffer
+            ssize_t n = ::write(fd.get(),
+                                write_buffer.data() + write_offset,
+                                write_buffer.size() - write_offset);
 
             if (n > 0)
             {
-                write_buffer.erase(0, n);
+                write_offset += n; // advance offset
             }
             else
             {
                 if (errno == EINTR)
-                    continue; // syscall interrupted → retry
+                    continue; // retry
 
                 if (errno == EAGAIN || errno == EWOULDBLOCK)
-                    break; // socket not writable right now
+                    break; // socket full
 
-                state = ConnectionState::CLOSE; // real error
+                state = ConnectionState::CLOSE; // write error
                 return;
             }
         }
 
-        // Finished writing
-        if (write_buffer.empty())
+        // finished writing response
+        if (write_offset == write_buffer.size())
         {
+            write_buffer.clear();
+            write_offset = 0;
+
+            // next response if queued
             if (http_parser.response_ready())
             {
                 write_buffer = http_parser.take_response();
             }
-            else
+            else if (!keep_alive)
             {
-                if (!keep_alive)
-                {
-                    state = ConnectionState::CLOSE;
-                }
+                state = ConnectionState::CLOSE;
             }
         }
 

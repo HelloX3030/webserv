@@ -23,6 +23,7 @@ class Connection final : public EpollHandler
     Fd fd;
     ConnectionState state;
     HttpParser http_parser;
+    std::size_t write_offset;
     std::string write_buffer;
     Listener &listener;
     bool keep_alive;
