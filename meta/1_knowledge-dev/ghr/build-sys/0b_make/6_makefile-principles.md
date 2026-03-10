@@ -3,20 +3,16 @@
 
 ## orientation
 
-this document does not introduce new mechanisms. everything
-described here has been established across documents 0-5.
+everything described here has been established across documents 0-5.
 what this document does is elevate: extract the invariants,
 name the principles, and state them as the checklist against
 which any Makefile can be judged.
 
 a Makefile is not a script, but a formal declaration of
-the dependency structure of a software system. therefore is held
-to high standards.
+the dependency structure of a software system.
 
 
 ## the 3 invariants (from 0_telos-ontology.md)
-
-a Makefile that violates any of them is incorrect.
 
 **invariant 1 — correctness.**
 every produced artifact must be consistent with the current
@@ -35,7 +31,7 @@ adding, removing, or renaming a source file must not require
 manual edits to the Makefile. a build system that requires the
 programmer to maintain a manually curated file list is already
 broken — it has externalised a derivable fact into a human process.
-$(wildcard) or equivalent is not optional; it is required.
+`$(wildcard)` or equivalent is not optional; it is required.
 
 
 ## principle 1: graph completeness is the only correctness criterion
@@ -86,16 +82,16 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	$(CXX) $(CXXFLAGS) $(ASAN_CFLAGS) $(INCLUDES) -MMD -MP -c $< -o $@
 ```
 
-passing CXXFLAGS to the link step (a common anti-pattern) mixes
-phases. it is an ontological error: you are applying a concept
-to an entity it does not govern. that it happens to work — because
+passing CXXFLAGS to the link step mixes phases.
+it is an ontological error: you are applying a concept
+to an entity it does not govern. it may happen to work, because
 the linker ignores most compilation flags — does not make it
 correct. it will eventually break, silently or audibly.
 
 
 ## principle 3: every invariant written once; every variant once per variant
 
-this is DRY applied at the correct granularity.
+DRY applied at the correct granularity.
 
 the invariant layer — source file collection, include paths,
 base flags, the pattern rule bodies, the dependency inclusion —
@@ -152,9 +148,8 @@ the elite choice: it is structurally transparent, requires no
 knowledge of macro evaluation semantics to read, and produces
 no surprises under `make -p` inspection.
 
-metaprogramming that generates rules obscures structure. use it
-when it genuinely reduces complexity. never use it to appear
-sophisticated.
+metaprogramming that generates rules obscures structure.
+use it when it genuinely reduces complexity.
 
 
 ## principle 5: fail loudly at parse time
@@ -318,7 +313,7 @@ a project where the compiler supports -MMD.
 
 ## checklist
 
-a Makefile satisfies noetic purity when every item below holds. 
+a Makefile satisfies noetic purity when every item below holds.
 any violation is a concrete defect with a traceable root cause.
 
 graph completeness:

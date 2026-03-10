@@ -63,13 +63,22 @@ that needs to understand how a TU is compiled reads this file.
 
 ## usage
 
+run:
 ```bash
 bear -- make          # generate compile_commands.json
 bear -- make debug    # if build variant affects flags
 ```
 
-regenerate when: source files are added/removed, include paths
-change, compiler flags change. not on every build.
+when (etiquette)
+
+project first cloned or set up
+
+regenerate when compilation graph changes:
+source files are added/removed, include paths
+change, compiler flags change.
+Makefile structure changes
+
+not on every build (wasteful).
 
 
 ---
@@ -122,3 +131,15 @@ JSON Compilation Database specification:
 https://clang.llvm.org/docs/JSONCompilationDatabase.html
 
 LD_PRELOAD mechanism: `man ld.so` (Linux), `man dyld` (macOS)
+
+
+
+## further info to explore, esp. security-relevant
+
+LD_PRELOAD operates at the dynamic linker layer, not the syscall layer. It interposes on libc wrapper functions — execve(3) the C function — not execve(2) the raw syscall.
+
+The critical implication: a process can bypass LD_PRELOAD entirely by invoking syscalls directly via syscall instruction (x86-64: syscall opcode; x86: int 0x80) rather than going through libc. This is a known evasion technique — malware that avoids detection by LD_PRELOAD-based monitors does exactly this.
+
+So: bear requires the dynamic linker and libc to be in the call path. Statically linked binaries, or binaries that make direct syscalls, are invisible to it. For build auditing this doesn't matter — compilers always use libc. For security monitoring it matters enormously.
+
+True syscall-level interception requires ptrace — which is what strace uses. ptrace intercepts at the kernel boundary, below any userspace evasion. Bear 3.x actually explored this direction for robustness, though it adds complexity (ptrace requires elevated privileges or CAP_SYS_PTRACE in the general case).
