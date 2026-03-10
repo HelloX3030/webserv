@@ -73,7 +73,7 @@ void Connection::handle_event(uint32_t events)
             }
         }
 
-        if (http_parser.response_ready())
+        if (write_buffer.empty() && http_parser.response_ready())
         {
             write_buffer = http_parser.take_response();
             update_epoll_events();
@@ -106,7 +106,14 @@ void Connection::handle_event(uint32_t events)
         // Finished writing
         if (write_buffer.empty())
         {
-            state = ConnectionState::CLOSE;
+            if (http_parser.response_ready())
+            {
+                write_buffer = http_parser.take_response();
+            }
+            else
+            {
+                state = ConnectionState::CLOSE;
+            }
         }
 
         update_epoll_events();
