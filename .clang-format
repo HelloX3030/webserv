@@ -11,34 +11,3 @@ ColumnLimit:  80
 # block delimiter placement
 BreakBeforeBraces:                Allman
 AllowShortFunctionsOnASingleLine: None
-
-# inter-token spacing
-# Left: * binds to type, not declarator: int* p
-# ControlStatements: control-flow constructs take a space;
-# function application does not.
-PointerAlignment:  Left
-SpaceBeforeParens: ControlStatements
-
-# blank line constraint
-MaxEmptyLinesToKeep: 1
-
-# nesting-depth policy for structural constructs.
-# namespace: no semantic depth added; do not compound indent.
-# case: sub-level of switch; two syntactic levels, two depths
-NamespaceIndentation: None
-IndentCaseLabels:     true
-
-# include ordering: project headers, C++ stdlib, C/POSIX.
-# Regroup: merge and re-sort into canonical groups on each run.
-# own header first in each .cpp surfaces non-self-contained
-# headers at compile time.
-# within each group: alphabetical; no semantic implication.
-SortIncludes:  true
-IncludeBlocks: Regroup
-IncludeCategories:
-  - Regex:    '^"'
-    Priority: 1
-  - Regex:    '^<[^.]+>$'
-    Priority: 2
-  - Regex:    '^<.+\.h>$'
-    Priority: 3

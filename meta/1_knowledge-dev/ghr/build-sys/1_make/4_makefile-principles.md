@@ -14,19 +14,19 @@ the dependency structure of a software system.
 
 ## the 3 invariants (from 0_telos-ontology.md)
 
-**invariant 1 — correctness.**
+**1 — correctness.**
 every produced artifact must be consistent with the current
 state of every input in its transitive dependency set. a binary
 built from a mix of current and stale objects is a violation.
 silent violations are the worst kind.
 
-**invariant 2 — minimality.**
+**2 — minimality.**
 no rule executes unless its target is genuinely stale. over-building
 is not a safety measure — it is an error of omission in the
 dependency graph, compensated by brute force. the correct response
 to over-building is to repair the graph, not to accept the waste.
 
-**invariant 3 — structural stability.**
+**3 — structural stability.**
 adding, removing, or renaming a source file must not require
 manual edits to the Makefile. a build system that requires the
 programmer to maintain a manually curated file list is already
@@ -206,12 +206,9 @@ a V=1 verbose mode. a silent failure leaves no trail.
 ## principle 7: .PHONY is not optional
 
 every non-file target must be declared .PHONY. the cost is
-zero lines (batch the declaration at the top or bottom). the
-benefit is immunity to the class of silent failures produced
+zero lines (batch the declaration at the top or bottom).
+the benefit is immunity to the class of silent failures produced
 by a file on disk with the same name as a phony target.
-
-this is not a risk to be weighed. it is a 1-line declaration
-with no downside. omitting it is never justified.
 
 collect all phony targets in a single declaration:
 
@@ -291,8 +288,8 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp $(H_FILES)
 ```
 
 listing all headers as a prerequisite of every .o is a
-correctness approximation, not a correctness solution. it
-produces correct results (in the sense that no stale artifact
+correctness approximation, not a correctness solution.
+it produces correct results (in the sense that no stale artifact
 is missed) but violates minimality: any header change triggers
 a full recompile of every TU, regardless of which headers each
 TU actually includes.

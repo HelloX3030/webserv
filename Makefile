@@ -32,7 +32,7 @@ OBJ_DIR     := obj
 DBG_OBJ_DIR := obj_debug
 LKS_OBJ_DIR := obj_leaks
 
-# ─── source collection ────────────────────────────────────────
+# ─── src collection ────────────────────────────────────────
 # rwildcard: recursive wildcard traversal.
 # used for SRC_FILES only — H_FILES is eliminated;
 # header dependencies are derived per-TU by -MMD.

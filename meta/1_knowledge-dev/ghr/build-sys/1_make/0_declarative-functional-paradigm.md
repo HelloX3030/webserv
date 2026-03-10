@@ -1,19 +1,16 @@
 # 2. the declarative-functional paradigm
 
-Understanding Make's computational paradigm tells you
-what it can and cannot express naturally, where its
-pathologies come from, how to read and write rules
-with full clarity, and how Make relates to other
-systems — Datalog, Prolog, Haskell's lazy evaluation.
-These are structural, not aesthetic considerations.
+Understanding Make's computational paradigm tells you what it can and cannot
+express naturally, where its pathologies come from, how to read and write rules
+with clarity, and how Make relates to other systems —
+Datalog, Prolog, Haskell's lazy evaluation.
 
 
 ## imperative vs declarative
 
-Imperative computation: a sequence of commands, each
-mutating state. The programmer specifies how to reach
-a desired state, step by step. Order is explicit and
-essential — swap 2 lines and the result changes or breaks.
+Imperative computation: a sequence of commands, each mutating state.
+The programmer specifies how to reach a desired state, step by step.
+Order is explicit and essential — swap 2 lines and the result changes or breaks.
 
 ```bash
 compile foo.cpp
@@ -43,10 +40,10 @@ of these facts, derived by topological sort. "Compile
 foo before bar before linking" is not stated — it
 follows necessarily from the declared structure.
 
-The distinction is ontological, not syntactic. 
-Imperative programs encode a procedure; 
-declarative programs encode a relation. 
-Executing a declarative program is searching for a solution 
+The distinction is ontological, not syntactic.
+Imperative programs encode a procedure;
+declarative programs encode a relation.
+Executing a declarative program is searching for a solution
 to a constraint system, not running a recipe.
 
 
@@ -98,7 +95,7 @@ explains several behaviours that otherwise appear arbitrary:
     because the order of clauses in a logic program does
     not determine execution order — dependency structure does.
 
-    A rule can appear "above" its prerequisites in the file 
+    A rule can appear "above" its prerequisites in the file
     and still work: the engine resolves a goal graph, not a script.
 
     Circular dependencies are errors because a circular
