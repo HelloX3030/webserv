@@ -51,10 +51,10 @@ void Connection::handle_event(uint32_t events)
 
             if (n > 0)
             {
-                http_parser.add_buffer(buffer, n);
+                http_parser.add_buffer(*this, buffer, n);
 
                 // TODO: remove, here only for testing
-                const ServerConfig& config = get_server_config("test");
+                const ServerConfig &config = get_server_config("test");
                 (void)config;
             }
             else if (n == 0)
@@ -162,9 +162,9 @@ std::string to_string(ConnectionState state)
     }
 }
 
-const ServerConfig &Connection::get_server_config(const std::string &host)
+const ServerConfig &Connection::get_server_config(const std::string &host) const
 {
-    const ServerConfig& config = listener.get_server_config(host);
+    const ServerConfig &config = listener.get_server_config(host);
 
 #ifdef DEBUG
     log::log(CONNECTION, "get_server_config");

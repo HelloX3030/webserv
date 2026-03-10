@@ -1,4 +1,6 @@
 #include "classes/HttpParser.hpp"
+#include "classes/Connection.hpp"
+#include "http/HttpMethods.hpp"
 #include "http/HttpResponse.hpp"
 
 HttpParser::HttpParser()
@@ -23,7 +25,7 @@ HttpParser::~HttpParser()
 {
 }
 
-void HttpParser::add_buffer(const char *buffer, ssize_t n)
+void HttpParser::add_buffer(const Connection &connection, const char *buffer, ssize_t n)
 {
     this->buffer.append(buffer, n);
 
@@ -34,7 +36,8 @@ void HttpParser::add_buffer(const char *buffer, ssize_t n)
 #endif
 
     // Place Holder, for now just accumalate buffer + always respond
-    response = HttpResponse().to_string();
+
+    response = WebServ::post(connection.get_server_config("test"), "test", "test").to_string();
 }
 
 bool HttpParser::response_ready() const
