@@ -1,31 +1,44 @@
-# base style
+# BasedOnStyle: base preset for all ~200 options;
+# named overrides below take precedence.
 BasedOnStyle: LLVM
 
-# indentation
-IndentWidth: 4
-TabWidth: 4
-UseTab: Never
+# dimensional parameters of token stream's textual representation
+IndentWidth:  4
+TabWidth:     4
+UseTab:       Never
+ColumnLimit:  80
 
-# brace style
-BreakBeforeBraces: Allman
-
-# line length (0 = unlimited)
-ColumnLimit: 0
-
-# function formatting
+# block delimiter placement
+BreakBeforeBraces:                Allman
 AllowShortFunctionsOnASingleLine: None
 
-# include handling
-SortIncludes: false
-
-# control statements spacing
+# inter-token spacing
+# Left: * binds to type, not declarator: int* p
+# ControlStatements: control-flow constructs take a space;
+# function application does not.
+PointerAlignment:  Left
 SpaceBeforeParens: ControlStatements
 
-# empty line control
+# blank line constraint
 MaxEmptyLinesToKeep: 1
 
-# namespace formatting
+# nesting-depth policy for structural constructs.
+# namespace: no semantic depth added; do not compound indent.
+# case: sub-level of switch; two syntactic levels, two depths
 NamespaceIndentation: None
+IndentCaseLabels:     true
 
-# switch formatting
-IndentCaseLabels: true
+# include ordering: project headers, C++ stdlib, C/POSIX.
+# Regroup: merge and re-sort into canonical groups on each run.
+# own header first in each .cpp surfaces non-self-contained
+# headers at compile time.
+# within each group: alphabetical; no semantic implication.
+SortIncludes:  true
+IncludeBlocks: Regroup
+IncludeCategories:
+  - Regex:    '^"'
+    Priority: 1
+  - Regex:    '^<[^.]+>$'
+    Priority: 2
+  - Regex:    '^<.+\.h>$'
+    Priority: 3
