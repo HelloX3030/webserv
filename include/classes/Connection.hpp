@@ -25,6 +25,7 @@ class Connection final : public EpollHandler
     HttpParser http_parser;
     std::string write_buffer;
     Listener &listener;
+    bool keep_alive;
 
   public:
     Connection() = delete;
@@ -44,6 +45,7 @@ class Connection final : public EpollHandler
 
     // Functions
     [[nodiscard]] const ServerConfig &get_server_config(const std::string &host);
+    void set_keep_alive();
 };
 std::ostream &operator<<(std::ostream &os, const Connection &connection);
 

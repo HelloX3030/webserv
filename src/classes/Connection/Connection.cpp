@@ -6,7 +6,7 @@ Connection::~Connection()
 }
 
 Connection::Connection(Listener &listener, int fd)
-    : fd(fd), state(ConnectionState::READ), listener(listener)
+    : fd(fd), state(ConnectionState::READ), listener(listener), keep_alive(false)
 {
 }
 
@@ -112,7 +112,10 @@ void Connection::handle_event(uint32_t events)
             }
             else
             {
-                state = ConnectionState::CLOSE;
+                if (!keep_alive)
+                {
+                    state = ConnectionState::CLOSE;
+                }
             }
         }
 
@@ -160,6 +163,11 @@ const ServerConfig &Connection::get_server_config(const std::string &host)
 #endif
 
     return config;
+}
+
+void Connection::set_keep_alive()
+{
+    keep_alive = true;
 }
 
 namespace WebServ
