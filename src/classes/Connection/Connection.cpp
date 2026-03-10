@@ -92,9 +92,7 @@ void Connection::handle_event(uint32_t events)
         while (write_offset < write_buffer.size())
         {
             // write remaining buffer
-            ssize_t n = ::write(fd.get(),
-                                write_buffer.data() + write_offset,
-                                write_buffer.size() - write_offset);
+            ssize_t n = ::write(fd.get(), write_buffer.data() + write_offset, write_buffer.size() - write_offset);
 
             if (n > 0)
             {
