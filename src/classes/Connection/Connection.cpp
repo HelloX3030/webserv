@@ -59,16 +59,19 @@ void Connection::handle_event(uint32_t events)
             }
             else if (n == 0)
             {
-                // peer closed
+                // peer closed connection
                 state = ConnectionState::CLOSE;
                 return;
             }
             else
             {
-                if (errno == EAGAIN || errno == EWOULDBLOCK)
-                    break;
+                if (errno == EINTR)
+                    continue; // syscall interrupted → retry
 
-                state = ConnectionState::CLOSE;
+                if (errno == EAGAIN || errno == EWOULDBLOCK)
+                    break; // no more data right now
+
+                state = ConnectionState::CLOSE; // real error
                 return;
             }
         }
@@ -95,10 +98,13 @@ void Connection::handle_event(uint32_t events)
             }
             else
             {
-                if (errno == EAGAIN || errno == EWOULDBLOCK)
-                    break;
+                if (errno == EINTR)
+                    continue; // syscall interrupted → retry
 
-                state = ConnectionState::CLOSE;
+                if (errno == EAGAIN || errno == EWOULDBLOCK)
+                    break; // socket not writable right now
+
+                state = ConnectionState::CLOSE; // real error
                 return;
             }
         }
