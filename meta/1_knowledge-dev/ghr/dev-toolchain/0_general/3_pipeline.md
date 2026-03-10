@@ -10,14 +10,14 @@ that moves that information from source to consumer.
 
 ```
 Makefile
-  │  single source of truth: flags, include paths,
+  │  sgl src of truth: flags, include paths,
   │  language standard, build variants
   │
   │  bear -- make
   │  (intercepts compiler invocations at LD_PRELOAD layer)
   v
 compile_commands.json
-  │  one entry per translation unit.
+  │  1 entry per TU.
   │  each entry: file, working directory, full compiler invocation.
   │  the compilation database — stable across editor sessions.
   │
@@ -116,7 +116,7 @@ clangd detects the file change and re-indexes automatically.
 
 ## the invariant
 
-one source of truth for compilation semantics: the Makefile.
+1 source of truth for compilation semantics: the Makefile.
 everything downstream is derived.
 
 violating this — duplicating flags in `.clangd`, in IDE config,

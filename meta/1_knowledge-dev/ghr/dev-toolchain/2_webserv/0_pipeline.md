@@ -3,7 +3,9 @@
 
 ## instantiation of the general pipeline
 
-see: dev-toolchain/0_general/1_pipeline.md
+see:
+ghr/build-sys/1_webserv/
+ghr/dev-toolchain/0_general/1_pipeline.md
 
 
 ---
