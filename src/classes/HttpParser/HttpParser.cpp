@@ -1,4 +1,5 @@
 #include "classes/HttpParser.hpp"
+#include "http/HttpResponse.hpp"
 
 HttpParser::HttpParser()
 {
@@ -33,12 +34,7 @@ void HttpParser::add_buffer(const char *buffer, ssize_t n)
 #endif
 
     // Place Holder, for now just accumalate buffer + always respond
-    response =
-        "HTTP/1.1 200 OK\r\n"
-        "Content-Length: 5\r\n"
-        "Connection: close\r\n"
-        "\r\n"
-        "Hello";
+    response = HttpResponse().to_string();
 }
 
 bool HttpParser::response_ready() const
