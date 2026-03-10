@@ -6,6 +6,7 @@
 namespace WebServ
 {
 
+constexpr const char *HTTP_VERSION = "HTTP/1.0";
 constexpr const std::size_t EPOLL_MAX_EVENTS = 64;
 constexpr const int EPOLL_TIMEOUT = -1;
 constexpr const std::size_t EPOLL_HANDLERS_BATCH_SIZE = 64;
