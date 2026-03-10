@@ -1,0 +1,27 @@
+---
+Checks: >
+  clang-analyzer-*,
+  bugprone-*,
+  modernize-use-nullptr,
+  modernize-use-override,
+  modernize-use-default-member-init,
+  modernize-loop-convert,
+  modernize-use-emplace,
+  performance-unnecessary-copy-initialization,
+  performance-move-const-arg,
+  readability-const-return-type,
+  readability-container-size-empty,
+  readability-string-compare,
+  -bugprone-easily-swappable-parameters,
+  -clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling
+
+WarningsAsErrors: >
+  clang-analyzer-*,
+  bugprone-use-after-move,
+  bugprone-infinite-loop
+
+HeaderFilterRegex: '(src|include)/.*'
+
+CheckOptions:
+  - key: modernize-loop-convert.MinConfidence
+    value: reasonable

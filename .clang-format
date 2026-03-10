@@ -1,7 +1,31 @@
+# base style
 BasedOnStyle: LLVM
+
+# indentation
 IndentWidth: 4
 TabWidth: 4
 UseTab: Never
+
+# brace style
 BreakBeforeBraces: Allman
+
+# line length (0 = unlimited)
 ColumnLimit: 0
+
+# function formatting
 AllowShortFunctionsOnASingleLine: None
+
+# include handling
+SortIncludes: false
+
+# control statements spacing
+SpaceBeforeParens: ControlStatements
+
+# empty line control
+MaxEmptyLinesToKeep: 1
+
+# namespace formatting
+NamespaceIndentation: None
+
+# switch formatting
+IndentCaseLabels: true

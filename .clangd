@@ -1,2 +1,2 @@
 CompileFlags:
-  Add: [-Iinc, -Isrc, -std=c++17]
+  CompilationDatabase: .
