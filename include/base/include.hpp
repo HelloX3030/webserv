@@ -13,6 +13,7 @@
 #include <unistd.h>
 
 // C++
+#include <fstream>
 #include <iostream>
 #include <map>
 #include <memory>
