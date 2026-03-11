@@ -18,3 +18,7 @@ www/uploads/*
 # uncomment @ of team dev process, pre-evals
 
 *.pdf
+
+# TODO
+# => remove www_server1
+www_server1/

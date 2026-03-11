@@ -29,15 +29,11 @@ void HttpParser::add_buffer(const Connection &connection, const char *buffer, ss
 {
     this->buffer.append(buffer, n);
 
-#ifdef DEBUG
-    std::cout << format::header("HttpParser::buffer_start") << std::endl;
-    std::cout << this->buffer << std::endl;
-    std::cout << format::header("HttpParser::buffer_end") << std::endl;
-#endif
-
     // Place Holder, for now just accumalate buffer + always respond
 
-    response = WebServ::post(connection.get_server_config("test"), "test", "test").to_string();
+    // response = WebServ::post(connection.get_server_config("test"), "test", "test").to_string();
+    (void)connection;
+    response = HttpResponse().to_string();
 }
 
 bool HttpParser::response_ready() const

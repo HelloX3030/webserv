@@ -1,5 +1,6 @@
 #include "classes/Connection.hpp"
 #include "classes/Listener.hpp"
+#include "http/HttpMethods.hpp"
 
 Connection::~Connection()
 {
@@ -51,11 +52,21 @@ void Connection::handle_event(uint32_t events)
 
             if (n > 0)
             {
+#ifdef DEBUG
+                std::cout << format::header("Connection::handle_event::EPOLLIN buffer_start") << std::endl;
+                std::cout << buffer;
+                std::cout << format::header("Connection::handle_event::EPOLLIN buffer_end") << std::endl;
+#endif
                 http_parser.add_buffer(*this, buffer, n);
 
-                // TODO: remove, here only for testing
-                const ServerConfig &config = get_server_config("test");
-                (void)config;
+                // // TODO: remove, here only for testing
+                // // => don't forget to remove #include "http_methods.hpp"
+                const ServerConfig &config = get_server_config("default_localhost");
+                auto resp = WebServ::post(config, "/test.txt", "Moin Moin");
+
+                std::cout << format::header("post test response start") << std::endl;
+                std::cout << resp.to_string() << std::endl;
+                std::cout << format::header("post test response end") << std::endl;
             }
             else if (n == 0)
             {
@@ -91,7 +102,12 @@ void Connection::handle_event(uint32_t events)
     {
         while (write_offset < write_buffer.size())
         {
-            // write remaining buffer
+// write remaining buffer
+#ifdef DEBUG
+            std::cout << format::header("Connection::handle_event::EPOLLOUT buffer_start") << std::endl;
+            std::cout << write_buffer.data() + write_offset;
+            std::cout << format::header("Connection::handle_event::EPOLLOUT buffer_end") << std::endl;
+#endif
             ssize_t n = ::write(fd.get(), write_buffer.data() + write_offset, write_buffer.size() - write_offset);
 
             if (n > 0)

@@ -7,12 +7,18 @@ HttpResponse post(const ServerConfig &config, const std::string &path, const std
 {
     // find matching location (simplified: prefix match)
     const Location *location = NULL;
-    for (std::map<std::string, Location>::const_iterator it = config.locations.begin(); it != config.locations.end(); ++it)
+    std::string location_prefix;
+
+    for (std::map<std::string, Location>::const_iterator it = config.locations.begin();
+         it != config.locations.end(); ++it)
     {
         if (path.find(it->first) == 0)
         {
-            location = &it->second;
-            break;
+            if (it->first.size() > location_prefix.size())
+            {
+                location = &it->second;
+                location_prefix = it->first;
+            }
         }
     }
 
@@ -30,24 +36,29 @@ HttpResponse post(const ServerConfig &config, const std::string &path, const std
             return HttpResponse(413);
     }
 
-    // determine filesystem path
-    std::string file_path;
+    // determine base directory
+    std::string base;
 
     if (location->upload_enable && !location->upload_store.empty())
-    {
-        file_path = location->upload_store + "/" + path;
-    }
+        base = location->upload_store;
     else
-    {
-        file_path = location->root + "/" + path;
-    }
+        base = location->root;
 
-    // protection against directory traversal attacks
-    auto safe = utils::resolve_path(location->upload_store, file_path);
+    // remove location prefix
+    std::string relative = path.substr(location_prefix.size());
+    if (!relative.empty() && relative[0] == '/')
+        relative = relative.substr(1);
+
+    std::string file_path = base + "/" + relative;
+
+    // traversal protection
+    auto safe = utils::resolve_path(base, file_path);
     if (!safe)
         return HttpResponse(403);
 
-    // write file (overwrite allowed)
+    bool existed = std::filesystem::exists(*safe);
+
+    // write file
     std::ofstream file(safe->c_str(), std::ios::binary);
     if (!file.is_open())
         return HttpResponse(500);
@@ -55,11 +66,7 @@ HttpResponse post(const ServerConfig &config, const std::string &path, const std
     file.write(content.data(), content.size());
     file.close();
 
-    // success response
-    HttpResponse res(201);
-    res.set_body("Created\n");
-
-    return res;
+    return HttpResponse(existed ? 200 : 201);
 }
 
 } // namespace WebServ
