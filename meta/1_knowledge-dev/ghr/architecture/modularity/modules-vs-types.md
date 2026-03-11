@@ -34,13 +34,14 @@ anonymous namespace — translation-unit-local. names declared here are
 invisible to other translation units: the correct home for implementation
 details that must not leak.
 
+
 "class or namespace?" maps directly to "entity or process?".
 
 
 ---
 
 
-## the misuse pattern: class as module
+## a misuse pattern: class as module
 
 symptoms: never instantiated more than once simultaneously, no meaningful
 question of "how many instances?", public interface is 1 function, member
@@ -61,9 +62,8 @@ exposes only the public interface.
 mutually recursive functions sharing intermediate state — a cursor, a
 partially-built result — face a choice. passing state as a parameter
 through every level makes it tramp data: a passenger carried not because
-the immediate function uses it, but because something below does. tramp
-data falsely implies every function depends on every parameter.
-
+the immediate function uses it, but because something below does.
+tramp data falsely implies every function depends on every parameter.
 
 
 3 solutions:
@@ -78,6 +78,7 @@ destroyed on return. transience is structurally expressed.
 
 explicit passing — correct when call depth is shallow and shared state
 is small. tramp data is a problem of depth and breadth, not of principle.
+
 
 for a recursive descent parser — 6+ call levels, 2 shared cursors —
 the local state struct is correct.

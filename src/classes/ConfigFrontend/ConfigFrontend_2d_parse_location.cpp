@@ -1,19 +1,20 @@
-#include "../../../include/classes/ConfigFrontend.hpp"
-
-#include <stdexcept>
-#include <string>
-
 /* location-level directive parsers.
 
-each function implements one grammar production from location_dir.
-same contract as server-level: name consumed, function owns values. */
+each function implements 1 grammar production from location_dir.
+same contract as server-level: name consumed, function owns values.
 
+memory-mechanics:
+This fragment has no memory safety exposure of its own.
+Its correctness is contingent on the END sentinel invariant
+established by fragment 1. the tokeniser's final push unconditionally
+appends Token{TokenType::END, "", line}
+*/
 
 /* grammar: root_dir = "root", path, ";" ;
 
 filesystem path. runtime resolves request URIs against this root.
 mandatory field — validator rejects location without root. */
-void ConfigFrontend::parse_root(Location& loc)
+void Frontend::parse_root(Location& loc)
 {
     loc.root = expect_STRING().value;
     expect_SEMICOLON();
@@ -23,34 +24,24 @@ void ConfigFrontend::parse_root(Location& loc)
 
 at least 1 filename required. when URI maps to directory, server
 tries each index file in order until one exists. */
-void ConfigFrontend::parse_index(Location& loc)
+void Frontend::parse_index(Location& loc)
 {
     if (peek().type != TokenType::STRING)
         throw std::runtime_error(
             "[config] line " + std::to_string(peek().line) +
             ": index requires at least 1 filename");
-
     while (peek().type == TokenType::STRING)
         loc.index_files.push_back(consume().value);
-
     expect_SEMICOLON();
 }
 
 /* grammar: methods_dir = "allowed_methods", method, { method }, ";" ;
 
-clears the default {GET, POST, DELETE} before inserting.
-this directive is an explicit override, not additive.
-
-rationale: if the directive were additive, there would be no way
-to restrict methods — the default would always be included.
-clearing first makes allowed_methods an override: what you write
-is exactly what is permitted.
-
+clears default {GET, POST, DELETE}: directive is an override, not additive.
 std::set deduplicates: "allowed_methods GET GET;" → {GET}. */
-void ConfigFrontend::parse_methods(Location& loc)
+void Frontend::parse_methods(Location& loc)
 {
     loc.allowed_methods.clear();
-
     while (peek().type == TokenType::STRING)
     {
         Token t = consume();
@@ -62,12 +53,10 @@ void ConfigFrontend::parse_methods(Location& loc)
                 "[config] line " + std::to_string(t.line) +
                 ": unknown HTTP method '" + t.value + "'");
     }
-
     if (loc.allowed_methods.empty())
         throw std::runtime_error(
             "[config] line " + std::to_string(peek().line) +
             ": allowed_methods requires at least 1 method");
-
     expect_SEMICOLON();
 }
 
@@ -81,7 +70,7 @@ when URI maps to directory and no index file exists:
 
 default off: exposing filesystem structure is a security concern.
 requires explicit operator opt-in. */
-void ConfigFrontend::parse_autoindex(Location& loc)
+void Frontend::parse_autoindex(Location& loc)
 {
     Token t = expect_STRING();
     if      (t.value == "on")  loc.autoindex = true;
@@ -97,7 +86,7 @@ void ConfigFrontend::parse_autoindex(Location& loc)
 
 file extension that triggers CGI execution (e.g. ".py", ".php").
 semantically coupled with cgi_path — validator enforces both or neither. */
-void ConfigFrontend::parse_cgi_ext(Location& loc)
+void Frontend::parse_cgi_ext(Location& loc)
 {
     loc.cgi_extension = expect_STRING().value;
     expect_SEMICOLON();
@@ -107,7 +96,7 @@ void ConfigFrontend::parse_cgi_ext(Location& loc)
 
 path to CGI interpreter (e.g. "/usr/bin/python3").
 semantically coupled with cgi_extension — validator enforces. */
-void ConfigFrontend::parse_cgi_path(Location& loc)
+void Frontend::parse_cgi_path(Location& loc)
 {
     loc.cgi_path = expect_STRING().value;
     expect_SEMICOLON();
@@ -121,7 +110,7 @@ present value overrides server default for this location only.
 
 overload resolution: this function takes Location&, the server-level
 overload takes ServerConfig&. resolved at call site by argument type. */
-void ConfigFrontend::parse_body_size(Location& loc)
+void Frontend::parse_body_size(Location& loc)
 {
     Token t = expect_STRING();
     loc.client_max_body_size = parse_size(t);
@@ -133,7 +122,7 @@ void ConfigFrontend::parse_body_size(Location& loc)
 enables file upload handling for this location.
 semantically coupled with upload_store — validator enforces:
     upload_enable true requires upload_store non-empty. */
-void ConfigFrontend::parse_upload_enable(Location& loc)
+void Frontend::parse_upload_enable(Location& loc)
 {
     Token t = expect_STRING();
     if      (t.value == "on")  loc.upload_enable = true;
@@ -149,7 +138,7 @@ void ConfigFrontend::parse_upload_enable(Location& loc)
 
 filesystem path where uploaded files are written.
 semantically coupled with upload_enable — validator enforces. */
-void ConfigFrontend::parse_upload_store(Location& loc)
+void Frontend::parse_upload_store(Location& loc)
 {
     loc.upload_store = expect_STRING().value;
     expect_SEMICOLON();
@@ -163,7 +152,7 @@ range enforced here (parse-time rejection) and in validator.
 return_code is std::optional<uint16_t>: std::nullopt means no redirect.
 semantically coupled with return_path — validator enforces:
     return_code set requires return_path non-empty. */
-void ConfigFrontend::parse_return(Location& loc)
+void Frontend::parse_return(Location& loc)
 {
     Token code_tok = expect_STRING();
     Token path_tok = expect_STRING();

@@ -1,3 +1,5 @@
+https://en.cppreference.com/w/cpp/container/vector/push_back
+
 Standard library — std::vector<T>::push_back(const T&).
 
 Essence: append one element to the end of a dynamic array. The vector owns a heap-allocated buffer of capacity ≥ size. push_back writes the new element at buffer[size], increments size. When size would exceed capacity, the vector allocates a new buffer (typically 2× current capacity), moves all existing elements, then writes the new element. The old buffer is freed.

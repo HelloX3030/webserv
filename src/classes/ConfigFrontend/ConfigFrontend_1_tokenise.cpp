@@ -4,8 +4,8 @@ finite automaton with 2 states: accumulating a STRING | not.
 transitions on whitespace and structural characters.
 
 token meaning is determined by grammar position, not token type —
-"8080" is a port after "listen", a hostname after "server_name". a
-NUMBER type would require the lexer to assign partial meaning, which
+"8080" is a port after "listen", a hostname after "server_name".
+a NUMBER type would require the lexer to assign partial meaning, which
 belongs to the parser. numeric values are consumed as STRING and
 interpreted by parse_port / parse_size.
 
@@ -25,7 +25,6 @@ void Frontend::tokenise(const std::string& source)
 {
     size_t      line = 1;
     std::string current;
-
     auto flush = [&]()
     {
         if (!current.empty())
@@ -34,7 +33,6 @@ void Frontend::tokenise(const std::string& source)
             current.clear();
         }
     };
-
     for (const char c : source)
     {
         if      (c == '\n')             { flush(); ++line; }
@@ -44,7 +42,6 @@ void Frontend::tokenise(const std::string& source)
         else if (c == ';') { flush(); tokens_.push_back({TokenType::SEMICOLON, "", line}); }
         else               { current += c; }
     }
-
     flush();
     tokens_.push_back({TokenType::END, "", line});
 }
