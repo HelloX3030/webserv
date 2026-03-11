@@ -111,6 +111,28 @@ HttpResponse post(const ServerConfig &config, const std::string &path, const std
     log::log(HTTP_METHODE_POST, "Resolved safe path=\"" + safe->string() + "\"");
 #endif
 
+    auto parent = safe->parent_path();
+
+#ifdef DEBUG
+    log::log(HTTP_METHODE_POST, "Parent path=\"" + parent.string() + "\"");
+#endif
+
+    if (!std::filesystem::exists(parent))
+    {
+#ifdef DEBUG
+        log::log(HTTP_METHODE_POST, "Parent directory does not exist -> 409");
+#endif
+        return HttpResponse(409);
+    }
+
+    if (std::filesystem::is_directory(*safe))
+    {
+#ifdef DEBUG
+        log::log(HTTP_METHODE_POST, "Target path is a directory -> 403");
+#endif
+        return HttpResponse(403);
+    }
+
     bool existed = std::filesystem::exists(*safe);
 
 #ifdef DEBUG

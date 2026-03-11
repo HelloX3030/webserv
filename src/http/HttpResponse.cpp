@@ -75,6 +75,8 @@ std::string HttpResponse::status_text(int status)
         return "Not Found";
     case 405:
         return "Method Not Allowed";
+    case 409:
+        return "Conflict";
     case 413:
         return "Payload Too Large";
     case 500:
@@ -82,6 +84,10 @@ std::string HttpResponse::status_text(int status)
     case 501:
         return "Not Implemented";
     default:
+#ifdef DEBUG
+        throw SetupError("Http Response code no status text found: " + std::to_string(status));
+#else
         return "Unknown";
+#endif
     }
 }

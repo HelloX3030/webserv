@@ -62,7 +62,7 @@ void Connection::handle_event(uint32_t events)
                 // // TODO: remove, here only for testing
                 // // => don't forget to remove #include "http_methods.hpp"
                 const ServerConfig &config = get_server_config("default_localhost");
-                auto resp = WebServ::post(config, "/test.txt", "Moin Moin");
+                auto resp = WebServ::post(config, "/test/", "Moin Moin");
 
                 std::cout << format::header("post test response start") << std::endl;
                 std::cout << resp.to_string() << std::endl;
