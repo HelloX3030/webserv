@@ -12,7 +12,7 @@ int main(int argc, char **argv)
     // Parse
     try
     {
-        WebServ::parse(argc, argv);
+        WebServ::load_config(argc, argv);
         WebServ::init();
 #ifdef DEBUG
         WebServ::add_test_data();
