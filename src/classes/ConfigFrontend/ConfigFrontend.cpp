@@ -1,6 +1,4 @@
 #include "classes/ConfigFrontend.hpp"
-/* Makefile's `-I include` enforces relative to include/
-so include subdirs*/
 
 #include <fstream>
 #include <iterator>
@@ -24,7 +22,7 @@ struct Token
 {
     TokenType   type;
     std::string value;
-    size_t      line; // source line at emission — sole carrier of
+    size_t      line; // src line at emission — sole carrier of
                       // location information for parse-time errors.
 };
 

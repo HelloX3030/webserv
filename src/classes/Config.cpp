@@ -1,4 +1,4 @@
-#include "../../include/classes/Config.hpp"
+#include "classes/Config.hpp"
 
 #include <ostream>
 #include <sstream>
@@ -12,15 +12,13 @@ does not reconstruct valid nginx syntax — renders state for inspection.
 
 2 access points, 1 rendering path:
     to_string(x)     → std::string, for embedding in log messages or errors.
-    operator<<(os, x) → delegates to to_string. single definition,
-                        no divergence.
+    operator<<(os, x) → delegates to to_string. single definition, no divergence.
 
 maintenance liability: each to_string function manually enumerates
 its struct's fields. C++17 has no reflection — the compiler cannot
 detect a field added to a struct but omitted here. divergence is
 silent. update to_string whenever the corresponding struct changes.
 */
-
 
 static const char* method_name(HttpMethod m)
 {
