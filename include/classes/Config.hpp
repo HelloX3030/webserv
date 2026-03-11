@@ -8,22 +8,23 @@
 #include <string>
 #include <vector>
 
-constexpr size_t DEFAULT_CLIENT_MAX_BODY_SIZE = 1024 * 1024; // 1 MiB
+constexpr size_t            DEFAULT_CLIENT_MAX_BODY_SIZE = 1024 * 1024; // 1 MiB
+constexpr std::string_view  DEFAULT_LISTEN_HOST = "0.0.0.0";
 
 /*
 Config.hpp — pure data types produced by the config parser.
 No methods, no behaviour. Describes operator intent as extracted from
-the config file. All other components consume these types; 
+the config file. All other components consume these types;
 none are depended upon here.
 
-Does not include base/base.hpp. That header pulls in sockets, signals,
-and POSIX I/O — none of which belong in a data type definition. 
+Does not include `base/base.hpp`, which pulls in sockets, signals, POSIX I/O
+— none of which belong in a data type definition.
 dependencies: Server.hpp → Config.hpp → stdlib only.
 */
 
 /*
 The grammar's methods_dir terminals form a closed set: GET, POST, DELETE.
-enum class enforces membership at compile time - 
+enum class enforces membership at compile time -
 an unknown method cannot be represented, no runtime string comparison required.
 */
 enum class HttpMethod
@@ -39,12 +40,12 @@ when absent, parser assigns default host "0.0.0.0".
 
 `port` type:
 must contain full TCP port space [0, 65535].
-    2^8 = 256 < 65535   
+    2^8 = 256 < 65535
     2^16 = 65536 > 65535
 ∴ uint16_t chosen (unsigned integer type w/ width 16 bits)
 as minimal std width.
 
-valid range enforced at parse time in parse_port() 
+valid range enforced at parse time in parse_port()
 & confirmed in validator. */
 struct ListenAddress
 {
@@ -67,7 +68,7 @@ rejected: too restrictive for an evaluation server where the evaluator
 expects all methods unless explicitly limited. explicit restriction
 via allowed_methods directive is the opt-in.
 
-`cgi_extension` and `cgi_path` are semantically coupled: 
+`cgi_extension` and `cgi_path` are semantically coupled:
 either both set or both absent. Validator enforces.
 
 `upload_enable` / `upload_store`: upload_enable=true requires upload_store
@@ -98,7 +99,7 @@ Derived from server_block and server_dir productions.
 
 Named ServerConfig, not Server.
     ServerConfig is passive: it holds operator intent.
-    Server class is operational, an actor: 
+    Server class is operational, an actor:
     has lifecycle & behaviour.
 
 `listen` is a vector: the grammar permits multiple listen_dir within
@@ -129,8 +130,8 @@ struct ServerConfig
 /*
 display serialisation — Config.cpp
 
-free functions, not methods: 
-Config.hpp contracts "no methods, no behaviour". 
+free functions, not methods:
+Config.hpp contracts "no methods, no behaviour".
 to_string is orthogonal to data definition —
 it is observation of state, not state or behaviour itself.
 

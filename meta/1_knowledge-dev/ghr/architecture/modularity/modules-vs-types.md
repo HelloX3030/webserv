@@ -101,16 +101,20 @@ source:
 
 ```cpp
 namespace {
-    struct State {
-        // transient state shared across the pipeline
-        OutputType run(InputType const&);
-    };
+
+struct State {
+    // transient state shared across the pipeline
+    OutputType run(InputType const&);
+};
+
 }
 
 namespace ModuleName {
-    OutputType transform(InputType const& input) {
-        return State{}.run(input);
-    }
+
+OutputType transform(InputType const& input) {
+    return State{}.run(input);
+}
+
 }
 ```
 
@@ -132,18 +136,21 @@ a 6-level recursive descent — was valid, but the prior question was
 never asked.
 
 correct form: ConfigFrontend.hpp exposes the namespace and parse().
-ConfigFrontend.cpp contains the anonymous-namespace Parser struct and
-its methods. the split .cpp files (_2b_, _2c_, ...) collapse into 1
-file — they required the class declaration in the header to share a
-type across translation units. with Parser in an anonymous namespace,
-that coupling disappears. pipeline stages become sections within 1 file,
-in call order.
+ConfigFrontend.cpp contains the anonymous-namespace Parser struct
+and its methods. the split .cpp files (_2b_, _2c_, ...) collapse into 1 file
+— they required the class declaration in the header to share a type
+across translation units. with Parser in an anonymous namespace, that coupling
+disappears. pipeline stages become sections within 1 file, in call order.
 
 
 ---
 
 
 ## language perspectives
+
+Agda — a pipeline is a function between types. intermediate state is
+made explicit in the type signature. "class or module?" does not arise:
+there are no classes, only types and functions.
 
 Haskell — a parsing pipeline is a function or a composition of functions.
 shared cursor state is threaded via the State monad, or abstracted by a
@@ -152,10 +159,6 @@ parser combinator library (Parsec, Megaparsec). no class is reached for.
 Rust — a free function or impl block on a local struct. the struct is
 not exported; it appears only in the .rs file. the module system (mod,
 pub) maps directly to the namespace/anonymous-namespace distinction.
-
-Agda — a pipeline is a function between types. intermediate state is
-made explicit in the type signature. "class or module?" does not arise:
-there are no classes, only types and functions.
 
 
 ---

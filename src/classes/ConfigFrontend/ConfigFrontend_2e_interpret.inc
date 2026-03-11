@@ -1,17 +1,11 @@
-#include "../../../include/classes/ConfigFrontend.hpp"
-
-#include <stdexcept>
-#include <string>
-
 /* interpretation leaves.
-
-these functions interpret STRING token values as typed values.
-they are the boundary between text (token.value) and semantics
+these fns interpret STRING token values as typed values.
+boundary between text (token.value) & semantics
 (port number, byte size, host:port pair).
 
-the parser consumes STRING tokens everywhere — the lexer has no
-NUMBER type. these functions perform the string → typed value
-conversion, throwing with line number on failure. */
+the parser consumes STRING tokens everywhere — the lexer has no NUMBER type.
+these fn perform the string → typed value conversion,
+throwing with line number on failure. */
 
 
 /* interpret size with optional suffix.
@@ -19,7 +13,7 @@ conversion, throwing with line number on failure. */
 suffixes: k/K (×1024), m/M (×1024²), g/G (×1024³).
 no suffix: bytes.
 
-used for client_max_body_size at both server and location level. 
+used for `client_max_body_size` at both server & location level.
 
 stoull over stoul: on 32-bit platforms size_t is 32 bits.
 stoul would truncate before cast. stoull gives 64-bit precision. */
@@ -30,10 +24,8 @@ size_t ConfigFrontend::parse_size(const Token& t)
         throw std::runtime_error(
             "[config] line " + std::to_string(t.line) +
             ": empty size value");
-
     size_t multiplier = 1;
     std::string digits = s;
-
     char last = s.back();
     if (last == 'k' || last == 'K')
     {
@@ -50,7 +42,6 @@ size_t ConfigFrontend::parse_size(const Token& t)
         multiplier = 1024 * 1024 * 1024;
         digits = s.substr(0, s.size() - 1);
     }
-
     size_t value;
     try { value = std::stoull(digits); }
     catch (...)
@@ -59,7 +50,15 @@ size_t ConfigFrontend::parse_size(const Token& t)
             "[config] line " + std::to_string(t.line) +
             ": invalid size '" + s + "'");
     }
-
+    if (value == 0)
+        throw std::runtime_error(
+            "[config] line " + std::to_string(t.line) +
+            ": size must be > 0");
+    // checked multiply: detect overflow before it wraps.
+    if (multiplier > 1 && value > SIZE_MAX / multiplier)
+        throw std::runtime_error(
+            "[config] line " + std::to_string(t.line) +
+            ": size '" + s + "' overflows size_t");
     return value * multiplier;
 }
 
@@ -106,7 +105,7 @@ ListenAddress ConfigFrontend::parse_host_port(const Token& t)
     size_t colon = s.find(':');
     if (colon == std::string::npos)
     {
-        addr.host = "0.0.0.0";
+        addr.host = DEFAULT_LISTEN_HOST;
         addr.port = parse_port(s, t.line);
     }
     else

@@ -1,8 +1,3 @@
-#include "../../../include/classes/ConfigFrontend.hpp"
-
-#include <stdexcept>
-#include <string>
-
 /* validate the completed std::vector<ServerConfig>.
 
 2-layer enforcement strategy for constrained values:
@@ -73,7 +68,7 @@ void ConfigFrontend::validate_server(const ServerConfig& s)
 
     for (const auto& addr : s.listen)
     {
-        if (addr.port < 1)  // removed: || addr.port > 65535 due to compiler: error: comparison is always false due to limited range of data type [-Werror=type-limits]
+        if (addr.port < 1)
             throw std::runtime_error(
                 "[config] validation error: listen port out of range"
                 " — got " + std::to_string(addr.port) + ", valid range [1, 65535]");

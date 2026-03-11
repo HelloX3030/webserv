@@ -3,10 +3,10 @@
 
 ## the compiler's unit of work
 
-a translation unit (TU) is the atomic unit of compilation: 1 source
-file after the preprocessor has run. the compiler sees exactly 1 TU
-at a time — no knowledge of other TUs during compilation; only the
-linker joins them.
+a translation unit (TU) is the atomic unit of compilation:
+1 source file after the preprocessor has run.
+the compiler sees exactly 1 TU at a time — no knowledge of other TUs
+during compilation; only the linker joins them.
 
 the preprocessor runs before any parsing or type checking. it is a
 text substitution engine. `#include` pastes the contents of another

@@ -5,8 +5,7 @@ computation, with access to the enclosing scope's bindings.
 
 telos: name a repeated operation without promoting it to the global
 namespace. the name gives the operation identity at call sites; the
-scope restriction signals it has no meaning outside the enclosing
-context.
+scope restriction signals it has no meaning outside the enclosing context.
 
 
 ## the 3 things it eliminates
@@ -46,8 +45,7 @@ expression; it may reference bindings in scope by substitution.
 
 Haskell: `where` (definition-scoped) and `let`/`in` (expression-
 scoped). same functional character. for local procedures that carry
-state across calls, the State monad makes the threading explicit in
-the type.
+state across calls, the State monad makes the threading explicit in the type.
 
 Rust: nested closures with explicit capture modes (`move` for by-value).
 nested `fn` items are also possible but cannot capture — they are
