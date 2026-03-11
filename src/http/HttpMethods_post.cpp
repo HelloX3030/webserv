@@ -76,7 +76,7 @@ HttpResponse post(const ServerConfig &config, const std::string &path, const std
     log::log(HTTP_METHODE_POST, "Constructed file_path=\"" + file_path + "\"");
 
     // traversal protection
-    auto safe = utils::resolve_path(base, file_path);
+    auto safe = utils::resolve_path(base, relative);
 
     if (!safe)
     {
