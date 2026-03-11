@@ -20,7 +20,7 @@ endif
 
 SRC_DIR  := src
 INC_DIR  := include
-INCLUDES := -I $(INC_DIR)
+INCLUDES := -I $(INC_DIR)	# resolve unqualified include paths relative to include/
 
 # ─── variant names and objdirs ────────────────────────────────
 

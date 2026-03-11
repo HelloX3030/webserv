@@ -17,7 +17,7 @@ used for `client_max_body_size` at both server & location level.
 
 stoull over stoul: on 32-bit platforms size_t is 32 bits.
 stoul would truncate before cast. stoull gives 64-bit precision. */
-size_t ConfigFrontend::parse_size(const Token& t)
+size_t Frontend::parse_size(const Token& t)
 {
     const std::string& s = t.value;
     if (s.empty())
@@ -70,7 +70,7 @@ and confirmed in validator (belt-and-suspenders).
 
 type: uint16_t. port space is [0, 65535]. 2^16 = 65536 > 65535.
 uint16_t is the minimal standard width that fits. */
-uint16_t ConfigFrontend::parse_port(const std::string& s, size_t line)
+uint16_t Frontend::parse_port(const std::string& s, size_t line)
 {
     int val;
     try { val = std::stoi(s); }
@@ -97,7 +97,7 @@ formats:
 
 host defaults to "0.0.0.0" (all interfaces) when absent.
 colon presence distinguishes the two forms. */
-ListenAddress ConfigFrontend::parse_host_port(const Token& t)
+ListenAddress Frontend::parse_host_port(const Token& t)
 {
     ListenAddress addr;
     const std::string& s = t.value;

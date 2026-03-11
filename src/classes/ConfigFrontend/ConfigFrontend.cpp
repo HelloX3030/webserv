@@ -1,4 +1,6 @@
-#include "ConfigFrontend.hpp"
+#include "classes/ConfigFrontend.hpp"
+/* Makefile's `-I include` enforces relative to include/
+so include subdirs*/
 
 #include <fstream>
 #include <iterator>
@@ -108,11 +110,11 @@ std::vector<ServerConfig> parse(const std::string& filepath)
 
 } // namespace ConfigFrontend
 
-#include "ConfigFrontend_0_read.cpp"
-#include "ConfigFrontend_1_tokenise.cpp"
-#include "ConfigFrontend_2a_parse_navigate.cpp"
-#include "ConfigFrontend_2b_parse_blocks.cpp"
-#include "ConfigFrontend_2c_parse_server.cpp"
-#include "ConfigFrontend_2d_parse_location.cpp"
-#include "ConfigFrontend_2e_interpret.cpp"
-#include "ConfigFrontend_3_validate.cpp"
+#include "ConfigFrontend_0_read.inc"
+#include "ConfigFrontend_1_tokenise.inc"
+#include "ConfigFrontend_2a_parse_navigate.inc"
+#include "ConfigFrontend_2b_parse_blocks.inc"
+#include "ConfigFrontend_2c_parse_server.inc"
+#include "ConfigFrontend_2d_parse_location.inc"
+#include "ConfigFrontend_2e_interpret.inc"
+#include "ConfigFrontend_3_validate.inc"

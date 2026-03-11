@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Config.hpp"
+#include "classes/Config.hpp"
 
 #include <string>
 #include <vector>

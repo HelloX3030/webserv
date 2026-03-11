@@ -33,7 +33,7 @@ constraints checked here:
         cgi_extension ↔ cgi_path: both or neither
         upload_enable ↔ upload_store: enable=true requires store non-empty
         return_code ↔ return_path: code set requires path non-empty */
-void ConfigFrontend::validate(const std::vector<ServerConfig>& servers)
+void Frontend::validate(const std::vector<ServerConfig>& servers)
 {
     if (servers.empty())
         throw std::runtime_error(
@@ -44,7 +44,7 @@ void ConfigFrontend::validate(const std::vector<ServerConfig>& servers)
 }
 
 /* mandatory fields and per-location delegation. */
-void ConfigFrontend::validate_server(const ServerConfig& s)
+void Frontend::validate_server(const ServerConfig& s)
 {
     if (s.listen.empty())
         throw std::runtime_error(
@@ -91,7 +91,7 @@ enabling upload without destination path is incomplete.
 
 return coupling: return_code set requires return_path non-empty.
 redirect without target URI is malformed. */
-void ConfigFrontend::validate_location(const std::string& path, const Location& loc)
+void Frontend::validate_location(const std::string& path, const Location& loc)
 {
     if (loc.root.empty())
         throw std::runtime_error(
