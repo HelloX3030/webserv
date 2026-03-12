@@ -177,7 +177,7 @@ leaksclean:
 
 leaksre: leaksclean leaks
 
-# ─── run targets ──────────────────────────────────────────────
+# --- run targets ---
 
 run: $(NAME)
 	./$(NAME)
