@@ -24,6 +24,11 @@ void HttpResponse::set_header(const std::string &key, const std::string &value)
     headers[key] = value;
 }
 
+void HttpResponse::set_content_type(const std::string &type)
+{
+    headers["Content-Type"] = type;
+}
+
 std::string HttpResponse::to_string() const
 {
     std::ostringstream response;

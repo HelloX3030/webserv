@@ -1,5 +1,4 @@
-#ifndef HTTPRESPONSE_HPP
-#define HTTPRESPONSE_HPP
+#pragma once
 
 #include "base/base.hpp"
 
@@ -25,8 +24,7 @@ class HttpResponse
     void set_status(int status);
     void set_body(const std::string &body);
     void set_header(const std::string &key, const std::string &value);
+    void set_content_type(const std::string &type);
 
     std::string to_string() const;
 };
-
-#endif
