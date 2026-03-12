@@ -10,7 +10,7 @@ namespace WebServ
     extern std::vector<ServerConfig> servers;
 
     // Functions
-    void add_test_data();
+    // void add_test_data();
     void init();
     void load_config(int argc, char **argv);
     void display();

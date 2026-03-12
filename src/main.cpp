@@ -15,7 +15,7 @@ int main(int argc, char **argv)
         WebServ::load_config(argc, argv);
         WebServ::init();
 #ifdef DEBUG
-        WebServ::add_test_data();
+        // WebServ::add_test_data();
         WebServ::display();
 #endif
         WebServ::run();

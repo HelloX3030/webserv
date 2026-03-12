@@ -60,13 +60,18 @@ DBG_OBJS  := $(patsubst $(SRC_DIR)/%.cpp,$(DBG_OBJ_DIR)/%.o,$(SRC_FILES))
 LKS_OBJS  := $(patsubst $(SRC_DIR)/%.cpp,$(LKS_OBJ_DIR)/%.o,$(SRC_FILES))
 DEP_FILES := $(REL_OBJS:.o=.d) $(DBG_OBJS:.o=.d) $(LKS_OBJS:.o=.d)
 
-# ─── phony targets ────────────────────────────────────────────
+# --- phony declarations ---
 
-.PHONY: all clean fclean re debug leaks \
-        debugclean debugre leaksclean leaksre \
-        run debugrun leaksrun
+# variant-agnostic operations
+.PHONY: clean fclean
 
-# ─── variant configuration ────────────────────────────────────
+# 3 variants: release, debug, leak (rows)
+# per-variant:  build   clean        rebuild    run
+.PHONY:         all                  re         run
+.PHONY:         debug   debugclean   debugre    debugrun
+.PHONY:         leaks   leaksclean   leaksre    leaksrun
+
+# --- variant configuration ---
 # target-specific variables propagate to the entire subgraph
 # rooted at each binary target. EXTRA_CFLAGS is referenced in
 # COMPILE_OBJ, which expands during phase 2 when these values
@@ -84,6 +89,7 @@ $(LKS_NAME): EXTRA_LDFLAGS :=
 # ─── 42-required targets ──────────────────────────────────────
 
 all: $(NAME)
+# 1st target in file = default goal, so `make`≡ `make all`
 
 clean:
 	@echo "  RM   $(OBJ_DIR) $(DBG_OBJ_DIR) $(LKS_OBJ_DIR)"

@@ -14,8 +14,7 @@ send arbitrary bytes, see what comes back.
 
 ## what it does
 
-opens TCP connection. that's it.
-
+opens TCP connection.
 no protocol awareness. no HTTP knowledge. no formatting.
 whatever you type goes to the server as raw bytes.
 whatever server sends back appears on your screen as raw bytes.
@@ -255,7 +254,7 @@ use both during development.
 
 telnet tests:
 - basic GET works
-- POST with body works  
+- POST with body works
 - malformed requests return 400
 - server doesn't hang on slow/partial input
 - server closes connection appropriately
