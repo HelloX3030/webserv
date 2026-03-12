@@ -10,6 +10,7 @@ class HttpResponse
     std::map<std::string, std::string> headers;
 
     static std::string status_text(int status);
+    static std::string get_mime_type(const std::filesystem::path &path);
 
   public:
     HttpResponse();
@@ -24,7 +25,9 @@ class HttpResponse
     void set_status(int status);
     void set_body(const std::string &body);
     void set_header(const std::string &key, const std::string &value);
-    void set_content_type(const std::string &type);
+
+    // Commom Header Types
+    void set_content_type(const std::filesystem::path &path);
 
     std::string to_string() const;
 };

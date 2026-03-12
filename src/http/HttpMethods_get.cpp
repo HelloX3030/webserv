@@ -25,8 +25,10 @@ static HttpResponse serve_file(const std::filesystem::path &file_path)
     HttpResponse res(200);
     res.set_body(buffer.str());
 
+    res.set_content_type(file_path);
+
 #ifdef DEBUG
-    log::log(HTTP_METHODE_GET, "Returning 200 OK with body size=" + std::to_string(res.to_string().size()));
+    log::log(HTTP_METHODE_GET, res.to_string());
 #endif
 
     return res;
