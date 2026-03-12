@@ -34,7 +34,7 @@ static HttpResponse serve_file(const std::filesystem::path &file_path)
     return res;
 }
 
-[[nodiscard]] HttpResponse get(const ServerConfig &config, const std::string &path)
+[[nodiscard]] HttpResponse http_get(const ServerConfig &config, const std::string &path)
 {
 #ifdef DEBUG
     log::log(HTTP_METHODE_GET, "Path=\"" + path + "\"");

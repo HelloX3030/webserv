@@ -52,7 +52,7 @@ std::vector<ServerConfig> parse(int argc, char **argv)
         Location root_location;
         root_location.root = "./www_server1";
         root_location.index_files = {"index.html"};
-        root_location.allowed_methods = {HttpMethod::GET, HttpMethod::POST};
+        root_location.allowed_methods = {HttpMethod::GET, HttpMethod::POST, HttpMethod::DELETE};
         root_location.autoindex = false;
         root_location.upload_enable = false;
 

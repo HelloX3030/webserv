@@ -3,7 +3,7 @@
 namespace WebServ
 {
 
-HttpResponse post(const ServerConfig &config, const std::string &path, const std::string &content)
+HttpResponse http_post(const ServerConfig &config, const std::string &path, const std::string &content)
 {
 #ifdef DEBUG
     log::log(HTTP_METHODE_POST, "Path=\"" + path + "\" content=\"" + content + "\"");
