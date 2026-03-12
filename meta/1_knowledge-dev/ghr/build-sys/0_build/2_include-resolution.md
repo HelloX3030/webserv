@@ -3,9 +3,12 @@ how compilers resolve includes, what -I means formally, the name collision hazar
 
 On recursive -I
 
-The ask: instead of -I include, use something like
+what about instead of -I include, use something like :?
+
 -I include -I include/classes -I include/base
+
 — or auto-discover all subdirectories.
+
 
 Pros:
 
