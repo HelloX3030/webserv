@@ -160,9 +160,9 @@ Header-Without-Value
 
 malformed header. should reject.
 
+---
 
 ## interpreting results
-
 
 ### success
 
@@ -206,6 +206,7 @@ telnet: Unable to connect to remote host: Connection refused
 
 nothing listening on that port. server not running.
 
+---
 
 ## telnet vs nc (netcat)
 
@@ -245,6 +246,7 @@ use telnet to understand HTTP.
 use curl to test your server efficiently.
 use both during development.
 
+---
 
 ## 42 subject requirement
 
@@ -261,3 +263,31 @@ telnet tests:
 
 the subject explicitly requires telnet testing because it exposes
 the raw protocol. no browser abstractions hiding bugs.
+
+---
+
+## NOTES TO PROCESS
+
+**Telnet — no prompts:**
+
+Telnet opens a raw TCP socket. No protocol, no prompts, no structure.
+You're typing bytes directly onto the wire.
+
+```
+$ telnet 127.0.0.1 8080
+Trying 127.0.0.1...
+Connected to 127.0.0.1.
+Escape character is '^]'.
+```
+
+Now you have an open TCP connection. The cursor sits there. *You* type:
+```
+GET / HTTP/1.1↵
+Host: localhost↵
+↵
+(where ↵ = Enter key = sends CRLF)
+
+The server is silently accumulating bytes. When it sees \r\n\r\n (blank line),
+it knows: "headers complete, parse and respond."
+Then it writes its response back, which telnet displays.
+No interactivity. No prompts. Raw byte exchange. You are the HTTP client, manually.
