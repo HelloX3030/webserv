@@ -33,8 +33,8 @@ struct HttpRequestFrontend
 };
 ```
 
-`buffer_` accumulates bytes across `advance()` calls.
-consumed bytes are erased after each successful phase transition.
+`buffer_` accumulates bytes across `advance()` calls. consumed bytes
+are erased after each successful phase transition.
 
 `request_` fields are populated incrementally: method/uri/version
 after REQUEST_LINE completes, headers after each header line,
@@ -161,6 +161,16 @@ terminal. error_code_ is set. advance() returns Failed.
 
 ## advance() control flow
 
+internal result type for phase-parsing functions:
+
+```cpp
+enum class PhaseResult { Advanced, NeedMore, Failed };
+```
+
+`Advanced` — phase completed, transitioned to next phase.
+`NeedMore` — insufficient bytes, remain in current phase.
+`Failed` — parse error, transitioned to ERROR.
+
 ```cpp
 ParseResult HttpRequestFrontend::advance(const char* data, size_t len)
 {
@@ -171,19 +181,34 @@ ParseResult HttpRequestFrontend::advance(const char* data, size_t len)
         switch (phase_)
         {
             case ParsePhase::REQUEST_LINE:
-                if (!try_parse_request_line())
+            {
+                PhaseResult r = parse_request_line();
+                if (r == PhaseResult::NeedMore)
                     return {ParseStatus::Incomplete, {}, 0};
-                break;
+                if (r == PhaseResult::Failed)
+                    return {ParseStatus::Failed, {}, error_code_};
+                break;  // Advanced — loop continues
+            }
 
             case ParsePhase::HEADERS:
-                if (!try_parse_header_line())
+            {
+                PhaseResult r = parse_header_line();
+                if (r == PhaseResult::NeedMore)
                     return {ParseStatus::Incomplete, {}, 0};
+                if (r == PhaseResult::Failed)
+                    return {ParseStatus::Failed, {}, error_code_};
                 break;
+            }
 
             case ParsePhase::BODY:
-                if (!try_consume_body())
+            {
+                PhaseResult r = consume_body();
+                if (r == PhaseResult::NeedMore)
                     return {ParseStatus::Incomplete, {}, 0};
+                if (r == PhaseResult::Failed)
+                    return {ParseStatus::Failed, {}, error_code_};
                 break;
+            }
 
             case ParsePhase::COMPLETE:
                 return {ParseStatus::Complete, request_, 0};
@@ -196,12 +221,11 @@ ParseResult HttpRequestFrontend::advance(const char* data, size_t len)
 ```
 
 the while loop handles the case where a single `advance()` call
-provides enough bytes to complete multiple phases.
-loop until Incomplete, Complete, or Failed are hit.
+provides enough bytes to complete multiple phases. we loop until
+we hit NeedMore, Complete, or Failed.
 
-each `try_parse_*` returns true if it transitioned to a new phase,
-false if it needs more data. on error, it sets error_code_ and
-transitions to ERROR before returning true.
+each `parse_*` function returns a 3-valued result. control flow
+is explicit at every call site. no implicit state inspection.
 
 
 ---
@@ -209,12 +233,13 @@ transitions to ERROR before returning true.
 
 ## error codes
 
-| condition               | code | phase |
-| malformed request line  | 400 | REQUEST_LINE |
-| unknown method          | 501 | REQUEST_LINE |
-| malformed header        | 400 | HEADERS |
-| Content-Length invalid  | 400 | HEADERS |
-| body exceeds limit      | 413 | BODY |
+| condition | code | phase |
+|-----------|------|-------|
+| malformed request line | 400 | REQUEST_LINE |
+| unknown method | 501 | REQUEST_LINE |
+| malformed header | 400 | HEADERS |
+| Content-Length invalid | 400 | HEADERS |
+| body exceeds limit | 413 | BODY |
 
 
 ---
@@ -248,7 +273,7 @@ request and must survive the reset.
 1. buffer_ contains all unparsed bytes. consumed bytes are erased.
 
 2. phase_ reflects current parse position.
-  only advances, never retreats (except reset()).
+    only advances, never retreats (except reset()).
 
 3. request_ fields are valid for completed phases only.
    method/uri/version valid after REQUEST_LINE.
@@ -281,16 +306,14 @@ bytes arrive at arbitrary boundaries. examples:
 
 ```
 "POST / HTTP/1.1\r\nContent-Length: 10\r\n\r\nhel"
-                    ↑ request line + headers + partial body
+                    ← request line + headers + partial body
 "lo worl"           ← more body
 "d"                 ← completes body
 ```
 
-the state machine handles all cases identically:
-  accumulate into buffer_,
-  scan for phase completion,
-  consume and transition or
-  return Incomplete.
+the state machine handles all cases identically: accumulate into
+buffer_, scan for phase completion, consume and transition or
+return Incomplete.
 
 
 ---
