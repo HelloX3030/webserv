@@ -147,16 +147,16 @@ void Frontend::parse_upload_store(Location& loc)
 /* grammar: return_dir = "return", status_code, path, ";" ;
 
 redirect directive. status_code in [300, 399] (redirect codes).
-range enforced here (parse-time rejection) and in validator.
+range enforced here (parse-time rejection) & in validator.
 
-return_code is std::optional<uint16_t>: std::nullopt means no redirect.
+return_code is std::optional<uint16_t>:
+std::nullopt means no redirect.
 semantically coupled with return_path — validator enforces:
     return_code set requires return_path non-empty. */
 void Frontend::parse_return(Location& loc)
 {
     Token code_tok = expect_STRING();
     Token path_tok = expect_STRING();
-
     int code;
     try { code = std::stoi(code_tok.value); }
     catch (...)
@@ -169,7 +169,6 @@ void Frontend::parse_return(Location& loc)
         throw std::runtime_error(
             "[config] line " + std::to_string(code_tok.line) +
             ": return code out of range [300, 399]: " + code_tok.value);
-
     loc.return_code = static_cast<uint16_t>(code);
     loc.return_path = path_tok.value;
     expect_SEMICOLON();
