@@ -7,10 +7,8 @@
 
 namespace WebServ
 {
-extern std::vector<ServerConfig> servers;
-
 // Functions
-[[nodiscard]] std::vector<ServerConfig> parse(int argc, char **argv);
+[[nodiscard]] std::vector<ServerConfig> load_config(int argc, char **argv);
 void init(const std::vector<ServerConfig> &configs);
 void display();
 void run();

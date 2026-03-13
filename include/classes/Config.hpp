@@ -35,7 +35,6 @@ enum class HttpMethod
     POST,
     DELETE
 };
-std::string_view to_string(HttpMethod method);
 
 /* derived from the host_port grammar production.
 host is optional — bare port (`listen 8080;`) is valid.
@@ -57,7 +56,6 @@ struct ListenAddress
 
     bool operator==(const ListenAddress &other) const;
 };
-std::string to_string(const ListenAddress &address);
 
 // ListenAdress now Hashable
 namespace std
@@ -114,7 +112,6 @@ struct Location
     std::optional<uint16_t> return_code;
     std::string return_path;
 };
-std::string to_string(const Location &location);
 
 /*
 Derived from server_block and server_dir productions.
@@ -132,7 +129,7 @@ uint16_t key: status codes are non-negative, maximum 599, requiring
 > 8 bits (2^8 = 256 < 599). uint16_t is the minimal standard
 width that fits [100, 599]. Valid range enforced at parse time and
 confirmed in validator.
-
+Location
 `locations` maps path prefix to Location.
 std::map: O(log n) prefix lookup used by the request dispatcher.
 
@@ -165,6 +162,7 @@ the full definition (<ostream>) lives in Config.cpp.
 operator<< delegates to to_string — sgl rendering path,
 2 call sites: stream output & string embedding.
 */
+std::string to_string(HttpMethod m);
 std::string to_string(const ListenAddress &addr);
 std::string to_string(const Location &loc);
 std::string to_string(const ServerConfig &cfg);

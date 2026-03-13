@@ -6,7 +6,7 @@ namespace WebServ
 [[nodiscard]] HttpResponse http_delete(const ServerConfig &config, const std::string &path)
 {
 #ifdef DEBUG
-    log::log(HTTP_METHODE_DELETE, "Path=\"" + path + "\"");
+    logging::log(HTTP_METHODE_DELETE, "Path=\"" + path + "\"");
 #endif
 
     // find matching location (longest prefix match)
@@ -29,20 +29,20 @@ namespace WebServ
     if (!location)
     {
 #ifdef DEBUG
-        log::log(HTTP_METHODE_DELETE, "No matching location -> 404");
+        logging::log(HTTP_METHODE_DELETE, "No matching location -> 404");
 #endif
         return HttpResponse(404);
     }
 
 #ifdef DEBUG
-    log::log(HTTP_METHODE_DELETE, "Matched location prefix=\"" + location_prefix + "\" root=\"" + location->root + "\"");
+    logging::log(HTTP_METHODE_DELETE, "Matched location prefix=\"" + location_prefix + "\" root=\"" + location->root + "\"");
 #endif
 
     // check allowed methods
     if (location->allowed_methods.count(HttpMethod::DELETE) == 0)
     {
 #ifdef DEBUG
-        log::log(HTTP_METHODE_DELETE, "DELETE not allowed -> 405");
+        logging::log(HTTP_METHODE_DELETE, "DELETE not allowed -> 405");
 #endif
         return HttpResponse(405);
     }
@@ -50,7 +50,7 @@ namespace WebServ
     std::string base = location->root;
 
 #ifdef DEBUG
-    log::log(HTTP_METHODE_DELETE, "Using root base=\"" + base + "\"");
+    logging::log(HTTP_METHODE_DELETE, "Using root base=\"" + base + "\"");
 #endif
 
     // remove location prefix
@@ -59,7 +59,7 @@ namespace WebServ
         relative = relative.substr(1);
 
 #ifdef DEBUG
-    log::log(HTTP_METHODE_DELETE, "Relative path=\"" + relative + "\"");
+    logging::log(HTTP_METHODE_DELETE, "Relative path=\"" + relative + "\"");
 #endif
 
     // traversal protection
@@ -68,19 +68,19 @@ namespace WebServ
     if (!safe)
     {
 #ifdef DEBUG
-        log::log(HTTP_METHODE_DELETE, "resolve_path rejected traversal -> 403");
+        logging::log(HTTP_METHODE_DELETE, "resolve_path rejected traversal -> 403");
 #endif
         return HttpResponse(403);
     }
 
 #ifdef DEBUG
-    log::log(HTTP_METHODE_DELETE, "Resolved safe path=\"" + safe->string() + "\"");
+    logging::log(HTTP_METHODE_DELETE, "Resolved safe path=\"" + safe->string() + "\"");
 #endif
 
     if (!std::filesystem::exists(*safe))
     {
 #ifdef DEBUG
-        log::log(HTTP_METHODE_DELETE, "File does not exist -> 404");
+        logging::log(HTTP_METHODE_DELETE, "File does not exist -> 404");
 #endif
         return HttpResponse(404);
     }
@@ -88,13 +88,13 @@ namespace WebServ
     if (std::filesystem::is_directory(*safe))
     {
 #ifdef DEBUG
-        log::log(HTTP_METHODE_DELETE, "Target is directory -> 403");
+        logging::log(HTTP_METHODE_DELETE, "Target is directory -> 403");
 #endif
         return HttpResponse(403);
     }
 
 #ifdef DEBUG
-    log::log(HTTP_METHODE_DELETE, "Deleting file");
+    logging::log(HTTP_METHODE_DELETE, "Deleting file");
 #endif
 
     try
@@ -104,13 +104,13 @@ namespace WebServ
     catch (...)
     {
 #ifdef DEBUG
-        log::log(HTTP_METHODE_DELETE, "Filesystem deletion failed -> 500");
+        logging::log(HTTP_METHODE_DELETE, "Filesystem deletion failed -> 500");
 #endif
         return HttpResponse(500);
     }
 
 #ifdef DEBUG
-    log::log(HTTP_METHODE_DELETE, "File deleted -> 200");
+    logging::log(HTTP_METHODE_DELETE, "File deleted -> 200");
 #endif
 
     return HttpResponse(200);

@@ -6,7 +6,7 @@ namespace WebServ
 HttpResponse http_post(const ServerConfig &config, const std::string &path, const std::string &content)
 {
 #ifdef DEBUG
-    log::log(HTTP_METHODE_POST, "Path=\"" + path + "\" content=\"" + content + "\"");
+    logging::log(HTTP_METHODE_POST, "Path=\"" + path + "\" content=\"" + content + "\"");
 #endif
 
     // find matching location (longest prefix match)
@@ -29,20 +29,20 @@ HttpResponse http_post(const ServerConfig &config, const std::string &path, cons
     if (!location)
     {
 #ifdef DEBUG
-        log::log(HTTP_METHODE_POST, "No matching location -> 404");
+        logging::log(HTTP_METHODE_POST, "No matching location -> 404");
 #endif
         return HttpResponse(404);
     }
 
 #ifdef DEBUG
-    log::log(HTTP_METHODE_POST, "Matched location prefix=\"" + location_prefix + "\" root=\"" + location->root + "\"");
+    logging::log(HTTP_METHODE_POST, "Matched location prefix=\"" + location_prefix + "\" root=\"" + location->root + "\"");
 #endif
 
     // check allowed methods
     if (location->allowed_methods.count(HttpMethod::POST) == 0)
     {
 #ifdef DEBUG
-        log::log(HTTP_METHODE_POST, "POST not allowed in location -> 405");
+        logging::log(HTTP_METHODE_POST, "POST not allowed in location -> 405");
 #endif
         return HttpResponse(405);
     }
@@ -51,13 +51,13 @@ HttpResponse http_post(const ServerConfig &config, const std::string &path, cons
     if (location->client_max_body_size.has_value())
     {
 #ifdef DEBUG
-        log::log(HTTP_METHODE_POST, "Location body size limit=" + std::to_string(location->client_max_body_size.value()));
+        logging::log(HTTP_METHODE_POST, "Location body size limit=" + std::to_string(location->client_max_body_size.value()));
 #endif
 
         if (content.size() > location->client_max_body_size.value())
         {
 #ifdef DEBUG
-            log::log(HTTP_METHODE_POST, "Body too large -> 413");
+            logging::log(HTTP_METHODE_POST, "Body too large -> 413");
 #endif
             return HttpResponse(413);
         }
@@ -70,14 +70,14 @@ HttpResponse http_post(const ServerConfig &config, const std::string &path, cons
     {
         base = location->upload_store;
 #ifdef DEBUG
-        log::log(HTTP_METHODE_POST, "Using upload_store base=\"" + base + "\"");
+        logging::log(HTTP_METHODE_POST, "Using upload_store base=\"" + base + "\"");
 #endif
     }
     else
     {
         base = location->root;
 #ifdef DEBUG
-        log::log(HTTP_METHODE_POST, "Using root base=\"" + base + "\"");
+        logging::log(HTTP_METHODE_POST, "Using root base=\"" + base + "\"");
 #endif
     }
 
@@ -87,13 +87,13 @@ HttpResponse http_post(const ServerConfig &config, const std::string &path, cons
         relative = relative.substr(1);
 
 #ifdef DEBUG
-    log::log(HTTP_METHODE_POST, "Relative path=\"" + relative + "\"");
+    logging::log(HTTP_METHODE_POST, "Relative path=\"" + relative + "\"");
 #endif
 
     std::string file_path = base + "/" + relative;
 
 #ifdef DEBUG
-    log::log(HTTP_METHODE_POST, "Constructed file_path=\"" + file_path + "\"");
+    logging::log(HTTP_METHODE_POST, "Constructed file_path=\"" + file_path + "\"");
 #endif
 
     // traversal protection
@@ -102,25 +102,25 @@ HttpResponse http_post(const ServerConfig &config, const std::string &path, cons
     if (!safe)
     {
 #ifdef DEBUG
-        log::log(HTTP_METHODE_POST, "resolve_path rejected traversal -> 403");
+        logging::log(HTTP_METHODE_POST, "resolve_path rejected traversal -> 403");
 #endif
         return HttpResponse(403);
     }
 
 #ifdef DEBUG
-    log::log(HTTP_METHODE_POST, "Resolved safe path=\"" + safe->string() + "\"");
+    logging::log(HTTP_METHODE_POST, "Resolved safe path=\"" + safe->string() + "\"");
 #endif
 
     auto parent = safe->parent_path();
 
 #ifdef DEBUG
-    log::log(HTTP_METHODE_POST, "Parent path=\"" + parent.string() + "\"");
+    logging::log(HTTP_METHODE_POST, "Parent path=\"" + parent.string() + "\"");
 #endif
 
     if (!std::filesystem::exists(parent))
     {
 #ifdef DEBUG
-        log::log(HTTP_METHODE_POST, "Parent directory does not exist -> 409");
+        logging::log(HTTP_METHODE_POST, "Parent directory does not exist -> 409");
 #endif
         return HttpResponse(409);
     }
@@ -128,7 +128,7 @@ HttpResponse http_post(const ServerConfig &config, const std::string &path, cons
     if (std::filesystem::is_directory(*safe))
     {
 #ifdef DEBUG
-        log::log(HTTP_METHODE_POST, "Target path is a directory -> 403");
+        logging::log(HTTP_METHODE_POST, "Target path is a directory -> 403");
 #endif
         return HttpResponse(403);
     }
@@ -136,7 +136,7 @@ HttpResponse http_post(const ServerConfig &config, const std::string &path, cons
     bool existed = std::filesystem::exists(*safe);
 
 #ifdef DEBUG
-    log::log(HTTP_METHODE_POST, std::string("File existed=") + (existed ? "true" : "false"));
+    logging::log(HTTP_METHODE_POST, std::string("File existed=") + (existed ? "true" : "false"));
 #endif
 
     // write file
@@ -145,20 +145,20 @@ HttpResponse http_post(const ServerConfig &config, const std::string &path, cons
     if (!file.is_open())
     {
 #ifdef DEBUG
-        log::log(HTTP_METHODE_POST, "Failed to open file for writing -> 500");
+        logging::log(HTTP_METHODE_POST, "Failed to open file for writing -> 500");
 #endif
         return HttpResponse(500);
     }
 
 #ifdef DEBUG
-    log::log(HTTP_METHODE_POST, "Writing " + std::to_string(content.size()) + " bytes");
+    logging::log(HTTP_METHODE_POST, "Writing " + std::to_string(content.size()) + " bytes");
 #endif
 
     file.write(content.data(), content.size());
     file.close();
 
 #ifdef DEBUG
-    log::log(HTTP_METHODE_POST, existed ? "Returning 200 OK (overwrite)" : "Returning 201 Created");
+    logging::log(HTTP_METHODE_POST, existed ? "Returning 200 OK (overwrite)" : "Returning 201 Created");
 #endif
 
     return HttpResponse(existed ? 200 : 201);

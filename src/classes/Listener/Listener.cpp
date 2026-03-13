@@ -83,7 +83,7 @@ void Listener::add_host(const std::string &new_host, Server &server)
     auto it = host_to_server.find(new_host);
     if (it != host_to_server.end())
     {
-        log::log(WARNING, "Duplicated server_name");
+        logging::log(WARNING, "Duplicated server_name");
     }
     else
     {
@@ -107,7 +107,7 @@ void Listener::handle_event(uint32_t events)
     // epoll reported socket error
     if (events & (EPOLLERR | EPOLLHUP))
     {
-        log::log(LISTENER, "EPOLLERR", log::LogType::ERROR);
+        logging::log(LISTENER, "EPOLLERR", logging::LogType::ERROR);
     }
 
     // listener only cares about readable events
@@ -138,25 +138,25 @@ void Listener::handle_event(uint32_t events)
             // fd limit reached
             if (errno == EMFILE || errno == ENFILE)
             {
-                log::log(LISTENER, "FD limit reached", log::LogType::ERROR);
+                logging::log(LISTENER, "FD limit reached", logging::LogType::ERROR);
                 break;
             }
 
             // unexpected accept error
             int err = errno;
-            log::log(LISTENER, "accept failed: " + std::string(strerror(err)), log::LogType::ERROR);
+            logging::log(LISTENER, "accept failed: " + std::string(strerror(err)), logging::LogType::ERROR);
             continue;
         }
 
         // new client connected
-        log::log(LISTENER, "Accepted client fd=" + std::to_string(connection_fd));
+        logging::log(LISTENER, "Accepted client fd=" + std::to_string(connection_fd));
 
         // set client socket non-blocking
         int flags = fcntl(connection_fd, F_GETFL, 0);
         if (flags == -1 || fcntl(connection_fd, F_SETFL, flags | O_NONBLOCK) == -1)
         {
             int err = errno;
-            log::log(LISTENER, "fcntl failed: " + std::string(strerror(err)), log::LogType::ERROR);
+            logging::log(LISTENER, "fcntl failed: " + std::string(strerror(err)), logging::LogType::ERROR);
             close(connection_fd);
             continue;
         }

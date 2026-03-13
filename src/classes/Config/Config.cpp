@@ -1,127 +1,180 @@
 #include "classes/Config.hpp"
 
-std::string_view to_string(HttpMethod method)
-{
-    switch (method)
-    {
-        case HttpMethod::GET:    return "GET";
-        case HttpMethod::POST:   return "POST";
-        case HttpMethod::DELETE: return "DELETE";
-    }
+#include <ostream>
+#include <sstream>
+#include <string>
 
-    return "UNKNOWN";
+/*
+Config.cpp — display serialisation for Config data types.
+
+programmer-facing: complete field coverage, labelled and indented.
+does not reconstruct valid nginx syntax — renders state for inspection.
+
+2 access points, 1 rendering path:
+    to_string(x)     → std::string, for embedding in log messages or errors.
+    operator<<(os, x) → delegates to to_string. single definition, no divergence.
+
+maintenance liability: each to_string function manually enumerates
+its struct's fields. C++17 has no reflection — the compiler cannot
+detect a field added to a struct but omitted here. divergence is
+silent. update to_string whenever the corresponding struct changes.
+*/
+
+std::string to_string(HttpMethod m)
+{
+    switch (m)
+    {
+    case HttpMethod::GET:
+        return "GET";
+    case HttpMethod::POST:
+        return "POST";
+    case HttpMethod::DELETE:
+        return "DELETE";
+    }
+    return "?";
 }
 
-bool ListenAddress::operator==(const ListenAddress& other) const
+bool ListenAddress::operator==(const ListenAddress &other) const
 {
     return host == other.host && port == other.port;
 }
 
-std::string to_string(const ListenAddress& address)
+/*
+format mirrors the listen directive syntax: host:port.
+e.g. "0.0.0.0:8080", "127.0.0.1:3000"
+*/
+std::string to_string(const ListenAddress &addr)
 {
-    return address.host + ":" + std::to_string(address.port);
+    return addr.host + ":" + std::to_string(addr.port);
 }
 
-std::string to_string(const Location& location)
+std::ostream &operator<<(std::ostream &os, const ListenAddress &addr)
+{
+    return os << to_string(addr);
+}
+
+/*
+Location has no self-knowledge of its map key (the path prefix).
+the key lives in ServerConfig's locations map. to_string(Location)
+renders block contents only — the composite renderer in
+to_string(ServerConfig) provides path context.
+
+client_max_body_size rendered as "(inherit)" when std::nullopt —
+distinguishes "not set" from a numeric value, which a bare integer
+cannot express.
+*/
+std::string to_string(const Location &loc)
 {
     std::ostringstream os;
 
     os << "Location {\n";
+    os << "  root:                 " << loc.root << "\n";
 
-    os << "  root: " << location.root << "\n";
-
-    os << "  index_files: [";
-    for (size_t i = 0; i < location.index_files.size(); ++i)
+    os << "  index_files:          [";
+    for (size_t i = 0; i < loc.index_files.size(); ++i)
     {
-        os << location.index_files[i];
-        if (i + 1 < location.index_files.size())
+        if (i)
             os << ", ";
+        os << loc.index_files[i];
     }
     os << "]\n";
 
-    os << "  allowed_methods: [";
-    size_t count = 0;
-    for (const auto& method : location.allowed_methods)
+    os << "  allowed_methods:      {";
+    bool first = true;
+    for (HttpMethod m : loc.allowed_methods)
     {
-        os << to_string(method);
-        if (++count < location.allowed_methods.size())
-            os << ", ";
+        if (!first)
+            os << " ";
+        os << to_string(m);
+        first = false;
     }
-    os << "]\n";
+    os << "}\n";
 
-    os << "  autoindex: " << (location.autoindex ? "true" : "false") << "\n";
+    os << "  autoindex:            " << (loc.autoindex ? "on" : "off") << "\n";
 
-    os << "  cgi_extension: " << location.cgi_extension << "\n";
-    os << "  cgi_path: " << location.cgi_path << "\n";
+    os << "  cgi_extension:        "
+       << (loc.cgi_extension.empty() ? "(none)" : loc.cgi_extension) << "\n";
+    os << "  cgi_path:             "
+       << (loc.cgi_path.empty() ? "(none)" : loc.cgi_path) << "\n";
 
     os << "  client_max_body_size: ";
-    if (location.client_max_body_size)
-        os << *location.client_max_body_size;
+    if (loc.client_max_body_size.has_value())
+        os << loc.client_max_body_size.value();
     else
-        os << "inherit";
+        os << "(inherit)";
     os << "\n";
 
-    os << "  upload_enable: " << (location.upload_enable ? "true" : "false") << "\n";
-    os << "  upload_store: " << location.upload_store << "\n";
+    os << "  upload_enable:        " << (loc.upload_enable ? "on" : "off") << "\n";
+    os << "  upload_store:         "
+       << (loc.upload_store.empty() ? "(none)" : loc.upload_store) << "\n";
 
-    os << "  return: ";
-    if (location.return_code)
-        os << *location.return_code << " -> " << location.return_path;
+    os << "  return:               ";
+    if (loc.return_code.has_value())
+        os << loc.return_code.value() << " " << loc.return_path;
     else
-        os << "none";
+        os << "(none)";
     os << "\n";
 
     os << "}";
-
     return os.str();
 }
 
-std::string to_string(const ServerConfig& config)
+std::ostream &operator<<(std::ostream &os, const Location &loc)
+{
+    return os << to_string(loc);
+}
+
+/*
+indentation of nested Location blocks is the responsibility of this
+composite renderer, not of to_string(Location) itself — keeps the
+inner function self-contained and independently usable.
+
+getline loop re-indents each line of the Location block by 6 spaces,
+aligning it under the path key it belongs to.
+*/
+std::string to_string(const ServerConfig &cfg)
 {
     std::ostringstream os;
 
     os << "ServerConfig {\n";
 
-    // listen
-    os << "  listen: [\n";
-    for (const auto& addr : config.listen)
+    os << "  listen:\n";
+    for (const auto &addr : cfg.listen)
         os << "    " << to_string(addr) << "\n";
-    os << "  ]\n";
 
-    // server names
-    os << "  server_names: [";
-    for (size_t i = 0; i < config.server_names.size(); ++i)
+    os << "  server_names:         [";
+    for (size_t i = 0; i < cfg.server_names.size(); ++i)
     {
-        os << config.server_names[i];
-        if (i + 1 < config.server_names.size())
+        if (i)
             os << ", ";
+        os << cfg.server_names[i];
     }
     os << "]\n";
 
-    os << "  client_max_body_size: " << config.client_max_body_size << "\n";
+    os << "  client_max_body_size: " << cfg.client_max_body_size << "\n";
 
-    // error pages
-    os << "  error_pages: {\n";
-    for (const auto& [code, path] : config.error_pages)
-        os << "    " << code << " -> " << path << "\n";
-    os << "  }\n";
+    os << "  error_pages:\n";
+    if (cfg.error_pages.empty())
+        os << "    (none)\n";
+    else
+        for (const auto &[code, path] : cfg.error_pages)
+            os << "    " << code << " -> " << path << "\n";
 
-    // locations
-    os << "  locations: {\n";
-    for (const auto& [path, location] : config.locations)
+    os << "  locations:\n";
+    for (const auto &[path, loc] : cfg.locations)
     {
-        os << "    \"" << path << "\":\n";
-
-        std::string loc_str = to_string(location);
-        std::istringstream loc_stream(loc_str);
+        os << "    \"" << path << "\" ->\n";
+        std::istringstream lines(to_string(loc));
         std::string line;
-
-        while (std::getline(loc_stream, line))
+        while (std::getline(lines, line))
             os << "      " << line << "\n";
     }
-    os << "  }\n";
 
     os << "}";
-
     return os.str();
+}
+
+std::ostream &operator<<(std::ostream &os, const ServerConfig &cfg)
+{
+    return os << to_string(cfg);
 }

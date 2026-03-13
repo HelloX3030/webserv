@@ -196,7 +196,7 @@ const ServerConfig &Connection::get_server_config(const std::string &host) const
     const ServerConfig &config = listener.get_server_config(host);
 
 #ifdef DEBUG
-    log::log(CONNECTION, "get_server_config");
+    logging::log(CONNECTION, "get_server_config");
     std::cout << ::to_string(config) << std::endl;
 #endif
 

@@ -6,7 +6,7 @@ namespace WebServ
 static HttpResponse serve_file(const std::filesystem::path &file_path)
 {
 #ifdef DEBUG
-    log::log(HTTP_METHODE_GET, "Serving file \"" + file_path.string() + "\"");
+    logging::log(HTTP_METHODE_GET, "Serving file \"" + file_path.string() + "\"");
 #endif
 
     std::ifstream file(file_path.c_str(), std::ios::binary);
@@ -14,7 +14,7 @@ static HttpResponse serve_file(const std::filesystem::path &file_path)
     if (!file.is_open())
     {
 #ifdef DEBUG
-        log::log(HTTP_METHODE_GET, "Failed to open file -> 500");
+        logging::log(HTTP_METHODE_GET, "Failed to open file -> 500");
 #endif
         return HttpResponse(500);
     }
@@ -28,7 +28,7 @@ static HttpResponse serve_file(const std::filesystem::path &file_path)
     res.set_content_type(file_path);
 
 #ifdef DEBUG
-    log::log(HTTP_METHODE_GET, res.to_string());
+    logging::log(HTTP_METHODE_GET, res.to_string());
 #endif
 
     return res;
@@ -37,7 +37,7 @@ static HttpResponse serve_file(const std::filesystem::path &file_path)
 [[nodiscard]] HttpResponse http_get(const ServerConfig &config, const std::string &path)
 {
 #ifdef DEBUG
-    log::log(HTTP_METHODE_GET, "Path=\"" + path + "\"");
+    logging::log(HTTP_METHODE_GET, "Path=\"" + path + "\"");
 #endif
 
     // find matching location (longest prefix match)
@@ -60,20 +60,20 @@ static HttpResponse serve_file(const std::filesystem::path &file_path)
     if (!location)
     {
 #ifdef DEBUG
-        log::log(HTTP_METHODE_GET, "No matching location -> 404");
+        logging::log(HTTP_METHODE_GET, "No matching location -> 404");
 #endif
         return HttpResponse(404);
     }
 
 #ifdef DEBUG
-    log::log(HTTP_METHODE_GET, "Matched location prefix=\"" + location_prefix + "\" root=\"" + location->root + "\"");
+    logging::log(HTTP_METHODE_GET, "Matched location prefix=\"" + location_prefix + "\" root=\"" + location->root + "\"");
 #endif
 
     // check allowed methods
     if (location->allowed_methods.count(HttpMethod::GET) == 0)
     {
 #ifdef DEBUG
-        log::log(HTTP_METHODE_GET, "GET not allowed in location -> 405");
+        logging::log(HTTP_METHODE_GET, "GET not allowed in location -> 405");
 #endif
         return HttpResponse(405);
     }
@@ -82,7 +82,7 @@ static HttpResponse serve_file(const std::filesystem::path &file_path)
     std::string base = location->root;
 
 #ifdef DEBUG
-    log::log(HTTP_METHODE_GET, "Using root base=\"" + base + "\"");
+    logging::log(HTTP_METHODE_GET, "Using root base=\"" + base + "\"");
 #endif
 
     // remove location prefix
@@ -91,7 +91,7 @@ static HttpResponse serve_file(const std::filesystem::path &file_path)
         relative = relative.substr(1);
 
 #ifdef DEBUG
-    log::log(HTTP_METHODE_GET, "Relative path=\"" + relative + "\"");
+    logging::log(HTTP_METHODE_GET, "Relative path=\"" + relative + "\"");
 #endif
 
     // traversal protection
@@ -100,19 +100,19 @@ static HttpResponse serve_file(const std::filesystem::path &file_path)
     if (!safe)
     {
 #ifdef DEBUG
-        log::log(HTTP_METHODE_GET, "resolve_path rejected traversal -> 403");
+        logging::log(HTTP_METHODE_GET, "resolve_path rejected traversal -> 403");
 #endif
         return HttpResponse(403);
     }
 
 #ifdef DEBUG
-    log::log(HTTP_METHODE_GET, "Resolved safe path=\"" + safe->string() + "\"");
+    logging::log(HTTP_METHODE_GET, "Resolved safe path=\"" + safe->string() + "\"");
 #endif
 
     if (!std::filesystem::exists(*safe))
     {
 #ifdef DEBUG
-        log::log(HTTP_METHODE_GET, "File does not exist -> 404");
+        logging::log(HTTP_METHODE_GET, "File does not exist -> 404");
 #endif
         return HttpResponse(404);
     }
@@ -121,7 +121,7 @@ static HttpResponse serve_file(const std::filesystem::path &file_path)
     if (std::filesystem::is_directory(*safe))
     {
 #ifdef DEBUG
-        log::log(HTTP_METHODE_GET, "Target is directory");
+        logging::log(HTTP_METHODE_GET, "Target is directory");
 #endif
 
         // try index files
@@ -133,14 +133,14 @@ static HttpResponse serve_file(const std::filesystem::path &file_path)
             if (std::filesystem::exists(index_path))
             {
 #ifdef DEBUG
-                log::log(HTTP_METHODE_GET, "Serving index file \"" + index_path.string() + "\"");
+                logging::log(HTTP_METHODE_GET, "Serving index file \"" + index_path.string() + "\"");
 #endif
                 return serve_file(index_path);
             }
         }
 
 #ifdef DEBUG
-        log::log(HTTP_METHODE_GET, "Directory without index -> 403");
+        logging::log(HTTP_METHODE_GET, "Directory without index -> 403");
 #endif
         return HttpResponse(403);
     }
