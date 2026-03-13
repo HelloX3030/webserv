@@ -16,7 +16,7 @@ src/interfaces/EPollHandler.cpp
 ## what EpollHandler is
 
 an abstract base class defining the contract every event handler must
-satisfy to participate in the event loop. 
+satisfy to participate in the event loop.
 concrete handlers (Listener, Connection) inherit from it.
 
 the event loop in `WebServ::run()` holds only `EpollHandler*` pointers.
@@ -45,8 +45,8 @@ class EpollHandler {
 };
 ```
 
-pure virtual methods are the contract obligations. 
-`update_epoll_events()` is shared infrastructure: 
+pure virtual methods are the contract obligations.
+`update_epoll_events()` is shared infrastructure:
 calls `epoll_ctl(EPOLL_CTL_MOD)` using virtual `get_fd()` and `get_events()`
 — used by handlers when their interest mask changes.
 
@@ -64,8 +64,8 @@ namespace WebServ {
 declarations (not definitions) of the server-level registry and its
 operations. placed here so that every file including `EPollHandler.hpp`
 — i.e. every concrete handler — gets access to `add_epoll_handler` and
-`remove_epoll_handler` without an additional include. 
-a convenience coupling: the abstraction header carries 
+`remove_epoll_handler` without an additional include.
+a convenience coupling: the abstraction header carries
 the infrastructure declarations its implementors need.
 
 
@@ -105,4 +105,4 @@ registration, deregistration, destruction — passes through them.
 
 ## further reading
 
-_meta/1_knowledge->dev/ghr/architecture/
+meta/1_knowledge->dev/ghr/architecture/

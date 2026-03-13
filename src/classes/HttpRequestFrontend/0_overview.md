@@ -13,6 +13,11 @@ this is irreducible state.
 ConfigFrontend:      parse : String → Config           (pure)
 HttpRequestFrontend: feed  : Self × Bytes → Self × Result   (stateful)
 ```
+    NB (ghr): see:
+        thread: 20260313-0_persistence_http-request-frontend
+        section: 2. Type notation
+    creation of documentation upcoming
+
 
 ConfigFrontend receives complete input, produces complete output,
 holds no state between calls. a namespace containing a pure function
