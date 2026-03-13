@@ -1,11 +1,11 @@
 /* location-level directive parsers.
 
-each function implements 1 grammar production from location_dir.
-same contract as server-level: name consumed, function owns values.
+each fn implements 1 grammar production from location_dir.
+same contract as server-level: name consumed, fn owns values.
 
 memory-mechanics:
-This fragment has no memory safety exposure of its own.
-Its correctness is contingent on the END sentinel invariant
+this fragment has no memory safety exposure of its own.
+its correctness is contingent on the END sentinel invariant
 established by fragment 1. the tokeniser's final push unconditionally
 appends Token{TokenType::END, "", line}
 */

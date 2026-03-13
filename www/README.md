@@ -2,8 +2,7 @@
 
 the document root. the filesystem subtree the server maps to URI-space
 and delivers to HTTP clients. when the server receives a GET request,
-it resolves the URI against this tree, reads the file, and transmits
-its bytes.
+it resolves the URI against this tree, reads the file, and transmits its bytes.
 
 committed to the repository so the server is self-contained:
 `git clone` + `./webserv` works on any machine without external setup.
@@ -11,7 +10,7 @@ committed to the repository so the server is self-contained:
 
 ## naming
 
-`www/` is the convention of early web servers (Apache, NCSA httpd).
+`www/` ("world wide web") is the convention of early web servers (Apache, NCSA httpd).
 alternatives: `htdocs/`, `public_html/`, `html/`.
 the name carries no runtime meaning — what the server treats as its
 document root is determined solely by the `root` directive in config.
@@ -19,10 +18,10 @@ document root is determined solely by the `root` directive in config.
 
 ## structure
 
-see local disk filesystem. this directory is a work in progress.
+see filesystem.
 
 
-## files
+## files (WIP)
 
 ### html/index.html
 
@@ -40,21 +39,19 @@ renders it: the user sees a file picker and a submit button.
 when the user submits, the browser constructs a POST request. the form's
 `enctype="multipart/form-data"` attribute instructs the browser to use
 multipart encoding — the only encoding that can carry binary file data.
-under this encoding, the request body is divided into MIME parts: one
-part carries the file bytes, another carries metadata including
-`Content-Disposition: filename=`, from which the server extracts the
-original filename.
+under this encoding, the request body is divided into MIME parts:
+1 part carries the file bytes, another carries metadata including
+`Content-Disposition: filename=`, from which the server extracts the original filename.
 
 without `enctype="multipart/form-data"`, the browser falls back to
 `application/x-www-form-urlencoded`, which cannot carry binary data
 and transmits no filename. the upload silently fails.
 
 
-### errors/
+### errors/ (WIP)
 
 error pages served when the server's `error_page` directive maps a
-status code to a path in this directory. this directory is a work
-in progress.
+status code to a path in this directory.
 
 paths in `error_page` are URI-space paths, not filesystem paths:
 the server resolves them against the location root at request time.
