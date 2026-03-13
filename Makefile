@@ -77,7 +77,7 @@ DEP_FILES := $(REL_OBJS:.o=.d) $(DBG_OBJS:.o=.d) $(LKS_OBJS:.o=.d)
 # COMPILE_OBJ, which expands during phase 2 when these values
 # are active. EXTRA_LDFLAGS is composed into each link rule.
 
-$(NAME):     EXTRA_CFLAGS  :=
+$(NAME):     EXTRA_CFLAGS  := -O3 # ghr: read into optimisation => cross cpp unit optimisation (build process)
 $(NAME):     EXTRA_LDFLAGS :=
 
 $(DBG_NAME): EXTRA_CFLAGS  := -DDEBUG=1 -g -O0 -fno-omit-frame-pointer
