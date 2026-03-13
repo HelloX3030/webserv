@@ -8,7 +8,7 @@ do we need to implement HTTP/1.0 keep-alive?
 
 ## answer
 
-HTTP/1.0 keep-alive mechanism: no. not required.
+no. not required.
 
 HTTP/1.0 defaults to closing connections. keep-alive is an opt-in
 extension — client sends `Connection: keep-alive`, server honours it.
@@ -16,7 +16,7 @@ extension — client sends `Connection: keep-alive`, server honours it.
 HTTP/1.1 inverts the default: connections persist unless either
 party sends `Connection: close`. the opt-in mechanism is replaced by opt-out.
 
-since the subject mandates HTTP/1.1, we implement HTTP/1.1 semantics.
+since the subject mandates HTTP/1.1, we should implement HTTP/1.1 semantics.
 the HTTP/1.0 keep-alive handshake is unnecessary — we handle
 persistence through HTTP/1.1's default behaviour.
 
@@ -64,14 +64,14 @@ protocol's semantics rather than an approximation.
 
 ### state machine extension
 
-after each response: explicit decision required.
-keep fd open, or close?
+after each response: explicit decision required:
+    keep fd open, or close?
 
 the runtime must handle a state that doesn't exist in the
 single-request model: "idle, waiting for next request."
 fd registered with poll(), but neither reading nor writing.
 
-this is where subtle bugs concentrate — state transitions that
+potential src of bugs — state transitions that
 only exist under persistence, invisible in single-request testing.
 
 
@@ -104,13 +104,13 @@ this decision requires:
 
 ### who has what
 ```
-                        | frontend | response | runtime
-------------------------+----------+----------+---------
-HTTP version            |    ✓     |          |
-Connection header       |    ✓     |          |
-response completion     |          |    ✓     |
-config                  |          |          |    ✓
-fd lifecycle control    |          |          |    ✓
+                            | frontend | response | runtime
+------------------------+----------+----------+------------
+(1) HTTP version            |    ✓     |          |
+(2) Connection header       |    ✓     |          |
+(3) response completion     |          |    ✓     |
+(4) config                  |          |          |    ✓
+(5) fd lifecycle control    |          |          |    ✓
 ```
 
 frontend has (1) and (2), but cannot have (3), (4), or (5).
@@ -157,8 +157,7 @@ else
 ```
 
 the conjunction matters: even if client wants keep-alive,
-a failed response should close. don't reuse connections in
-uncertain state.
+a failed response should close. don't reuse connections in uncertain state.
 
 
 ---
@@ -168,7 +167,6 @@ uncertain state.
 
 what does "clean completion" mean?
 
-from first principles:
 - all response bytes written to socket
 - no I/O error during write
 
