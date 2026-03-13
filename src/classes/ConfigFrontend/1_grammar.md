@@ -13,6 +13,7 @@ why:
 reading:
 . terminals are quoted strings
 . whitespace between symbols is implicit
+. prose terminals (? ... ?) per ISO 14977 for character ranges
 
 
 ---
@@ -98,11 +99,7 @@ letter          = ? 'a'..'z' | 'A'..'Z' ? ;
 digit           = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" ;
 ```
 
-prose terminals (? ... ?) per ISO 14977 for character ranges.
-
-
 ---
-
 
 ## notes
 

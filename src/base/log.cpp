@@ -2,7 +2,7 @@
 #include "base/defines.hpp"
 #include "base/errors.hpp"
 
-namespace log
+namespace logging
 {
 
 void log(std::string title, std::string msg, std::string value, LogType type)
@@ -10,7 +10,7 @@ void log(std::string title, std::string msg, std::string value, LogType type)
 #ifdef DEBUG
     if (title.length() > log_title_width - 2)
     {
-        std::cout << "LOG TITLE TO LONG!" << std::endl;
+        std::cout << "LOG TITLE TOO LONG!" << std::endl;
     }
 #endif
 
@@ -57,15 +57,15 @@ void log(std::string title, std::size_t i, std::string msg, LogType type)
 
 } // namespace log
 
-std::string to_string(log::LogType type)
+std::string to_string(logging::LogType type)
 {
     switch (type)
     {
-    case log::LogType::DEFAULT:
+    case logging::LogType::DEFAULT:
         return DEFAULT;
-    case log::LogType::ERROR:
+    case logging::LogType::ERROR:
         return ERROR;
-    case log::LogType::LIST:
+    case logging::LogType::LIST:
         return LIST;
     default:
         return UNKNOWN;

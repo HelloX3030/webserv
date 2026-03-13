@@ -1,0 +1,13 @@
+see:
+.(root)/.clangformat
+
+
+discuss decisions made
+
+see: 20260310-0_dev-toolchain
+
+
+ColumnLimit
+your position — team discipline, lines already mostly ≤80 — is coherent if the discipline holds consistently across both of you, across fatigue and deadline pressure, and catches violations in review. the case for setting 80 or 100 in the file is that clang-format enforces the constraint mechanically and unconditionally, without relying on attention. it is not distrust — it is offloading a cognitive task to a tool so human attention goes to semantics.
+as for elite projects: Genode enforces 80 columns — their coding style document is explicit about this. DarkFi does not publish a formal style guide, but their C++ is idiomatic and reads as 80-column-disciplined. the Linux kernel enforces 80 (recently relaxed to 100 for some subsystems, with debate). LLVM itself uses 80. the historical argument is exactly what you said: terminals, screen splits, side-by-side diffs. the practical modern argument is: at 80 columns, you can have two files side-by-side in any editor on any screen without horizontal scrolling. this is load-bearing for code review.
+my recommendation: set ColumnLimit: 80. your discipline already targets this. the tool simply makes it a contract rather than an intention. if a line genuinely needs to exceed it — a long string literal, a POSIX type signature — // clang-format off/on handles the exception explicitly.

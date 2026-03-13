@@ -14,7 +14,7 @@ Listener::~Listener()
 {
 }
 
-Listener::Listener(ListenAddress listen_adress, Server& default_server)
+Listener::Listener(ListenAddress listen_adress, Server &default_server)
     : default_server(default_server)
 {
     // Create Socket
@@ -176,7 +176,7 @@ std::string Listener::to_string() const
     std::string result = "Listener(fd=" + std::to_string(fd.get()) + ", hosts=[";
 
     bool first = true;
-    for (const auto& [host, _] : host_to_server)
+    for (const auto &[host, _] : host_to_server)
     {
         if (!first)
             result += ", ";

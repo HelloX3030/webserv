@@ -2,7 +2,7 @@
 
 #include "include.hpp"
 
-namespace log
+namespace logging
 {
 
 constexpr int log_title_width = 20;
@@ -20,4 +20,4 @@ void log(std::string title, std::size_t i, std::string msg, LogType type = LogTy
 
 } // namespace log
 
-std::string to_string(log::LogType type);
+std::string to_string(logging::LogType type);

@@ -1,0 +1,1 @@
+binary vs text, JSON, structured formats (future)

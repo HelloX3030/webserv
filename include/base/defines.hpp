@@ -2,6 +2,19 @@
 
 #include <cstddef>
 
+/*
+whether something belongs in defines.hpp:
+is this a value that:
+(a) is referenced from multiple sites, or
+(b) encodes a policy decision whose change
+must propagate consistently across the system?
+*/
+
+/*
+infrastructure policy constants:
+system-wide tunables, potentially referenced from multiple sites,
+encoding decisions about resource limits.
+*/
 // Batch Sizes
 namespace WebServ
 {
@@ -34,8 +47,13 @@ constexpr const char *CLOSE = "Close";
 constexpr const char *UNKNOWN = "Unknown";
 
 // Log Titles
+/*
+source identifiers used as the title argument
+in logging::log() calls, establishing component identity in log output.
+*/
 constexpr const char *DISPLAY = "Display";
 constexpr const char *WEB_SERV = "WebServ";
+constexpr const char* CONFIG_FRONTEND = "ConfigFrontend";
 constexpr const char *SERVER = "Server";
 constexpr const char *LISTENER = "Listener";
 constexpr const char *CONNECTION = "Connection";

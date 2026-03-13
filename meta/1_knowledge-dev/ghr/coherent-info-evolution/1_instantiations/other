@@ -1,0 +1,4 @@
+Operational transformation (real-time collaborative editing)
+CRDTs (conflict-free replicated data types)
+Database replication / eventual consistency
+File synchronization (Unison, Syncthing)

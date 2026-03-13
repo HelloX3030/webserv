@@ -1,24 +1,27 @@
-# Executables
-webserv
-webserv_debug
-webserv_leaks
+# (Lukas includes 42 subject.pdf in root)
+*.pdf
+
+# clang tooling
+compile_commands.json
+.cache/
+# .clang-format
+# .clang-tidy
+# .clangd
+
+# editor UI
+# .vscode/
 
 # build dirs + obj artifacts
 obj/
 obj_debug/
 obj_leaks/
 
+# executables
+webserv
+webserv_debug
+webserv_leaks
+
 # runtime-generated files
 www/uploads/*
 # keep dir struct in repo
 !www/uploads/README.md
-
-# local dev env: editor settings
-# .vscode/
-# uncomment @ of team dev process, pre-evals
-
-*.pdf
-
-# TODO
-# => remove www_server1
-www_server1/

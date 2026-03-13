@@ -13,7 +13,7 @@ void run()
 
 #ifdef DEBUG
         std::cout << BR << std::endl;
-        log::log(WEB_SERV, "e_poll wakeup...");
+        logging::log(WEB_SERV, "e_poll wakeup...");
         display();
 #endif
 
@@ -28,7 +28,7 @@ void run()
         {
             EpollHandler *handler = static_cast<EpollHandler *>(events[i].data.ptr);
 #ifdef DEBUG
-            log::log(WEB_SERV, handler->get_fd(), handler->to_string());
+            logging::log(WEB_SERV, handler->get_fd(), handler->to_string());
 #endif
             handler->handle_event(events[i].events);
 

@@ -1,23 +1,23 @@
+INTEGRATE INTO 0-4
+
+
 # HTTP request frontend — persistence support
 
+---
 
 ## context
 
 the frontend is a pure function: bytes in, structured request out.
 it has no knowledge of connection lifecycle.
-it exposes data that enables the runtime to make persistence
-decisions.
+it exposes data that enables the runtime to make persistence decisions.
 
 the frontend can be "persistent-ready" before the runtime is.
 the frontend doesn't need to know whether persistence is enabled —
 it just exposes the data. the runtime makes the decision.
 
-
 ---
 
-
 ## requirements for persistence support
-
 
 ### 1. expose HTTP version
 
@@ -31,7 +31,6 @@ why: HTTP/1.1 defaults to persistent connections.
 HTTP/1.0 defaults to non-persistent.
 the runtime needs this to compute the default behaviour.
 
-
 ### 2. expose Connection header
 
 the request struct must expose all headers, including `Connection`.
@@ -44,7 +43,6 @@ why: the client can override the default via:
 - `Connection: close` (HTTP/1.1 client wants to close)
 - `Connection: keep-alive` (HTTP/1.0 client wants to persist)
 
-
 ### 3. expose Content-Length
 
 the request struct must expose Content-Length when present.
@@ -53,7 +51,6 @@ why: Content-Length determines where the request body ends.
 without correct parsing, the frontend cannot identify request
 boundaries. if boundaries are wrong, persistent connections fail —
 the next request starts mid-body of the previous one.
-
 
 ### 4. correct request boundary detection
 
@@ -71,12 +68,9 @@ the frontend must:
 if Content-Length parsing is correct now, persistent connections
 work later. if it's approximate, they fail.
 
-
 ---
 
-
 ## header case normalisation
-
 
 ### the rule
 
@@ -97,10 +91,9 @@ RFC 9110 (current HTTP semantics):
 
 `Connection`, `connection`, `CONNECTION` are all the same header.
 
-
 ### implementation
 
-two options:
+2 options:
 
 1. normalise on parse: convert all header names to canonical form
    (e.g. lowercase) when building the headers map.
@@ -125,17 +118,13 @@ then lookup is simply:
 auto it = headers.find("connection");
 ```
 
-
 ---
-
 
 ## keepAlive() method
 
-
 ### purpose
 
-pure derivation from already-parsed data.
-no runtime coupling.
+pure derivation from already-parsed data. no runtime coupling.
 the runtime calls this after the response is sent to inform
 its decision — but the method itself has no side effects.
 
@@ -184,9 +173,7 @@ struct HttpRequest
 };
 ```
 
-
 ---
-
 
 ## HttpRequest struct — complete specification
 
@@ -214,9 +201,7 @@ struct HttpRequest
 };
 ```
 
-
 ---
-
 
 ## what the frontend does NOT do
 

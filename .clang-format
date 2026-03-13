@@ -1,7 +1,13 @@
+# BasedOnStyle: base preset for all ~200 options;
+# named overrides below take precedence.
 BasedOnStyle: LLVM
-IndentWidth: 4
-TabWidth: 4
-UseTab: Never
-BreakBeforeBraces: Allman
-ColumnLimit: 0
+
+# dimensional parameters of token stream's textual representation
+IndentWidth:  4
+TabWidth:     4
+UseTab:       Never
+ColumnLimit:  0
+
+# block delimiter placement
+BreakBeforeBraces:                Allman
 AllowShortFunctionsOnASingleLine: None

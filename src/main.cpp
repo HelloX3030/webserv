@@ -3,7 +3,7 @@
 int main(int argc, char **argv)
 {
 #ifdef DEBUG
-    log::log(INFORMATION, "DEBUG MODE ENABLED");
+    logging::log(INFORMATION, "DEBUG MODE ENABLED");
 #endif
 
     // Signals Handling
@@ -21,7 +21,7 @@ int main(int argc, char **argv)
     }
     catch (const std::exception &e)
     {
-        log::log(WEB_SERV, e.what(), log::LogType::ERROR);
+        logging::log(WEB_SERV, e.what(), logging::LogType::ERROR);
         WebServ::quit();
         return 1;
     }

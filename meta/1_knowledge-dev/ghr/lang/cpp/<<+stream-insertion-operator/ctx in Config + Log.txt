@@ -1,0 +1,19 @@
+operator<< — what it is and why Config needed it but LogType does not
+operator<< is C++'s stream insertion operator. It's what makes this work:
+cppstd::cout << some_object;
+The compiler desugars this to:
+cppoperator<<(std::cout, some_object);
+std::cout is an std::ostream. So the signature is:
+cppstd::ostream& operator<<(std::ostream& os, const T& x);
+This is function overloading on a symbol (<<) rather than an alphabetic name. The mechanism is identical — it's a free function with 2 parameters.
+Why did Config need it, and LogType does not? Ask: where is each type used?
+LogType appears in exactly 1 string context — the error message in log.cpp when an unknown type is passed. to_string alone covers that. Nobody writes std::cout << some_log_type directly.
+Config types — ListenAddress, Location, ServerConfig — may be used in stream contexts directly: std::cout << config, or nested inside another operator<< that calls os << addr. Without operator<<, every stream use requires std::cout << to_string(config) — noisier, and it breaks composability with the stream protocol.
+The delegation pattern we used:
+cppstd::ostream& operator<<(std::ostream& os, const ListenAddress& addr)
+{
+    return os << to_string(addr);
+}
+means there is exactly 1 rendering definition (to_string). operator<< adds zero logic — it just plugs to_string into the stream protocol. Single source of truth; 2 call-site forms.
+
+So the verbosity in Config was not accidental complexity — it was providing 2 access points to 1 rendering, because Config types participate in the stream protocol and LogType does not.

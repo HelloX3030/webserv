@@ -1,4 +1,4 @@
-# config frontend — overview
+# config frontend
 
 
 ## essence
@@ -15,7 +15,7 @@ reads text, produces data structures.
 ---
 
 
-## position in system
+## ctx in system
 ```
 phase 1: FRONTEND   config file → std::vector<ServerConfig>
 phase 2: INIT       configs → sockets, epoll registration
@@ -56,10 +56,11 @@ without further checking.
 
 ## what it is not
 
-not part of the event loop.
-not responsible for socket creation.
-not responsible for request handling.
-not a general-purpose config system:
+NOT:
+part of the event loop.
+responsible for socket creation.
+responsible for request handling.
+a general-purpose config system:
     no variables, no inheritance, no includes.
 
 
@@ -68,11 +69,9 @@ not a general-purpose config system:
 
 ## input / output contract
 
-input:
-    path to config file (NGINX-style syntax).
+input: path to config file (NGINX-style syntax).
 
-output:
-    validated configuration objects.
+output: validated configuration objects.
 ```cpp
     std::vector<ServerConfig>
 ```
