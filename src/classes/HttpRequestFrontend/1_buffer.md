@@ -1,0 +1,1 @@
+cursor/buffer management (stateful)
