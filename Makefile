@@ -16,11 +16,11 @@ else
   Q :=
 endif
 
-# ─── paths ────────────────────────────────────────────────────
+# --- paths ---
 
 SRC_DIR  := src
-INC_DIR  := include
-INCLUDES := -I $(INC_DIR)	# resolve unqualified include paths relative to include/
+INC_DIR  := inc
+INCLUDES := -I $(INC_DIR)	# resolve unqualified include paths relative to inc/
 
 # ─── variant names and objdirs ────────────────────────────────
 
@@ -146,15 +146,14 @@ $(DBG_OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 $(LKS_OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	$(COMPILE_OBJ)
 
-# ─── dependency inclusion ─────────────────────────────────────
-# placed after all pattern rules. .d files contain explicit
-# rules; explicit rules take precedence over pattern rules for
-# the same target. the dash suppresses errors on the first
-# build when no .d files exist yet.
+# --- dependency inclusion ---
+# placed after all pattern rules. .d files contain explicit rules;
+# explicit rules take precedence over pattern rules for the same target.
+# the dash suppresses errors on the 1st build when no .d files exist yet.
 
 -include $(DEP_FILES)
 
-# ─── variant targets ──────────────────────────────────────────
+# --- variant targets ---
 
 debug: $(DBG_NAME)
 leaks: $(LKS_NAME)
