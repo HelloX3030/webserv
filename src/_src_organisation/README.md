@@ -3,15 +3,13 @@
 this directory belongs in ./meta/1_knowledge-dev
 and will be transferred there asap.
 
-temporarily placed here for ease of access for Lukas
-to overview decisions made in reorganisation of source text/code
+temporarily placed here so Lukas has direct access
+and can more easily overview all decisions made re. reorganisation of source text/code
 
 ## name
 
 the term "organisation" includes/subsumes:
 
-naming
-structure
+structure & naming.
 
-of all program entities.
-in this case, focused on main module categories
+in this case, of all main program entities- module categories.
