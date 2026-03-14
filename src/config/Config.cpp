@@ -14,10 +14,11 @@ does not reconstruct valid nginx syntax — renders state for inspection.
     to_string(x)     → std::string, for embedding in log messages or errors.
     operator<<(os, x) → delegates to to_string. single definition, no divergence.
 
-maintenance liability: each to_string function manually enumerates
-its struct's fields. C++17 has no reflection — the compiler cannot
-detect a field added to a struct but omitted here. divergence is
-silent. update to_string whenever the corresponding struct changes.
+!
+maintenance liability: each to_string function manually enumerates its struct's fields.
+C++17 has no reflection — the compiler cannot detect a field added to a struct
+but omitted here. divergence is silent.
+update to_string whenever the corresponding struct changes.
 */
 
 std::string to_string(HttpMethod m)
@@ -40,7 +41,7 @@ bool ListenAddress::operator==(const ListenAddress &other) const
 }
 
 /*
-format mirrors the listen directive syntax: host:port.
+format mirrors the listen directive syntax: `host:port`.
 e.g. "0.0.0.0:8080", "127.0.0.1:3000"
 */
 std::string to_string(const ListenAddress &addr)
