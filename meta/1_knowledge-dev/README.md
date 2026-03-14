@@ -2,29 +2,29 @@ development & knowledge acquisition, learning:
 
     done incrementally:
         in phases, cycles
-        through time
-        interleaving through different things, domains
+        through, over, with time
+        interleaving through different things, areas, domains
 
-    come hand-in-hand
+    come hand-in-hand:
         dev requires knowledge. knowledge informs dev.
 
 
 
-dev requires,
-knowledge acquisition greatly aided by, if not, requires 
+dev requires, and
+knowledge acquisition greatly aided by, if not, requires
 
-an external medium/substrate/space
+    an external medium/substrate/space
 
 within which information can be worked with, transformed
     e.g. edited, represented, visualised...
 
-hence this inner-facing (for dev team) documentation (meta).
+hence this inner-facing (for dev team as opposed to users, auditors...)
+documentation (within meta/).
 
 
-ghr:
-most of this is in my personal sys, 
-some of it is in this repository (team, shared, public domain).
 
-
+Ideal:
 maintained as long as necessary, as short as possible.
-removal requires internalisation into my mind + integration into program.
+
+removal requires internalisation into mind + integration into program
+(create more literate programs)
