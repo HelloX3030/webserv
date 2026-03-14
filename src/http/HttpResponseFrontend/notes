@@ -1,3 +1,6 @@
 ghr will implement after Router
-Pure transformation: (StatusCode, Headers, Body) → bytes
+
+Pure transformation:
+(StatusCode, Headers, Body) → bytes
+
 Format the response according to HTTP spec.

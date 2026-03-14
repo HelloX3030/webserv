@@ -1,4 +1,4 @@
-## pre-implementation of Http Request Frontend by ghr
+## Lukas' temporary `HttpParser`, before ghr's implementation of Http Request Frontend
 
 
 interface:
@@ -25,7 +25,7 @@ The separation ghr is establishing:
 ```
 bytes → HttpRequest → route → handle → response bytes
          ^^^^^^^
-         my job
+        ghr's job
 ```
 
 ## when ghr has completed implementation of Http Request Frontend
