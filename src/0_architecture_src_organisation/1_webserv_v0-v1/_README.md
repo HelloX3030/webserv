@@ -71,10 +71,23 @@ each name reflects what most precisely identifies the category's boundary.
 
 ## conventions
 
-naming:
-- directories: lowercase (namespace/domain)
-- files: PascalCase (type declared)
-- subdirectories: don't repeat parent domain (filesystem provides context)
+naming reflects semantic distinction: instantiable vs container.
+
+| entity              | nature              | convention |
+|---------------------|---------------------|------------|
+| class, struct, enum | type (instantiable) | PascalCase |
+| namespace           | scope (container)   | lowercase  |
+| directory           | scope (container)   | lowercase  |
+
+files named after what they declare:
+- `Fd.cpp` → declares `Fd` class
+- `format.cpp` → declares `format` namespace
+
+subdirectories: don't repeat parent domain (filesystem provides context).
+
+examples:
+- v0: `ConfigFrontend/ConfigFrontend_1_tokenise.inc`
+- v1: `config/frontend/tokenise.inc`
 
 ---
 

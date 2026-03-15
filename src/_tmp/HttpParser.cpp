@@ -1,9 +1,6 @@
 // currently in usage in Lukas' branch, needed for current build
 // to be replaced by my implementation of HttpResponseFrontend
 
-
-
-
 #include "classes/HttpParser.hpp"
 #include "classes/Connection.hpp"
 #include "http/HttpMethods.hpp"

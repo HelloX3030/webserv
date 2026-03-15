@@ -4,9 +4,7 @@ temporary file created by Lukas
 to be replaced by ghr's HttpResponseFrontend + Router.
 Lukas will then reduce handlers ("Http Method" files)
 to remove routing logic
-
 */
-
 #include "http/HttpResponse.hpp"
 #include <sstream>
 

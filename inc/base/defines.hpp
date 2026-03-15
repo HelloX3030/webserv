@@ -13,7 +13,7 @@ must propagate consistently across the system?
 /*
 infrastructure policy constants:
 system-wide tunables, potentially referenced from multiple sites,
-encoding decisions about resource limits.
+encode decisions about resource limits.
 */
 // Batch Sizes
 namespace WebServ
