@@ -1,60 +1,81 @@
-## location within file system
+## location
 
-the directory: `1_webserv_v0-v1`
-belongs in ./meta/1_knowledge-dev/architecture/src_organisation/
-alongside 0_general/
-and will be transferred there asap.
+this directory (`1_webserv_v0-v1`) belongs in
+`./meta/1_knowledge-dev/architecture/src_organisation/`
+alongside `0_general/`.
 
-it is temporarily placed here so Lukas has direct access
-and can more easily overview all decisions made re. reorganisation of source
-alongside the actual source (by which I mean "code"/text)
-from our initial v0 to this v1
+temporarily placed here for direct access during reorganisation,
+to enable more easily a concurrent overview of the source code.
 
 ---
 
 ## v0
 
-### wtf was this
+initial structure to begin development.
 
-initial setup from Lukas
-to get the development underway
+categories:
+- `base/` — foundational infrastructure, utilities
+- `classes/`
+- expanded to include `interfaces/`
 
-### categories:
-
-base/
-  for foundational infrastructure, "utilities"
-
-classes/
-
-expanded also to include interfaces/
-
-  more "syntax" oriented
-
-once classes/ started bloating, became clear that new organisation was necessary
+syntactic grouping. no semantic constraint.
+once `classes/` bloated, reorganisation became necessary.
 
 ---
 
 ## v1
 
-reorganisation.
+principle: semantic-logical cohesion.
+group by domain, concern, or structural role.
 
-main organisation principle: semantic-logical cohension
-organise, group the program's main functional entities by domain / concern.
+see `./meta/1_knowledge-dev/architecture/src_organisation/0_general/`
+for upstream principles (WIP).
 
-see ./meta/1_knowledge-dev/architecture/src_organisation/0_general
-for general/upstream principles. (WIP)
+each category has a markdown file documenting:
+reasoning on name, contents, inclusion/exclusion from v0.
 
-each new category in v1 (subdirectories within src/)
-has a markdown file with some information, including
-reasoning on its name, contents, what's included/excluded compared with v0...
+---
 
-### overview
+## categories
 
-tree
+```
+base/       dependency floor. domain-agnostic primitives.
+core/       lifecycle orchestrator. global state. event loop.
+net/        reactor infrastructure. sockets, epoll, connections.
+http/       protocol layer. request parsing, response building, routing.
+handlers/   application behaviour. method implementations.
+config/     configuration frontend. read, parse, validate.
+cgi/        process execution. fork, exec, pipes, environment.
+main.cpp    entry point. top-level control flow.
+```
 
-with main meaning of each category
+---
 
-& discussion on different axes:
-domains, roles, positions, concerns...
+## naming axes
 
-accepting this lack of purity here, now
+categories are named by different criteria:
+
+| category   | axis                |
+|------------|---------------------|
+| base/      | position (floor)    |
+| core/      | role (orchestrator) |
+| net/       | domain (networking) |
+| http/      | protocol            |
+| handlers/  | role (processors)   |
+| config/    | concern             |
+| cgi/       | technology          |
+
+each name reflects what most precisely identifies the category's boundary.
+
+---
+
+## architectural debt
+
+`net/Connection` owns `HttpParser` from `http/`.
+this couples net/ to the HTTP protocol.
+
+in a purely layered design, net/ would be protocol-agnostic:
+Connection handles bytes; a separate layer interprets them.
+
+for webserv v1 (HTTP only), coupling is acceptable.
+for (ghrod's) v2 (multi-protocol), refactor: inject protocol handler via interface.
