@@ -259,3 +259,127 @@ Routing logic extraction: location matching, method checking, path resolution mo
 Handler interface change: handlers receive HandlerDecision, not raw (config, path)
 www/ config: have config files point to www/ subdirectories
 Error pages: ErrorHandler serves from www/html/errors/
+
+
+
+
+
+
+architectural problem identified:
+
+Current HttpMethods_*.cpp files contain ~40 lines of duplicated routing logic each:
+```cpp
+// THIS IS IN ALL THREE HANDLERS — should be in Router:
+const Location *location = NULL;
+for (...) { /* longest prefix match */ }
+if (location->allowed_methods.count(...) == 0) return 405;
+auto safe = utils::resolve_path(base, relative);
+```
+
+
+
+
+```
+**What Router decides, what handlers execute:**
+
+| Concern | Who owns it | Why |
+|---------|-------------|-----|
+| Location matching | Router | Config interpretation |
+| Method allowed? | Router | Config interpretation |
+| Handler type | Router | Derived from location directives |
+| Path resolution + traversal check | Router | Security boundary, config-dependent (root directive) |
+| File I/O | Handler | Execution, not decision |
+| CGI fork/exec | Handler | Execution |
+| Response construction | Handler | Produces HttpResponse |
+| Response serialization | HttpResponseFrontend | Protocol encoding |
+```
+
+We would have to then determine who calls the Router -
+
+Connection (runtime) - your code
+or
+somewhere in my http request-processing pipeline
+
+
+
+
+
+
+
+
+
+
+
+I would like my Router to own:
+- location matching
+- method checking
+- handler type determination
+- path resolution
+
+I'd like the Router's output to be:
+```
+HandlerDecision { type, resolved_path, error_code, ... }
+```
+
+---
+
+If we were to make this change, your handlers would then:
+
+receive `HandlerDecision`, not raw `(config, path)`
+
+
+they would then execute the decision,
+which could look like this:
+```
+struct HandlerDecision {
+    HandlerType type;           // StaticFile, CGI, Redirect, Error
+    std::filesystem::path resolved_path;
+    uint16_t error_code;        // 0 if no error; 404, 405, 403 etc. if error
+    // CGI-specific: interpreter path, etc.
+};
+```
+
+& produce response:
+
+- StaticFileHandler:  read file at resolved_path → HttpResponse
+- CGIHandler:         fork/exec interpreter, capture output → response
+- RedirectHandler:    build 3xx response with Location header
+- ErrorHandler:       build error response, serve from www/errors/
+
+
+so the potential interface to your handlers could become:
+```
+HttpResponse handle_static_file(const HandlerDecision& decision);
+HttpResponse handle_cgi(const HandlerDecision& decision);
+HttpResponse handle_redirect(const HandlerDecision& decision);
+HttpResponse handle_error(const HandlerDecision& decision);
+```
+
+---
+
+following the program flow...
+
+
+
+my `HttpResponseFrontend` would then serialise this HttpResponse:
+```
+status line, headers, body → bytes, wire format
+```
+
+and your `Connection` would then write these bytes to fd.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
