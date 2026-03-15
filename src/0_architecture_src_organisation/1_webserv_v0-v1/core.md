@@ -1,67 +1,57 @@
-# core
+## predicate
 
-## what this directory owns
+lifecycle orchestrator.
+init → run → quit.
+global state ownership. event loop dispatch.
 
-Lifecycle phases: init → run → quit
-Global state: epfd, servers, epoll_handlers
-Event loop dispatch (runtime orchestration)
+---
 
-## from v0 -> v1:
+## contents
 
-Previous categories which this 1 new category integrates:
+```
+WebServ.cpp             namespace definition
+WebServ_init.cpp        startup, listener registration
+WebServ_run.cpp         event loop
+WebServ_quit.cpp        shutdown, cleanup
+WebServ_load_config.cpp config file → ServerConfig
+WebServ_display.cpp     debug output
+Server.cpp              thin wrapper, add_server factory
+signal.cpp              g_running, handle_sigint
+```
 
-
-- classes/WebServ/
-  namespace orchestrator with global state (epfd, servers, epoll_handlers)
-
-
-- classes/Server/
-  thin wrapper around ServerConfig + add_server factory
-  nearly a typedef.
-
-  The WebServ::add_server function does the actual work (listener registration) and lives in Server.cpp
-  but belongs to WebServ namespace. namespace coupling already declares ownership. Physical placement should match logical ownership.
-
-  Dissolved into same directory as WebServ/
-
-
-- g_running and handle_sigint are shutdown semantics.
-  They exist because of the lifecycle (init → run → quit).
-  The event loop checks g_running. The signal handler sets it.
-  This is orchestration state, not domain-agnostic infrastructure.
-
-  The base/ test: "could another project use this unchanged?"
-  No — another server might handle shutdown differently,
-  use different signals, have different graceful-shutdown logic.
-
+---
 
 ## naming
 
-### considered also:
+chosen: "core"
+- central orchestrator, everything flows through
+- honest about structural role: centre of dependency graph
+- generic, but accurately so — it *is* the core
 
-app/
-application layer
-- vague
+rejected:
 
-server/
-- overloaded — the whole program is a server
+| name     | problem                                            |
+|----------|----------------------------------------------------|
+| app/     | vague                                              |
+| server/  | overloaded — the whole program is a server         |
+| runtime/ | suggests execution environment, sounds like "C++ runtime" |
+| loop/    | too narrow — init/quit aren't "loop"               |
 
-runtime/
-+ lifecycle-oriented, contrasts with parse-time
-- suggests an execution environment, not orchestration
-  sounds like "C++ runtime"
+---
 
-loop/
-+ direct — it's the event loop
-- too narrow (init/quit aren't "loop")
+## v0 → v1
 
-### chosen: core/
+integrates:
 
-+ means, implies: the central orchestrator, everything flows through
-- generic: says nothing about what kind of core
+`classes/WebServ/`
+- namespace orchestrator with global state (epfd, servers, epoll_handlers)
 
-is honest about the structural role: this is the center of the dependency graph,
-the sequencer, the owner of global state. It doesn't claim domain semantics it doesn't have.
+`classes/Server/`
+- thin wrapper around ServerConfig + add_server factory
+- nearly a typedef
+- WebServ::add_server does the work; physical placement now matches namespace
 
-The lifecycle pattern (init → run → quit) is a core pattern.
-The event loop is the core loop. The global state is the core state.
+`base/signal.cpp`
+- g_running and handle_sigint are shutdown semantics
+- tied to lifecycle, not domain-agnostic
+- base/ test: "could another project use this unchanged?" — no
