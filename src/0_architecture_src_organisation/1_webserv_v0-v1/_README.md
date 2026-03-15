@@ -50,4 +50,11 @@ reasoning on its name, contents, what's included/excluded compared with v0...
 
 ### overview
 
+tree
 
+with main meaning of each category
+
+& discussion on different axes:
+domains, roles, positions, concerns...
+
+accepting this lack of purity here, now
