@@ -1,40 +1,45 @@
-# networking layer
+## predicate
 
-## contains
+reactor infrastructure. sockets, epoll, connections.
 
-EPollHandler — abstract contract for event loop participants
-Listener — accepts connections, dispatches to Connection factory
-Connection — client fd lifecycle, owns HttpParser instance, socket primitives, I/O multiplexing
+EPollHandler: abstract contract for event loop participants.
+Listener: accepts connections, dispatches to Connection factory.
+Connection: client fd lifecycle, I/O multiplexing.
+
+---
 
 ## naming
 
-### chosen: net
+chosen: "net"
+- networking and event handling
+- accurate, accessible
 
-These are the reactor implementation. They're networking and event handling.
-he name net/ is accurate but incomplete. reactor/ would be more precise but jargon-heavy. Keep net/ — it's close enough.
+rejected:
 
-### others considered
+| name     | problem                                              |
+|----------|------------------------------------------------------|
+| reactor/ | precise but jargon-heavy                             |
+| io/      | conflates network I/O and file I/O (different semantics) |
 
-also considered io/
+---
 
-io/ conflates:
-Network I/O (sockets, poll/select/epoll)
-File I/O (reading static files to serve)
+## architectural debt
 
-These have different semantics. Socket reads can block/partial-read;
-file reads (on local fs) behave differently. If I later need file utilities, they'd live in base/ or a thin fs/.
+Connection owns HttpParser. this couples net/ to http/.
 
+in a purely layered design, net/ would be protocol-agnostic:
+- Connection handles bytes only
+- protocol layer interprets bytes via callback or interface
 
+for webserv v1 (HTTP only), coupling is acceptable.
 
-## coupling question
+for v2 (multi-protocol):
+- extract generic ByteStreamHandler interface
+- http/ implements it
+- Connection holds interface pointer, not concrete parser
 
-net/ contains Connection, which owns HttpParser.
-This couples net/ to http/.
+---
 
-In a purely layered design, net/ would be protocol-agnostic.
-For webserv's scope (HTTP only), this coupling is acceptable.
+## v0 → v1
 
-If extending to other protocols, refactor:
-  - Extract generic ByteStreamHandler interface
-  - Let http/ implement it
-  - Connection holds interface pointer, not concrete parser
+previously in `classes/`. extracted as distinct layer.

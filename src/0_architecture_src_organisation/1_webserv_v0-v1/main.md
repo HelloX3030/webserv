@@ -1,8 +1,19 @@
-entry point, reveals top-level dependency graph
+## predicate
+
+entry point. top-level control flow.
 
 signal setup → load_config → init → run → quit
 
+reveals dependency graph at a glance.
 
+---
 
-v1: kept same as in v0
-not within a subdir
+## naming
+
+`main.cpp` — convention. not within a subdirectory.
+
+---
+
+## v0 → v1
+
+unchanged.

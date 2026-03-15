@@ -1,17 +1,27 @@
-Method handlers: What to do when receiving GET/POST/DELETE.
-behaviour.
+## predicate
 
-Handlers use HTTP types but aren't about HTTP. They're about file serving, CGI execution, redirects. Different rate of change.
+application behaviour. what to do when receiving GET/POST/DELETE.
 
+file serving, CGI dispatch, redirects.
+uses HTTP types but isn't *about* HTTP — different rate of change.
 
+---
 
-naming is asymmetric.
-The predicate is "application behaviour triggered by HTTP methods" (file serving, CGI, redirects).
-The name describes a role, not a domain.
-The role-based naming reflects reality: this layer is about processing, not domain. It's where "what to do" lives.
+## naming
 
-Compare: http/ (protocol name), config/ (concern name), handlers/ (role name).
-This is honest but stylistically inconsistent.
+"handlers" — role-based, not domain-based.
 
-The asymmetry isn't necessarily wrong — it reflects the fact that handlers/ is categorically different from http/ or config/.
-Those are about something (a protocol, a concern). handlers/ does something.
+this layer is about *processing*, not *domain*.
+it's where "what to do" lives.
+
+the asymmetry with other categories (http/, config/) is intentional:
+those are *about* something; handlers/ *does* something.
+
+---
+
+## v0 → v1
+
+previously nested in `http/handlers/`. extracted to top-level.
+
+separation rationale: handlers depend on http/ types,
+but http/ shouldn't depend on handler implementations.
