@@ -47,3 +47,7 @@ for general/upstream principles. (WIP)
 each new category in v1 (subdirectories within src/)
 has a markdown file with some information, including
 reasoning on its name, contents, what's included/excluded compared with v0...
+
+### overview
+
+

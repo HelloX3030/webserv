@@ -18,15 +18,24 @@ or is this more "design / style"?
 
 ## threads to follow, things to research
 
-Dijkstra (change-rate)
+narrative
+(Knuth)
 
-Knuth (narrative)
+Structure reveals logic 
 
 separation of concerns
 
+Clean interfaces
+
 naming criteria
+precise...
 
 dependency direction
+No cyclic dependencies
+
+change-rate
+(Dijkstra)
+
 
 general base/ criteria
 

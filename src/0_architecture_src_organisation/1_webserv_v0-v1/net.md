@@ -25,3 +25,16 @@ These have different semantics. Socket reads can block/partial-read;
 file reads (on local fs) behave differently. If I later need file utilities, they'd live in base/ or a thin fs/.
 
 
+
+## coupling question
+
+net/ contains Connection, which owns HttpParser.
+This couples net/ to http/.
+
+In a purely layered design, net/ would be protocol-agnostic.
+For webserv's scope (HTTP only), this coupling is acceptable.
+
+If extending to other protocols, refactor:
+  - Extract generic ByteStreamHandler interface
+  - Let http/ implement it
+  - Connection holds interface pointer, not concrete parser
