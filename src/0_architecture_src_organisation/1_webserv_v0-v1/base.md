@@ -1,32 +1,34 @@
-"base"
+## predicate
 
-dependency floor (Fd RAII, logging, signals, utils)
+dependency floor. domain-agnostic primitives.
+nothing here depends on domain code (HTTP, config, networking).
 
-domain-agnostic primitives: error types, string utilities, logging
+test: "does X depend on any domain concept?" if yes, it doesn't belong.
 
+---
 
-name kept
-What the name encodes:
-"base" implies position in the dependency graph — this is the floor, nothing here depends on domain code.
-It's a structural constraint that communicates what can and cannot live here.
+## contents
 
-better than "utils"
-"utils" implies convenience — "stuff that's useful in multiple places".
-This is a weaker predicate. "Utils" directories become dumping grounds
-because "useful in multiple places" is true of almost everything interesting. There's no constraint.
+```
+Fd.cpp      RAII wrapper for POSIX file descriptors
+format.cpp  string formatting
+log.cpp     diagnostics infrastructure
+utils.cpp   path resolution
+```
 
+---
 
-The test:
-When someone asks "should X go in base/?", the answer requires checking: "does X depend on any domain concept (HTTP, config, networking)?" If yes, it doesn't belong. The name encodes discipline.
-When someone asks "should X go in utils/?", the answer is: "is X useful?" — always yes. No discipline.
-However:
-The contents of your current base/ deserve scrutiny:
+## naming
 
-Fd — genuinely domain-agnostic RAII for POSIX fds. ✓
-format — string formatting. ✓
-log — diagnostics infrastructure. ✓
-utils — path resolution. ✓ (the function is generic even if HTTP uses it)
+"base" encodes position in the dependency graph: the floor.
 
-from v0, no longer in v1:
-signal.cpp
-  see: core/
+rejected: "utils"
+- implies convenience ("useful in multiple places")
+- weak predicate, no constraint, becomes dumping ground
+
+---
+
+## v0 → v1
+
+removed: `signal.cpp` → `core/`
+shutdown semantics belong with lifecycle orchestration.
