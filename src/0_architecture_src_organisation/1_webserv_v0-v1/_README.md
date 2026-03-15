@@ -69,6 +69,14 @@ each name reflects what most precisely identifies the category's boundary.
 
 ---
 
+## conventions
+
+naming:
+- directories: lowercase (namespace/domain)
+- files: PascalCase (type declared)
+
+---
+
 ## architectural debt
 
 `net/Connection` owns `HttpParser` from `http/`.
