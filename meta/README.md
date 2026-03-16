@@ -1,6 +1,5 @@
-documentation
-
-living, dev-facing:
+living, dev-facing: 
 architecture decisions, WIP reasoning, contributor internals...
 
-used in conjunction with GitHub Project Issues
+combined with GitHub Project
+(perhaps re-create dev-process dir?)

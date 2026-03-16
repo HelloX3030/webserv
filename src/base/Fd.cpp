@@ -7,11 +7,11 @@ Fd::Fd()
 
 Fd::Fd(Fd &&other) noexcept
 {
-    // if (fd >= 0)
-    // {
-    //     close(fd);
-    // }
-    // fd = other.fd;
+    if (fd >= 0)
+    {
+        close(fd);
+    }
+    fd = other.fd;
     other.fd = -1;
 }
 

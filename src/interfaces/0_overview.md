@@ -90,9 +90,10 @@ namespace WebServ {
 }
 ```
 
-the `extern` declarations in the header become definitions here.
-this is the standard C++ pattern for namespace-scoped variables shared across TUs:
-declare with `extern` in the header, define once in one `.cpp` file.
+the `extern` declarations in the header become definitions here. this is
+the standard C++ pattern for namespace-scoped variables shared across
+translation units: declare with `extern` in the header, define once in
+one `.cpp` file.
 
 `add_epoll_handler` and `remove_epoll_handler` are the only 2 mutation
 points for the handler registry. all handler lifecycle — creation,
