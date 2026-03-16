@@ -1,25 +1,27 @@
-## predicate
+# http/
 
-protocol layer. HTTP syntax and semantics.
+## what this directory owns
 
-- request parsing: bytes → HttpRequest
-- response building: HttpResponse → bytes
-- routing: (HttpRequest, ServerConfig) → HandlerDecision
+Http representation - HTTP's syntax and semantics:
+
+### Request parsing
+
+(bytes → HttpRequest)
+
+### Response building
+(HttpResponse → bytes)
+
+### Routing
+
+ghr's Router signature: (HttpRequest, ServerConfig) → HandlerDecision
+
+This operates on requests. It's HTTP-layer logic that consumes config, not config-layer logic.
 
 Router answers "given this request, what should happen?"
-protocol-layer logic that consumes config, not config-layer logic.
+That's closer to HTTP than to config parsing, so placed in http/
 
----
 
-## naming
+## removed from v0
 
-"http" — the protocol.
-
----
-
-## v0 → v1
-
-removed: `handlers/` (method implementations) → now top-level `handlers/`
-
-handlers use HTTP types but aren't *about* HTTP.
-different concern, different rate of change.
+Lukas' http/handlers/
+which are method implementations
