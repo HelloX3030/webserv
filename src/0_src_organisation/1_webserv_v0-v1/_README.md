@@ -1,10 +1,10 @@
 ## location
 
-the directory `1_webserv_v0-v1/` (within `src/0_src_organisation`
-belongs in `./meta/1_knowledge-dev/architecture/src_organisation/`
+this directory (`1_webserv_v0-v1`) belongs in
+`./meta/1_knowledge-dev/architecture/src_organisation/`
 alongside `0_general/`.
 
-temporarily placed here within src/ for direct access during reorganisation,
+temporarily placed here for direct access during reorganisation,
 to enable more easily a concurrent overview of the source code.
 
 ---
@@ -88,21 +88,6 @@ subdirectories: don't repeat parent domain (filesystem provides ctx).
 examples:
 - v0: `ConfigFrontend/ConfigFrontend_1_tokenise.inc`
 - v1: `config/frontend/tokenise.inc`
-
-
-### additional, to integrate
-
-inc/          public interface surface. mirrors src/ top-level domains only.
-              internal src/ subdivisions (request-frontend/, frontend/) are
-              NOT mirrored. include paths encode domain, not implementation.
-
-class-split files:
-when a single entity's definition exceeds 1 file, split files follow:
-  EntityName.cpp          primary definitions or compilation target
-  EntityName_concern.cpp  definitions for specific concern group
-EntityName matches the declaration file. concern identifies the function group.
-applied: WebServ_init, WebServ_run, HttpMethods_delete, etc.
-
 
 ---
 
