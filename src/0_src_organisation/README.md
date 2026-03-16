@@ -1,14 +1,3 @@
-## location
-
-the directory `1_webserv_v0-v1/` (within `src/0_src_organisation`
-belongs in `./meta/1_knowledge-dev/architecture/src_organisation/`
-alongside `0_general/`.
-
-temporarily placed here within src/ for direct access during reorganisation,
-to enable more easily a concurrent overview of the source code.
-
----
-
 ## v0
 
 initial structure to begin development.
@@ -27,9 +16,6 @@ once `classes/` bloated, reorganisation became necessary.
 
 principle: semantic-logical cohesion.
 group by domain, concern, or structural role.
-
-see `./meta/1_knowledge-dev/architecture/src_organisation/0_general/`
-for upstream principles (WIP).
 
 each category has a markdown file documenting:
 reasoning on name, contents, inclusion/exclusion from v0.
@@ -90,7 +76,7 @@ examples:
 - v1: `config/frontend/tokenise.inc`
 
 
-### additional, to integrate
+### additional
 
 inc/          public interface surface. mirrors src/ top-level domains only.
               internal src/ subdivisions (request-frontend/, frontend/) are
