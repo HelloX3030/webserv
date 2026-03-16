@@ -51,3 +51,8 @@ std::size_t HttpParser::get_buffer_size() const
 {
     return buffer.size();
 }
+
+bool HttpParser::parse_error() const
+{
+    return false;
+}

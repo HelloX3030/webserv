@@ -21,4 +21,5 @@ class HttpParser
     bool response_ready() const;
     std::string take_response();
     std::size_t get_buffer_size() const;
+    bool parse_error() const;
 };

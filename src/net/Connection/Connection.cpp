@@ -61,28 +61,11 @@ void Connection::handle_event(uint32_t events)
                 std::cout << format::header("Connection::handle_event::EPOLLIN buffer_end") << std::endl;
 #endif
                 http_parser.add_buffer(*this, buffer, n);
-
-                // // TODO: remove, here only for testing
-                // // => don't forget to remove #include "http_methods.hpp"
-                const ServerConfig &config = get_server_config("default_localhost");
-
-                // Test Post
-                auto resp = WebServ::http_post(config, "/test.txt", "Moin Moin");
-                std::cout << format::header("post test response start") << std::endl;
-                std::cout << resp.to_string();
-                std::cout << format::header("post test response end") << std::endl;
-
-                // Test Get
-                resp = WebServ::http_get(config, "/test.txt");
-                std::cout << format::header("get test response start") << std::endl;
-                std::cout << resp.to_string();
-                std::cout << format::header("get test response end") << std::endl;
-
-                // Test Delete
-                resp = WebServ::http_delete(config, "/test.txt");
-                std::cout << format::header("delete test response start") << std::endl;
-                std::cout << resp.to_string();
-                std::cout << format::header("delete test response end") << std::endl;
+                if (http_parser.parse_error())
+                {
+                    state = ConnectionState::CLOSE;
+                    break;
+                }
             }
             else if (n == 0)
             {
