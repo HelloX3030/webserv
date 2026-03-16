@@ -83,7 +83,7 @@ files named after what they declare:
 - `Fd.cpp` → declares `Fd` class
 - `format.cpp` → declares `format` namespace
 
-subdirectories: don't repeat parent domain (filesystem provides context).
+subdirectories: don't repeat parent domain (filesystem provides ctx).
 
 examples:
 - v0: `ConfigFrontend/ConfigFrontend_1_tokenise.inc`
