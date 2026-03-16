@@ -6,11 +6,10 @@
 bytes arrive incrementally over a socket.
 the complete request is not available at once.
 between `read()` calls, something must remember parse progress.
-
 this is irreducible state.
 
 ```
-ConfigFrontend:      parse : String → Config           (pure)
+ConfigFrontend:      parse : String → Config                (pure)
 HttpRequestFrontend: feed  : Self × Bytes → Self × Result   (stateful)
 ```
     NB (ghr): see:
@@ -20,7 +19,7 @@ HttpRequestFrontend: feed  : Self × Bytes → Self × Result   (stateful)
 
 
 ConfigFrontend receives complete input, produces complete output,
-holds no state between calls. a namespace containing a pure function
+holds no state between calls. a namespace containing a pure fn
 is honest to this nature.
 
 HttpRequestFrontend receives partial input, may produce output,

@@ -1,0 +1,1 @@
+HttpRequest type, advance() signature
