@@ -1,3 +1,4 @@
+#include "base/utils.hpp"
 #include "http/HttpMethods.hpp"
 
 namespace WebServ

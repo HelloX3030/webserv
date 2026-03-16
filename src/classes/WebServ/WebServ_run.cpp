@@ -1,4 +1,7 @@
 #include "WebServ.hpp"
+#include "base/defines.hpp"
+#include "core/signal.hpp"
+#include <sys/epoll.h>
 
 namespace WebServ
 {

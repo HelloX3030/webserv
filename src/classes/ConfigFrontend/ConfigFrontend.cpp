@@ -1,11 +1,12 @@
-#include "classes/ConfigFrontend.hpp"
+#include "config/ConfigFrontend.hpp"
 
 #include <fstream>
 #include <iterator>
 #include <stdexcept>
 #include <string>
 
-namespace {
+namespace
+{
 
 /*
 TokenType — structural character classes of the config lexer.
@@ -16,14 +17,21 @@ RBRACE:    }
 SEMICOLON: ;
 END:       see 1_tokenise
 */
-enum class TokenType { STRING, LBRACE, RBRACE, SEMICOLON, END };
+enum class TokenType
+{
+    STRING,
+    LBRACE,
+    RBRACE,
+    SEMICOLON,
+    END
+};
 
 struct Token
 {
-    TokenType   type;
+    TokenType type;
     std::string value;
-    size_t      line; // src line at emission — sole carrier of
-                      // location information for parse-time errors.
+    size_t line; // src line at emission — sole carrier of
+                 // location information for parse-time errors.
 };
 
 /*
@@ -37,68 +45,69 @@ struct Frontend
     2 shared cursors: the complete mutable parse state,
     no tramp data */
     std::vector<Token> tokens_;
-    size_t             pos_ = 0;
+    size_t pos_ = 0;
 
     /* source acquisition */
-    std::string read    (const std::string& filepath);
-    void        tokenise(const std::string& source);
+    std::string read(const std::string &filepath);
+    void tokenise(const std::string &source);
 
     /* navigation — observations */
-    Token peek()                              const;
-    bool  at_STRING(const std::string& value) const;
+    Token peek() const;
+    bool at_STRING(const std::string &value) const;
 
     /* navigation — advancement */
     Token consume();
-    Token expect       (TokenType type);
+    Token expect(TokenType type);
     Token expect_STRING();
-    void  expect_SEMICOLON();
+    void expect_SEMICOLON();
 
     /* grammar productions. */
     [[nodiscard]] std::vector<ServerConfig> parse_config();
-    [[nodiscard]] ServerConfig              parse_server_block();
-    [[nodiscard]] Location                  parse_location_block();
+    [[nodiscard]] ServerConfig parse_server_block();
+    [[nodiscard]] Location parse_location_block();
 
-    void parse_server  (ServerConfig& s);
-    void parse_location(Location& loc);
+    void parse_server(ServerConfig &s);
+    void parse_location(Location &loc);
 
-    void parse_listen     (ServerConfig& s);
-    void parse_server_name(ServerConfig& s);
-    void parse_error_page (ServerConfig& s);
-    void parse_body_size  (ServerConfig& s);
-    void parse_body_size  (Location& loc);
+    void parse_listen(ServerConfig &s);
+    void parse_server_name(ServerConfig &s);
+    void parse_error_page(ServerConfig &s);
+    void parse_body_size(ServerConfig &s);
+    void parse_body_size(Location &loc);
 
-    void parse_root         (Location& loc);
-    void parse_index        (Location& loc);
-    void parse_methods      (Location& loc);
-    void parse_autoindex    (Location& loc);
-    void parse_cgi_ext      (Location& loc);
-    void parse_cgi_path     (Location& loc);
-    void parse_upload_enable(Location& loc);
-    void parse_upload_store (Location& loc);
-    void parse_return       (Location& loc);
+    void parse_root(Location &loc);
+    void parse_index(Location &loc);
+    void parse_methods(Location &loc);
+    void parse_autoindex(Location &loc);
+    void parse_cgi_ext(Location &loc);
+    void parse_cgi_path(Location &loc);
+    void parse_upload_enable(Location &loc);
+    void parse_upload_store(Location &loc);
+    void parse_return(Location &loc);
 
     /* interpretation — STRING token value → typed value */
-    [[nodiscard]] size_t        parse_size     (const Token& t);
-    [[nodiscard]] uint16_t      parse_port     (const std::string& s, size_t line);
-    [[nodiscard]] ListenAddress parse_host_port(const Token& t);
+    [[nodiscard]] size_t parse_size(const Token &t);
+    [[nodiscard]] uint16_t parse_port(const std::string &s, size_t line);
+    [[nodiscard]] ListenAddress parse_host_port(const Token &t);
 
-    void validate         (const std::vector<ServerConfig>& servers);
-    void validate_server  (const ServerConfig& s);
-    void validate_location(const std::string& path, const Location& loc);
+    void validate(const std::vector<ServerConfig> &servers);
+    void validate_server(const ServerConfig &s);
+    void validate_location(const std::string &path, const Location &loc);
 };
 
 } // anonymous namespace
 
-namespace ConfigFrontend {
+namespace ConfigFrontend
+{
 
 /*
 parse() sequences the pipeline. Frontend owns state & stage implementations.
 failure at any stage throws std::runtime_error with a located message.
 caller catches once.
 */
-std::vector<ServerConfig> parse(const std::string& filepath)
+std::vector<ServerConfig> parse(const std::string &filepath)
 {
-    Frontend    f;
+    Frontend f;
     std::string source = f.read(filepath);
     f.tokenise(source);
     auto result = f.parse_config();

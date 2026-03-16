@@ -1,7 +1,7 @@
 #pragma once
 
 #include "HttpResponse.hpp"
-#include "classes/Config.hpp"
+#include "config/Config.hpp"
 
 namespace WebServ
 {

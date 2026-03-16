@@ -1,4 +1,6 @@
 #include "WebServ.hpp"
+#include "base/defines.hpp"
+#include "base/logging.hpp"
 
 namespace WebServ
 {

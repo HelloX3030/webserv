@@ -1,4 +1,6 @@
 #include "WebServ.hpp"
+#include "base/defines.hpp"
+#include "base/logging.hpp"
 
 int main(int argc, char **argv)
 {

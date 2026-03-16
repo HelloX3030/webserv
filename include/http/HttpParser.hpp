@@ -1,8 +1,6 @@
-// temp from Lukas, to replace with ghr's HttpResponseFrontend.hpp
-
 #pragma once
 
-#include "base/base.hpp"
+#include <string>
 
 class Connection;
 

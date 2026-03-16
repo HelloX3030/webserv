@@ -1,1 +1,0 @@
-// pure data structure

@@ -1,5 +1,7 @@
 #include "WebServ.hpp"
-#include "classes/ConfigFrontend.hpp"
+#include "base/defines.hpp"
+#include "base/logging.hpp"
+#include "config/ConfigFrontend.hpp"
 
 namespace WebServ
 {

@@ -1,9 +1,9 @@
 #pragma once
 
-#include "base/base.hpp"
-#include "classes/Config.hpp"
-#include "classes/HttpParser.hpp"
-#include "interfaces/EPollHandler.hpp"
+#include "base/Fd.hpp"
+#include "config/Config.hpp"
+#include "http/HttpParser.hpp"
+#include "net/EPollHandler.hpp"
 
 // Forward Declarations
 class Listener;

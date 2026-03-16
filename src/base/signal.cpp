@@ -1,4 +1,7 @@
+#include "core/signal.hpp"
 #include "WebServ.hpp"
+#include "base/defines.hpp"
+#include "base/logging.hpp"
 
 volatile sig_atomic_t g_running = 1;
 volatile sig_atomic_t g_sigint_count = 0;

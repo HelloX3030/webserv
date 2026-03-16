@@ -1,9 +1,7 @@
 #pragma once
 
-#include "base/base.hpp"
-
-#include "classes/Config.hpp"
-#include "classes/Listener.hpp"
+#include "config/Config.hpp"
+#include "net/Listener.hpp"
 
 class Server final
 {
@@ -35,6 +33,6 @@ namespace WebServ
 {
 
 extern std::vector<Server> servers;
-void add_server(const ServerConfig& config);
+void add_server(const ServerConfig &config);
 
 } // namespace WebServ

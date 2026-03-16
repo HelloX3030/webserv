@@ -1,4 +1,5 @@
 #include "http/HttpResponse.hpp"
+#include "base/defines.hpp"
 #include <sstream>
 
 std::string HttpResponse::status_text(int status)

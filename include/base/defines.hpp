@@ -47,13 +47,9 @@ constexpr const char *CLOSE = "Close";
 constexpr const char *UNKNOWN = "Unknown";
 
 // Log Titles
-/*
-source identifiers used as the title argument
-in logging::log() calls, establishing component identity in log output.
-*/
 constexpr const char *DISPLAY = "Display";
 constexpr const char *WEB_SERV = "WebServ";
-constexpr const char* CONFIG_FRONTEND = "ConfigFrontend";
+constexpr const char *CONFIG_FRONTEND = "ConfigFrontend";
 constexpr const char *SERVER = "Server";
 constexpr const char *LISTENER = "Listener";
 constexpr const char *CONNECTION = "Connection";

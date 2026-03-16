@@ -1,4 +1,4 @@
-#include "classes/Server.hpp"
+#include "core/Server.hpp"
 
 Server::Server(ServerConfig config)
     : config(config)
@@ -13,7 +13,7 @@ const ServerConfig &Server::get_config() const
 std::string Server::to_string() const
 {
     std::string result;
-    
+
     // Config
     result += ::to_string(config);
 
@@ -25,7 +25,7 @@ namespace WebServ
 
 std::vector<Server> servers;
 
-void add_server(const ServerConfig& config)
+void add_server(const ServerConfig &config)
 {
     servers.emplace_back(config);
 

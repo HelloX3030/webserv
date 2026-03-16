@@ -1,6 +1,7 @@
-#include "base/log.hpp"
 #include "base/defines.hpp"
 #include "base/errors.hpp"
+#include "base/logging.hpp"
+#include <iostream>
 
 namespace logging
 {
@@ -55,7 +56,7 @@ void log(std::string title, std::size_t i, std::string msg, LogType type)
     log(title, msg, std::to_string(i), type);
 }
 
-} // namespace log
+} // namespace logging
 
 std::string to_string(logging::LogType type)
 {

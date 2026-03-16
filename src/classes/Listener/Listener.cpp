@@ -1,7 +1,16 @@
-#include "classes/Listener.hpp"
-#include "classes/Config.hpp"
-#include "classes/Connection.hpp"
-#include "classes/Server.hpp"
+#include "net/Listener.hpp"
+#include "base/defines.hpp"
+#include "base/logging.hpp"
+#include "config/Config.hpp"
+#include "core/Server.hpp"
+#include "net/Connection.hpp"
+#include <cstring>
+#include <fcntl.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <sys/epoll.h>
+#include <sys/socket.h>
+#include <unistd.h>
 
 namespace
 {

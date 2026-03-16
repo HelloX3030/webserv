@@ -1,4 +1,5 @@
 #include "WebServ.hpp"
+#include <sys/epoll.h>
 
 namespace WebServ
 {

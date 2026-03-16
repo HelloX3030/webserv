@@ -1,6 +1,6 @@
 #pragma once
 
-#include "classes/Config.hpp"
+#include "config/Config.hpp"
 
 #include <string>
 #include <vector>
@@ -36,6 +36,7 @@ no implementation detail appears in this header.
 an includer that changes its Token representation triggers recompilation
 of exactly 1 TU: ConfigFrontend.cpp.
 */
-namespace ConfigFrontend {
-    std::vector<ServerConfig> parse(const std::string& filepath);
+namespace ConfigFrontend
+{
+std::vector<ServerConfig> parse(const std::string &filepath);
 }

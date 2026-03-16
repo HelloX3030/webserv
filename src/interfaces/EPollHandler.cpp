@@ -1,4 +1,8 @@
-#include "interfaces/EPollHandler.hpp"
+#include "net/EPollHandler.hpp"
+#include "base/defines.hpp"
+#include <cstring>
+#include <sys/epoll.h>
+#include <system_error>
 
 EpollHandler::~EpollHandler()
 {
