@@ -55,9 +55,9 @@ constexpr const char *LISTENER = "Listener";
 constexpr const char *CONNECTION = "Connection";
 constexpr const char *HTTP_PARSER = "HttpParser";
 constexpr const char *EPOLL_HANDLER = "EPollHandler";
-constexpr const char *HTTP_METHODE_GET = "HttpGET";
-constexpr const char *HTTP_METHODE_POST = "HttpPOST";
-constexpr const char *HTTP_METHODE_DELETE = "HttpDELETE";
+constexpr const char *HTTP_METHOD_GET = "HttpGET";
+constexpr const char *HTTP_METHOD_POST = "HttpPOST";
+constexpr const char *HTTP_METHOD_DELETE = "HttpDELETE";
 
 // Log Msg
 constexpr const char *PARSE_SERVER_CONFIG = "Parse Server Config";
