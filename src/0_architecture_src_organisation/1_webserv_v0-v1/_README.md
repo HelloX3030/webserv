@@ -74,7 +74,6 @@ each name reflects what most precisely identifies the category's boundary.
 naming:
 - directories: lowercase (namespace/domain)
 - files: PascalCase (type declared)
-- subdirectories: don't repeat parent domain (filesystem provides context)
 
 ---
 
