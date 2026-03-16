@@ -1,9 +1,6 @@
 removed handlers/
 integrated HttpMethods within http/
 
-  opposed to Dijkstra's "different rate of change"
-
-
 
 src/config/frontend/
 &
@@ -24,22 +21,20 @@ extracted from core/
 
 now:
   src/core/Server & src/core/signal.cpp
-  separate from:
-  src/WebServ/
+  separate from: src/WebServ/
 
   inc/WebServ.hpp
-  separate from:
-  inc/core/
+  separate from: inc/core/
 
 
 
 removal of tmp/
-reintegration of temporary
+reintegration of temporary:
 
-HttpParser.hpp
-into inc/http/
+  HttpParser.hpp
+  into inc/http/
 
-and
+  and
 
-HttpParser.cpp
-into src/http/HttpResponseFrontend/
+  HttpParser.cpp
+  into src/http/HttpResponseFrontend/
