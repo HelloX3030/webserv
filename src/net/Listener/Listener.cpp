@@ -75,6 +75,11 @@ Listener::Listener(ListenAddress listen_adress, Server &default_server)
         throw std::system_error(errno, std::generic_category(), "listen");
 }
 
+const ServerConfig &Listener::get_default_server() const
+{
+    return default_server.get_config();
+}
+
 const ServerConfig &Listener::get_server_config(const std::string &host) const
 {
     auto it = host_to_server.find(host);

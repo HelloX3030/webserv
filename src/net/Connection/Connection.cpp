@@ -194,6 +194,11 @@ std::string to_string(ConnectionState state)
     }
 }
 
+const ServerConfig &Connection::get_default_server() const
+{
+    return listener.get_default_server();
+}
+
 const ServerConfig &Connection::get_server_config(const std::string &host) const
 {
     const ServerConfig &config = listener.get_server_config(host);

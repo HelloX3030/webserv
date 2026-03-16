@@ -24,6 +24,7 @@ class Listener final : public EpollHandler
     Listener(ListenAddress listen_adress, Server &default_server);
 
     // Getter
+    const ServerConfig &get_default_server() const;
     const ServerConfig &get_server_config(const std::string &host) const;
 
     // Setters
