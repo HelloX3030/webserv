@@ -1,6 +1,7 @@
 #include "net/Connection.hpp"
 #include "base/defines.hpp"
 #include "base/format.hpp"
+#include "base/logging.hpp"
 #include "http/HttpMethods.hpp"
 #include "net/Listener.hpp"
 #include <sys/epoll.h>

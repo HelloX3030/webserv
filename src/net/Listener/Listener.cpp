@@ -1,5 +1,6 @@
 #include "net/Listener.hpp"
 #include "base/defines.hpp"
+#include "base/errors.hpp"
 #include "base/logging.hpp"
 #include "config/Config.hpp"
 #include "core/Server.hpp"

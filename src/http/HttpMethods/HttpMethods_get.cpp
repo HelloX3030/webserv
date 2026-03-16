@@ -1,13 +1,15 @@
+#include "base/defines.hpp"
+#include "base/logging.hpp"
 #include "base/utils.hpp"
 #include "http/HttpMethods.hpp"
-#include "http/HttpResponse.hpp"
+#include "http/HttpResponseBuilder.hpp"
 #include <fstream>
 #include <sstream>
 
 namespace WebServ
 {
 
-static HttpResponse serve_file(const std::filesystem::path &file_path)
+static HttpResponseBuilder serve_file(const std::filesystem::path &file_path)
 {
 #ifdef DEBUG
     logging::log(HTTP_METHODE_GET, "Serving file \"" + file_path.string() + "\"");
@@ -20,13 +22,13 @@ static HttpResponse serve_file(const std::filesystem::path &file_path)
 #ifdef DEBUG
         logging::log(HTTP_METHODE_GET, "Failed to open file -> 500");
 #endif
-        return HttpResponse(500);
+        return HttpResponseBuilder(500);
     }
 
     std::stringstream buffer;
     buffer << file.rdbuf();
 
-    HttpResponse res(200);
+    HttpResponseBuilder res(200);
     res.set_body(buffer.str());
 
     res.set_content_type(file_path);
@@ -38,7 +40,7 @@ static HttpResponse serve_file(const std::filesystem::path &file_path)
     return res;
 }
 
-[[nodiscard]] HttpResponse http_get(const ServerConfig &config, const std::string &path)
+[[nodiscard]] HttpResponseBuilder http_get(const ServerConfig &config, const std::string &path)
 {
 #ifdef DEBUG
     logging::log(HTTP_METHODE_GET, "Path=\"" + path + "\"");
@@ -66,7 +68,7 @@ static HttpResponse serve_file(const std::filesystem::path &file_path)
 #ifdef DEBUG
         logging::log(HTTP_METHODE_GET, "No matching location -> 404");
 #endif
-        return HttpResponse(404);
+        return HttpResponseBuilder(404);
     }
 
 #ifdef DEBUG
@@ -79,7 +81,7 @@ static HttpResponse serve_file(const std::filesystem::path &file_path)
 #ifdef DEBUG
         logging::log(HTTP_METHODE_GET, "GET not allowed in location -> 405");
 #endif
-        return HttpResponse(405);
+        return HttpResponseBuilder(405);
     }
 
     // determine base directory
@@ -106,7 +108,7 @@ static HttpResponse serve_file(const std::filesystem::path &file_path)
 #ifdef DEBUG
         logging::log(HTTP_METHODE_GET, "resolve_path rejected traversal -> 403");
 #endif
-        return HttpResponse(403);
+        return HttpResponseBuilder(403);
     }
 
 #ifdef DEBUG
@@ -118,7 +120,7 @@ static HttpResponse serve_file(const std::filesystem::path &file_path)
 #ifdef DEBUG
         logging::log(HTTP_METHODE_GET, "File does not exist -> 404");
 #endif
-        return HttpResponse(404);
+        return HttpResponseBuilder(404);
     }
 
     // directory handling
@@ -146,7 +148,7 @@ static HttpResponse serve_file(const std::filesystem::path &file_path)
 #ifdef DEBUG
         logging::log(HTTP_METHODE_GET, "Directory without index -> 403");
 #endif
-        return HttpResponse(403);
+        return HttpResponseBuilder(403);
     }
 
     // serve file

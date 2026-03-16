@@ -1,4 +1,7 @@
 #include "WebServ.hpp"
+#include "base/defines.hpp"
+#include "base/errors.hpp"
+#include "base/logging.hpp"
 #include <sys/epoll.h>
 
 namespace WebServ

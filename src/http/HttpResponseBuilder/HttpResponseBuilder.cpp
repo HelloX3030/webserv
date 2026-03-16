@@ -1,8 +1,9 @@
-#include "http/HttpResponse.hpp"
+#include "http/HttpResponseBuilder.hpp"
 #include "base/defines.hpp"
+#include "base/errors.hpp"
 #include <sstream>
 
-std::string HttpResponse::status_text(int status)
+std::string HttpResponseBuilder::status_text(int status)
 {
     switch (status)
     {
@@ -43,7 +44,7 @@ std::string HttpResponse::status_text(int status)
     }
 }
 
-std::string HttpResponse::get_mime_type(const std::filesystem::path &path)
+std::string HttpResponseBuilder::get_mime_type(const std::filesystem::path &path)
 {
     static const std::map<std::string, std::string> types = {
         {".html", "text/html"},
@@ -64,35 +65,35 @@ std::string HttpResponse::get_mime_type(const std::filesystem::path &path)
     return "application/octet-stream";
 }
 
-HttpResponse::HttpResponse() : status(200)
+HttpResponseBuilder::HttpResponseBuilder() : status(200)
 {
 }
 
-HttpResponse::HttpResponse(int status) : status(status)
+HttpResponseBuilder::HttpResponseBuilder(int status) : status(status)
 {
 }
 
-void HttpResponse::set_status(int s)
+void HttpResponseBuilder::set_status(int s)
 {
     status = s;
 }
 
-void HttpResponse::set_body(const std::string &b)
+void HttpResponseBuilder::set_body(const std::string &b)
 {
     body = b;
 }
 
-void HttpResponse::set_header(const std::string &key, const std::string &value)
+void HttpResponseBuilder::set_header(const std::string &key, const std::string &value)
 {
     headers[key] = value;
 }
 
-void HttpResponse::set_content_type(const std::filesystem::path &path)
+void HttpResponseBuilder::set_content_type(const std::filesystem::path &path)
 {
     headers["Content-Type"] = get_mime_type(path);
 }
 
-std::string HttpResponse::to_string() const
+std::string HttpResponseBuilder::to_string() const
 {
     std::ostringstream response;
 

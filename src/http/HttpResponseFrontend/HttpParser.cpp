@@ -1,6 +1,6 @@
 #include "http/HttpParser.hpp"
 #include "http/HttpMethods.hpp"
-#include "http/HttpResponse.hpp"
+#include "http/HttpResponseBuilder.hpp"
 #include "net/Connection.hpp"
 #include <utility>
 
@@ -34,7 +34,7 @@ void HttpParser::add_buffer(const Connection &connection, const char *buffer, ss
 
     // response = WebServ::post(connection.get_server_config("test"), "test", "test").to_string();
     (void)connection;
-    response = HttpResponse().to_string();
+    response = HttpResponseBuilder().to_string();
 }
 
 bool HttpParser::response_ready() const

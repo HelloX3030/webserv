@@ -1,5 +1,7 @@
 #include "WebServ.hpp"
 #include "base/defines.hpp"
+#include "base/errors.hpp"
+#include "base/logging.hpp"
 #include "core/signal.hpp"
 #include <sys/epoll.h>
 

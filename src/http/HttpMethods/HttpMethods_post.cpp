@@ -1,3 +1,5 @@
+#include "base/defines.hpp"
+#include "base/logging.hpp"
 #include "base/utils.hpp"
 #include "http/HttpMethods.hpp"
 #include <fstream>
@@ -5,7 +7,7 @@
 namespace WebServ
 {
 
-HttpResponse http_post(const ServerConfig &config, const std::string &path, const std::string &content)
+HttpResponseBuilder http_post(const ServerConfig &config, const std::string &path, const std::string &content)
 {
 #ifdef DEBUG
     logging::log(HTTP_METHODE_POST, "Path=\"" + path + "\" content=\"" + content + "\"");
@@ -33,7 +35,7 @@ HttpResponse http_post(const ServerConfig &config, const std::string &path, cons
 #ifdef DEBUG
         logging::log(HTTP_METHODE_POST, "No matching location -> 404");
 #endif
-        return HttpResponse(404);
+        return HttpResponseBuilder(404);
     }
 
 #ifdef DEBUG
@@ -46,7 +48,7 @@ HttpResponse http_post(const ServerConfig &config, const std::string &path, cons
 #ifdef DEBUG
         logging::log(HTTP_METHODE_POST, "POST not allowed in location -> 405");
 #endif
-        return HttpResponse(405);
+        return HttpResponseBuilder(405);
     }
 
     // check location body size override
@@ -61,7 +63,7 @@ HttpResponse http_post(const ServerConfig &config, const std::string &path, cons
 #ifdef DEBUG
             logging::log(HTTP_METHODE_POST, "Body too large -> 413");
 #endif
-            return HttpResponse(413);
+            return HttpResponseBuilder(413);
         }
     }
 
@@ -106,7 +108,7 @@ HttpResponse http_post(const ServerConfig &config, const std::string &path, cons
 #ifdef DEBUG
         logging::log(HTTP_METHODE_POST, "resolve_path rejected traversal -> 403");
 #endif
-        return HttpResponse(403);
+        return HttpResponseBuilder(403);
     }
 
 #ifdef DEBUG
@@ -124,7 +126,7 @@ HttpResponse http_post(const ServerConfig &config, const std::string &path, cons
 #ifdef DEBUG
         logging::log(HTTP_METHODE_POST, "Parent directory does not exist -> 409");
 #endif
-        return HttpResponse(409);
+        return HttpResponseBuilder(409);
     }
 
     if (std::filesystem::is_directory(*safe))
@@ -132,7 +134,7 @@ HttpResponse http_post(const ServerConfig &config, const std::string &path, cons
 #ifdef DEBUG
         logging::log(HTTP_METHODE_POST, "Target path is a directory -> 403");
 #endif
-        return HttpResponse(403);
+        return HttpResponseBuilder(403);
     }
 
     bool existed = std::filesystem::exists(*safe);
@@ -149,7 +151,7 @@ HttpResponse http_post(const ServerConfig &config, const std::string &path, cons
 #ifdef DEBUG
         logging::log(HTTP_METHODE_POST, "Failed to open file for writing -> 500");
 #endif
-        return HttpResponse(500);
+        return HttpResponseBuilder(500);
     }
 
 #ifdef DEBUG
@@ -163,7 +165,7 @@ HttpResponse http_post(const ServerConfig &config, const std::string &path, cons
     logging::log(HTTP_METHODE_POST, existed ? "Returning 200 OK (overwrite)" : "Returning 201 Created");
 #endif
 
-    return HttpResponse(existed ? 200 : 201);
+    return HttpResponseBuilder(existed ? 200 : 201);
 }
 
 } // namespace WebServ

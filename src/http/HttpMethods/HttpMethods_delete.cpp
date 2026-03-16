@@ -1,10 +1,12 @@
+#include "base/defines.hpp"
+#include "base/logging.hpp"
 #include "base/utils.hpp"
 #include "http/HttpMethods.hpp"
 
 namespace WebServ
 {
 
-[[nodiscard]] HttpResponse http_delete(const ServerConfig &config, const std::string &path)
+[[nodiscard]] HttpResponseBuilder http_delete(const ServerConfig &config, const std::string &path)
 {
 #ifdef DEBUG
     logging::log(HTTP_METHODE_DELETE, "Path=\"" + path + "\"");
@@ -32,7 +34,7 @@ namespace WebServ
 #ifdef DEBUG
         logging::log(HTTP_METHODE_DELETE, "No matching location -> 404");
 #endif
-        return HttpResponse(404);
+        return HttpResponseBuilder(404);
     }
 
 #ifdef DEBUG
@@ -45,7 +47,7 @@ namespace WebServ
 #ifdef DEBUG
         logging::log(HTTP_METHODE_DELETE, "DELETE not allowed -> 405");
 #endif
-        return HttpResponse(405);
+        return HttpResponseBuilder(405);
     }
 
     std::string base = location->root;
@@ -71,7 +73,7 @@ namespace WebServ
 #ifdef DEBUG
         logging::log(HTTP_METHODE_DELETE, "resolve_path rejected traversal -> 403");
 #endif
-        return HttpResponse(403);
+        return HttpResponseBuilder(403);
     }
 
 #ifdef DEBUG
@@ -83,7 +85,7 @@ namespace WebServ
 #ifdef DEBUG
         logging::log(HTTP_METHODE_DELETE, "File does not exist -> 404");
 #endif
-        return HttpResponse(404);
+        return HttpResponseBuilder(404);
     }
 
     if (std::filesystem::is_directory(*safe))
@@ -91,7 +93,7 @@ namespace WebServ
 #ifdef DEBUG
         logging::log(HTTP_METHODE_DELETE, "Target is directory -> 403");
 #endif
-        return HttpResponse(403);
+        return HttpResponseBuilder(403);
     }
 
 #ifdef DEBUG
@@ -107,14 +109,14 @@ namespace WebServ
 #ifdef DEBUG
         logging::log(HTTP_METHODE_DELETE, "Filesystem deletion failed -> 500");
 #endif
-        return HttpResponse(500);
+        return HttpResponseBuilder(500);
     }
 
 #ifdef DEBUG
     logging::log(HTTP_METHODE_DELETE, "File deleted -> 200");
 #endif
 
-    return HttpResponse(200);
+    return HttpResponseBuilder(200);
 }
 
 } // namespace WebServ

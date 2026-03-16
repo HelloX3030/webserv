@@ -1,5 +1,6 @@
 #include "net/EPollHandler.hpp"
 #include "base/defines.hpp"
+#include "base/errors.hpp"
 #include <cstring>
 #include <sys/epoll.h>
 #include <system_error>

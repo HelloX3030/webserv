@@ -4,7 +4,7 @@
 #include <map>
 #include <string>
 
-class HttpResponse
+class HttpResponseBuilder
 {
   private:
     int status;
@@ -15,13 +15,13 @@ class HttpResponse
     static std::string get_mime_type(const std::filesystem::path &path);
 
   public:
-    HttpResponse();
-    HttpResponse(const HttpResponse &other) = default;
-    HttpResponse &operator=(const HttpResponse &other) = default;
-    ~HttpResponse() = default;
+    HttpResponseBuilder();
+    HttpResponseBuilder(const HttpResponseBuilder &other) = default;
+    HttpResponseBuilder &operator=(const HttpResponseBuilder &other) = default;
+    ~HttpResponseBuilder() = default;
 
     // Special Constructor
-    explicit HttpResponse(int status);
+    explicit HttpResponseBuilder(int status);
 
     // Functions
     void set_status(int status);
