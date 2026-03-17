@@ -67,6 +67,12 @@ void Connection::handle_event(uint32_t events)
                     state = ConnectionState::CLOSE;
                     break;
                 }
+
+                // TODO: remove, here only for testing
+                HttpResponseBuilder result = WebServ::wip_handle_request(*this, HttpMethod::GET, "/uploads/test.txt", {{"Host", "localhost"}}, "Moin Moin");
+                std::cout << format::header("Connection::wip_handle_request response_buffer_start") << std::endl;
+                std::cout << result.to_string();
+                std::cout << format::header("Connection::wip_handle_request response_buffer_end") << std::endl;
             }
             else if (n == 0)
             {
@@ -178,7 +184,7 @@ std::string to_string(ConnectionState state)
     }
 }
 
-const ServerConfig &Connection::get_default_server() const
+const ServerConfig &Connection::get_default_server_config() const
 {
     return listener.get_default_server();
 }
@@ -186,12 +192,6 @@ const ServerConfig &Connection::get_default_server() const
 const ServerConfig &Connection::get_server_config(const std::string &host) const
 {
     const ServerConfig &config = listener.get_server_config(host);
-
-#ifdef DEBUG
-    logging::log(CONNECTION, "get_server_config");
-    std::cout << ::to_string(config) << std::endl;
-#endif
-
     return config;
 }
 

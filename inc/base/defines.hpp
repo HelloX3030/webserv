@@ -45,6 +45,7 @@ constexpr const char *READ = "Read";
 constexpr const char *WRITE = "Write";
 constexpr const char *CLOSE = "Close";
 constexpr const char *UNKNOWN = "Unknown";
+constexpr const char *HOST = "Host";
 
 // Log Titles
 constexpr const char *DISPLAY = "Display";
