@@ -54,6 +54,7 @@ constexpr const char *CONFIG_FRONTEND = "ConfigFrontend";
 constexpr const char *SERVER = "Server";
 constexpr const char *LISTENER = "Listener";
 constexpr const char *CONNECTION = "Connection";
+constexpr const char *HANDLE_REQUEST = "HandleRequest";
 constexpr const char *HTTP_PARSER = "HttpParser";
 constexpr const char *EPOLL_HANDLER = "EPollHandler";
 constexpr const char *HTTP_METHOD_GET = "HttpGET";
