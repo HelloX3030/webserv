@@ -1,3 +1,16 @@
+# UPDATE 20260317
+
+Lukas wants to separate the routing logic, and own it.
+this documentation needs updating.
+
+see:
+  GitHub Issue #5
+  20260317-1
+  src/http/HttpRequestFrontend/doc/
+    esp. 3_integration.md
+
+
+
 # program analysis
 
 reverse-engineering Lukas's webserv implementation.

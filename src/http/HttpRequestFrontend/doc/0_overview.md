@@ -57,6 +57,7 @@ the computation is suspended between calls. the struct is the suspension.
 ## position in system
 ```
 phase 1: CONFIG FRONTEND      config file → ServerConfig[]       (startup)
+
 phase 2: RUNTIME              event loop, epoll, connections
     └── per request:
         a. REQUEST FRONTEND       bytes → HttpRequest
@@ -67,9 +68,9 @@ phase 2: RUNTIME              event loop, epoll, connections
 
 the request frontend owns phase 2a.
 it:
-receives bytes from Connection.
-produces `HttpRequest` for dispatch.
-knows nothing of routing, handling, or response generation.
+    receives bytes from Connection.
+    produces `HttpRequest` for dispatch.
+    knows nothing of routing, handling, or response generation.
 
 
 ---
