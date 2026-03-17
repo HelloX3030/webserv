@@ -25,11 +25,12 @@ enum class ParsePhase { REQUEST_LINE, HEADERS, BODY, COMPLETE, ERROR };
 
 struct HttpRequestFrontend
 {
-    std::string buffer_;        // accumulated unparsed bytes
-    ParsePhase  phase_;         // current phase
-    HttpRequest request_;       // being built incrementally
-    size_t      body_remaining_;// bytes still expected
-    uint16_t    error_code_;    // set on ERROR transition
+    std::string buffer_;         // accumulated unparsed bytes
+    ParsePhase  phase_;          // current phase
+    HttpRequest request_;        // being built incrementally
+    size_t      body_remaining_; // bytes still expected
+    uint16_t    error_code_;     // set on ERROR transition
+    size_t      max_body_size_;  // from config, for 413 detection
 };
 ```
 
@@ -39,6 +40,9 @@ are erased after each successful phase transition.
 `request_` fields are populated incrementally: method/uri/version
 after REQUEST_LINE completes, headers after each header line,
 body after BODY completes.
+
+`max_body_size_` is set at construction from server configuration.
+used at HEADERS → BODY transition to detect 413 before body accumulation.
 
 
 ---
@@ -82,18 +86,25 @@ COMPLETE and ERROR are terminal — no further transitions.
 
 waiting for: `Method SP URI SP HTTP-Version CRLF`
 
-scan buffer for CRLF. if not found, return Incomplete.
+scan buffer for CRLF. if not found, return NeedMore.
 if found, extract line, parse into 3 tokens separated by SP.
+
+validation sequence:
+1. split on SP — must yield exactly 3 tokens
+2. method token — must be GET, POST, or DELETE
+3. uri token — must begin with `/`
+4. version token — must be `HTTP/1.0` or `HTTP/1.1`
 
 success:
     populate request_.method, request_.uri, request_.http_version.
     erase consumed bytes from buffer_.
     transition → HEADERS.
 
-failure:
-    missing SP, unknown method, malformed version.
-    set error_code_ = 400.
-    transition → ERROR.
+failure conditions:
+    missing SP, wrong token count → 400
+    unknown method → 501
+    malformed version → 400
+    unsupported version (not HTTP/1.x) → 505
 
 
 ---
@@ -103,11 +114,13 @@ failure:
 
 waiting for: `Header-Name: Header-Value CRLF` or empty line `CRLF`
 
-scan buffer for CRLF. if not found, return Incomplete.
+scan buffer for CRLF. if not found, return NeedMore.
 
 if line is empty (just CRLF):
     headers complete.
-    compute body_remaining_ from Content-Length header.
+    extract Content-Length from headers (0 if absent).
+    if Content-Length > max_body_size_: error 413, transition → ERROR.
+    set body_remaining_ = Content-Length.
     if body_remaining_ == 0: transition → COMPLETE.
     else: transition → BODY.
 
@@ -118,6 +131,9 @@ if line is non-empty:
     insert into request_.headers.
     erase consumed bytes from buffer_.
     remain in HEADERS.
+
+note: 413 is detected at the HEADERS → BODY transition, not during
+body accumulation. this is fail-fast: reject before allocating.
 
 
 ---
@@ -133,7 +149,7 @@ if buffer_.size() >= body_remaining_:
     transition → COMPLETE.
 
 else:
-    return Incomplete.
+    return NeedMore.
 
 note: buffer_ may contain more bytes than body_remaining_ if
 the client pipelined requests. we consume exactly body_remaining_,
@@ -235,11 +251,15 @@ is explicit at every call site. no implicit state inspection.
 
 | condition | code | phase |
 |-----------|------|-------|
-| malformed request line | 400 | REQUEST_LINE |
-| unknown method | 501 | REQUEST_LINE |
-| malformed header | 400 | HEADERS |
-| Content-Length invalid | 400 | HEADERS |
-| body exceeds limit | 413 | BODY |
+| malformed request line (wrong token count, bad SP) | 400 | REQUEST_LINE |
+| empty or invalid uri | 400 | REQUEST_LINE |
+| malformed version string | 400 | REQUEST_LINE |
+| unknown method (not GET/POST/DELETE) | 501 | REQUEST_LINE |
+| unsupported version (not HTTP/1.x) | 505 | REQUEST_LINE |
+| malformed header (missing colon) | 400 | HEADERS |
+| Content-Length non-numeric or negative | 400 | HEADERS |
+| Content-Length exceeds max_body_size_ | 413 | HEADERS |
+| chunked Transfer-Encoding (not implemented) | 501 | HEADERS |
 
 
 ---
@@ -257,12 +277,16 @@ void HttpRequestFrontend::reset()
     request_ = HttpRequest{};
     body_remaining_ = 0;
     error_code_ = 0;
+    // max_body_size_ unchanged — same config for connection lifetime
 }
 ```
 
 buffer_ is not cleared. pipelined requests leave trailing bytes
 after the current request's body. these bytes belong to the next
 request and must survive the reset.
+
+max_body_size_ is not reset — it derives from server configuration
+and remains constant for the connection's lifetime.
 
 
 ---
@@ -284,6 +308,8 @@ request and must survive the reset.
    transition. decremented as bytes are consumed. 0 when BODY → COMPLETE.
 
 5. error_code_ is 0 unless phase_ is ERROR.
+
+6. max_body_size_ is constant after construction.
 
 
 ---
@@ -313,7 +339,7 @@ bytes arrive at arbitrary boundaries. examples:
 
 the state machine handles all cases identically: accumulate into
 buffer_, scan for phase completion, consume and transition or
-return Incomplete.
+return NeedMore.
 
 
 ---
@@ -321,18 +347,21 @@ return Incomplete.
 
 ## language perspectives
 
+Agda — incremental parsing modelled as a coinductive type or
+a state machine with explicit fuel. the mathematical structure
+is the same: `ParseState → Input → ParseState × Maybe Result`.
+
+
 Haskell — attoparsec provides incremental parsing via `parse` and `feed`.
 partial results carry continuation state.
 the `IResult` type is `Fail | Partial (ByteString -> IResult) | Done remaining result`.
 same 3-valued outcome: failed, need more, complete.
 
+
 Rust — nom's streaming parsers return `Incomplete(Needed)` when
 input is insufficient.
 identical pattern: accumulate, attempt parse, handle partial.
 
-Agda — incremental parsing modelled as a coinductive type or
-a state machine with explicit fuel. the mathematical structure
-is the same: `ParseState → Input → ParseState × Maybe Result`.
 
 the C++ implementation threads state through `this` implicitly.
 the pure functional view threads it explicitly. same machine,
