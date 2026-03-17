@@ -17,21 +17,18 @@ OS delivers packets arriving at that port to that socket.
 
 16-bit unsigned integer: 2^16 = 65536 values, range [0, 65535].
 not an OS constraint — a protocol constraint.
-the port field in the TCP (RFC 793, 1981) and UDP (RFC 768, 1980)
-headers is defined as 16 bits, baked into the packet format at the
-wire level. every conformant TCP/IP implementation on every OS
-uses this field.
+the port field in the TCP (RFC 793, 1981) and UDP (RFC 768, 1980) headers
+is defined as 16 bits, baked into the packet format at the wire level.
+every conformant TCP/IP implementation on every OS uses this field.
 
 port 0 is reserved: binding to 0 signals the OS to assign an
-available ephemeral port. not a usable server port.
-∴ server-usable range begins at 1.
+available ephemeral port. not a usable server port. ∴ server-usable range begins at 1.
 
 ---
 
 ## 3 categories
 
-a la IANA
-Internet Assigned Numbers Authority
+put forth by the `Internet Assigned Numbers Authority (IANA)`
 
 ```
 [0,     1023] — well-known.  IANA-assigned. require root on POSIX.
@@ -62,8 +59,9 @@ portscanning — probing a port range to discover running services —
 nmap (1997, Fyodor) is the canonical tool. a full [1, 65535] scan
 reveals the entire service footprint of a host.
 
-imagery: 
-"port" = a point of entry. a server is a harbour; ports the docks. 
-the early internet was deliberately cast in spatial, navigational terms 
-— surfing, navigating, ports, addresses —
-to make an abstract system graspable.
+---
+
+## imagery:
+"port" = a point of entry. a server is a harbour; ports the docks.
+the early internet was deliberately cast in spatial, navigational terms
+— surfing, navigating, ports, addresses — to make an abstract system graspable.

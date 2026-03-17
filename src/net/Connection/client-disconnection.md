@@ -8,8 +8,6 @@ server must handle client disconnections gracefully.
 
 ## detection
 
-see: tcp-connection-termination.md for TCP-level explanation.
-
 ### on read
 
 ```cpp
@@ -41,8 +39,7 @@ on any disconnection signal:
 3. remove from poll/epoll interest set
 4. continue event loop
 
-no error message to client (client is gone).
-log if desired.
+no error message to client (client is gone). log if desired.
 
 ---
 
@@ -53,8 +50,7 @@ client may disconnect at any point:
 - during response transmission (partial response sent)
 - during CGI execution (response never delivered)
 
-all cases: same handling.
-clean up, move on.
+all cases: same handling. clean up, move on.
 
 partial state in buffers is discarded.
 no attempt to "complete" the request.

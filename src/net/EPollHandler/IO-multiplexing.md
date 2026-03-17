@@ -9,8 +9,7 @@ any fd may or may not have data at any moment.
 blocking I/O on 1 fd stalls all others.
 busy-waiting burns CPU with no useful work.
 
-the solution must be: I/O multiplexing:
-sleep until something is ready,
+the solution must be: I/O multiplexing: sleep until something is ready,
 then wake and act only on what is ready.
 
 ---
@@ -34,25 +33,25 @@ given the protection boundary between userspace and kernel.
 ## alternatives and why they fail
 
 thread per connection:
-each thread blocks on its own fd. simple.
-cost: ~8MB stack per thread. 10,000 connections = 80GB just for stacks.
-context-switching overhead compounds this. fails at scale.
+    each thread blocks on its own fd. simple.
+    cost: ~8MB stack per thread. 10,000 connections = 80GB just for stacks.
+    context-switching overhead compounds this. fails at scale.
 
 busy-wait:
-loop over all fds, call non-blocking read, check EAGAIN, repeat.
-100% CPU. no sleep/wake. starves other processes. infeasible.
+    loop over all fds, call non-blocking read, check EAGAIN, repeat.
+    100% CPU. no sleep/wake. starves other processes. infeasible.
 
 async I/O (POSIX aio):
-kernel performs I/O asynchronously, notifies on completion.
-on Linux: only works for O_DIRECT files, not sockets. broken for our use.
-    why? Linux's POSIX aio implementation only functions correctly 
-    with O_DIRECT file I/O — a mode that bypasses the page cache entirely. 
-    Socket buffers are not O_DIRECT. 
-    The kernel simply never implemented aio properly for sockets on Linux. design gap.
+    kernel performs I/O asynchronously, notifies on completion.
+    on Linux: only works for O_DIRECT files, not sockets. broken for webserv usage.
+        why? Linux's POSIX aio implementation only functions correctly
+        with O_DIRECT file I/O — a mode that bypasses the page cache entirely.
+        Socket buffers are not O_DIRECT.
+        The kernel never implemented aio properly for sockets on Linux - design gap.
 
 signal-driven I/O:
-kernel sends SIGIO on readiness. handler cannot know which fd triggered it.
-signals can be lost. race conditions. fundamentally broken for multi-fd.
+    kernel sends SIGIO on readiness. handler cannot know which fd triggered it.
+    signals can be lost. race conditions. fundamentally broken for multi-fd.
 
 ---
 
@@ -70,10 +69,10 @@ array of {fd, events, revents} structs. no fd limit.
 kernel still scans every entry — O(n).
 POSIX standard.
 
-    pollfd's 2 event fields: 
+    pollfd's 2 event fields:
     `events` — what you ask the kernel to watch for
     `revents` — what the kernel writes back — what actually occurred
-    "r" = returned. 
+    "r" = returned.
     After poll() returns, you inspect revents on each fd to know what happened.
 
 ### epoll (Linux 2.5.44, 2002)
@@ -118,9 +117,8 @@ on call:
    kernel wakes the process.
 6. process inspects `revents` to know which fds to act on.
 
-the wait queues are the mechanism connecting hardware interrupts
-to process wakeup. the process does not poll in a loop —
-it genuinely sleeps and is woken by the kernel.
+the wait queues are the mechanism connecting hardware interrupts to process wakeup.
+the process does not poll in a loop — it genuinely sleeps and is woken by the kernel.
 
 
 ---
@@ -128,7 +126,7 @@ it genuinely sleeps and is woken by the kernel.
 
 ## in webserv
 
-the event loop — same logic, 2 implementations being considered:
+the event loop — same logic, 2 implementations were considered:
 
 ### poll
 

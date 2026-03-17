@@ -28,7 +28,7 @@ no handshake. immediate.
 kernel discards send/receive buffers.
 connection is dead.
 
-at application layer: 
+at application layer:
 - `recv()` returns -1, errno ECONNRESET
 - `send()` returns -1, errno ECONNRESET or EPIPE
 
@@ -47,5 +47,3 @@ detect via return value of recv()/send().
 
 `recv() == 0` → FIN received → close connection.
 `recv() == -1` → check errno, likely RST or other error → close connection.
-
-see: client-disconnection.md (wip)

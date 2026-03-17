@@ -30,7 +30,6 @@ cause: too many open connections.
 
 countermeasure: timeout mechanism.
 stale connections closed, fds recycled.
-see: request-timeout.md
 
 ### memory exhaustion
 
@@ -77,7 +76,7 @@ optional: connection rate limiting (not required for webserv).
 
 ---
 
-## invariant
+## invariants
 
 no client action crashes the server.
 no client action makes the server unresponsive to other clients.
