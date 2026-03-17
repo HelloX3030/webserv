@@ -9,12 +9,11 @@ and a network address (host:port).
 
 before binding: socket exists as anonymous file descriptor —
 connected to nothing, receiving nothing.
-after binding: OS knows packets arriving at `host:port` belong
-to this socket.
+after binding: OS knows packets arriving at `host:port` belong to this socket.
 
 the term is consistent across computer science:
 variable binding in lambda calculus, name binding in PLs,
-key binding in editors. 1 concept, many registers.
+key binding in editors...
 
 ---
 
@@ -65,10 +64,9 @@ OS checks process permissions.
 
 ## culture
 
-`address already in use` (`EADDRINUSE`) — a previous process still
-holds the bind — is nearly universal initiation for networked
-programming. `SO_REUSEADDR` is the remedy; looking it up is a rite
-of passage.
+`address already in use` (`EADDRINUSE`) — a previous  still holds the bind
+— is nearly universal initiation for networked programming.
+`SO_REUSEADDR` is the remedy.
 
 what's listening on port X?
 `ss -tlnp` (Linux) or `lsof -i :X` (macOS).

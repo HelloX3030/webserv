@@ -2,7 +2,7 @@
 
 ## ontology
 
-a socket is a handle to a communication endpoint.
+a handle to a communication endpoint.
 
 not "like a file" — different problem.
 files: persistent, local, named by path.
@@ -14,9 +14,8 @@ the abstraction resolves 3 fundamental problems simultaneously:
 3. multiplexing — how do N conversations share 1 machine?
 
 before BSD sockets (1983): each protocol (TCP, UDP, XNS, DECnet...)
-had its own syscalls. chaos. Bill Joy and colleagues at Berkeley
-unified them: 1 interface, N protocols underneath.
-polymorphism at the kernel level.
+had its own syscalls. chaos. Bill Joy and colleagues at Berkeley unified them:
+1 interface, N protocols underneath. polymorphism at the kernel level.
 
 formal structure:
 ```
@@ -65,7 +64,7 @@ the UPPERCASE constants — `AF_INET`, `INADDR_ANY`, `SO_REUSEADDR`
 defined in system headers shared between your process and the kernel.
 
 `htons()` — host-to-network short.
-network byte order is big-endian. your CPU may be little-endian.
+network byte order is big-endian. CPU may be little-endian.
 this is not optional: mismatched endianness means wrong port,
 wrong address. conversion is necessary.
 
@@ -94,16 +93,17 @@ is a factory; accept() materialises new communication channels.
 ## EADDRINUSE and SO_REUSEADDR
 
 `EADDRINUSE`: bind() fails because the port is already claimed.
-in TCP, when a socket closes, the OS holds the address in TIME_WAIT
-for ~2 minutes — ensuring stray packets from the old session don't
-corrupt a new one. this is correct TCP behaviour.
+in TCP, when a socket closes, the OS holds the address in TIME_WAIT for ~2 mins
+— ensuring stray packets from the old session don't corrupt a new one.
+this is correct TCP behaviour.
 
 consequence during development: kill webserv, restart immediately
 → bind() returns EADDRINUSE. the ghost of the previous process
 still holds the address.
 
-`SO_REUSEADDR`: a socket option, set before bind(), that tells the
-kernel: allow rebinding to an address in TIME_WAIT.
+
+`SO_REUSEADDR`: a socket option, set before bind(), that tells the kernel:
+allow rebinding to an address in TIME_WAIT.
 
 ```c
 int opt = 1;
@@ -145,7 +145,7 @@ Plan 9 proved unification is possible:
 /net/tcp/N/data  → read/write
 /net/tcp/N/ctl   → control
 ```
-same open/read/write for network and files. elegant.
+same open/read/write for network and files.
 
 the BSD socket API is not the only coherent
 design — it is the historical winner.

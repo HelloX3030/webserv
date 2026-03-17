@@ -2,16 +2,17 @@
 
 ## disambiguation
 
-2 entirely different processes, 1 word:
+2 different processes, 1 word:
 
 ```
 networking:   forwarding packets across the internet toward
               destination IP, hop by hop, via routing tables.
+
 web server:   given an incoming HTTP request, determine which
               configured location block handles it.
 ```
 
-context disambiguates. this doc is the second.
+this doc is about the second ctx: within a web server.
 
 ---
 
@@ -98,4 +99,4 @@ close()      — or keep-alive
 ```
 
 routing is the hinge: generic network layer → application layer.
-where the server's configuration becomes active.                            
+where the server's configuration becomes active.
