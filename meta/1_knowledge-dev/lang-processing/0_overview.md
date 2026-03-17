@@ -21,7 +21,7 @@ hierarchical relationships, semantic constraints.
 
 ## why "language"
 
-the input is not arbitrary characters. it conforms to rules.
+the input is not arbitrary characters - it conforms to rules.
 those rules constitute a **language** in the formal sense:
 a set of strings over an alphabet, defined by a grammar.
 

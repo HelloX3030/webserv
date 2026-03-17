@@ -7,7 +7,7 @@
 syntax tree → verified, typed structure
 ```
 
-semantic analysis transforms 
+semantic analysis transforms
 syntactically valid structure -> semantically valid structure
 
 
@@ -21,7 +21,7 @@ these depend on information not available at the local parse site, e.g.:
 
 "variable x must be declared before use":
     requires tracking declarations across the tree.
-    
+
 "function call arguments must match parameter types":
     requires comparing distant tree nodes.
 
@@ -49,8 +49,8 @@ semantic analysis divides into 2 distinct operations:
     all cross-references resolved?
     all semantic couplings satisfied?
 
-these are separated by **when** they can run and **what context**
-they have access to.
+these are separated by **when** they can run and
+**what context** they have access to.
 
 
 ---
@@ -87,7 +87,7 @@ uint16_t parse_port(const std::string& s, size_t line) {
 }
 ```
 
-the range check [1, 65535] 
+the range check [1, 65535]
 is not type-level — `uint16_t` admits 0, but
 domain-level — port 0 is not a valid service binding.
 
@@ -154,7 +154,7 @@ attempting to merge them fails:
 - interpret at validate-time: no line numbers, errors are imprecise
 - validate at parse-time: struct incomplete, checks are premature
 
-the separation is not a design choice. it is a logical necessity
+the separation is a logical necessity
 arising from the information available at each stage.
 
 
@@ -233,8 +233,9 @@ these structures enable:
 
 
 WebServ:
-the ConfigFrontend has no symbolic names in this sense.
-directive names are fixed keywords, not user-defined symbols.
+    ConfigFrontend:
+    has no symbolic names in this sense.
+    directive names are fixed keywords, not user-defined symbols.
 
 
 ---
@@ -269,28 +270,6 @@ preserved in the AST for precise diagnostics.
 
 ## in other languages
 
-Haskell (type checking via unification):
-```haskell
-typeCheck :: Expr → TypeEnv → Either TypeError Type
-typeCheck (Add e1 e2) env = do
-    t1 ← typeCheck e1 env
-    t2 ← typeCheck e2 env
-    unify t1 TInt
-    unify t2 TInt
-    return TInt
-```
-
-Rust (borrow checker as semantic analysis):
-```rust
-// semantic constraint: cannot use moved value
-let s1 = String::from("hello");
-let s2 = s1;
-println!("{}", s1);  // error: value moved
-```
-
-Rust's borrow checker is semantic analysis — it checks constraints
-(ownership, lifetimes) that cannot be expressed in the grammar.
-
 Agda (types are proofs):
 ```agda
 -- semantic constraint encoded in type
@@ -304,6 +283,31 @@ parsePort : String → Maybe (Σ ℕ ValidPort)
 in Agda, the type itself carries the constraint.
 a `ValidPort` cannot exist unless the proof obligations are met.
 semantic analysis becomes type checking.
+
+
+
+Haskell (type checking via unification):
+```haskell
+typeCheck :: Expr → TypeEnv → Either TypeError Type
+typeCheck (Add e1 e2) env = do
+    t1 ← typeCheck e1 env
+    t2 ← typeCheck e2 env
+    unify t1 TInt
+    unify t2 TInt
+    return TInt
+```
+
+
+Rust (borrow checker as semantic analysis):
+```rust
+// semantic constraint: cannot use moved value
+let s1 = String::from("hello");
+let s2 = s1;
+println!("{}", s1);  // error: value moved
+```
+
+Rust's borrow checker is semantic analysis — it checks constraints
+(ownership, lifetimes) that cannot be expressed in the grammar.
 
 
 ---
@@ -327,30 +331,30 @@ semantic analysis:
 
 Ontological gaps:
 
-Type theory foundations - what IS a type? Type as set, as proposition, as constraint. 
+Type theory foundations - what IS a type? Type as set, as proposition, as constraint.
 The typing judgment Γ ⊢ e : τ is the core formal object. Document uses "typed" without grounding it.
 
-Attribute grammars - the upstream formalism for semantic analysis, as CFG is for parsing. 
+Attribute grammars - the upstream formalism for semantic analysis, as CFG is for parsing.
 Synthesized vs inherited attributes. Currently absent; semantic analysis appears ad hoc when it has formal theory.
 
-Semantic domains - denotational semantics answers "what does this mean?" 
-by mapping syntax to mathematical objects. 
+Semantic domains - denotational semantics answers "what does this mean?"
+by mapping syntax to mathematical objects.
 The document says "semantic" without defining what semantics IS.
 
-Symbol tables / environments - mentioned in passing but no structure. 
-What IS an environment? Env = Name → Value. 
+Symbol tables / environments - mentioned in passing but no structure.
+What IS an environment? Env = Name → Value.
 The threading pattern. Scope as environment nesting.
 
 
 Mechanical gaps:
 
-Name resolution / scoping - lexical vs dynamic scope. 
-Scope graphs as the modern formalism. 
+Name resolution / scoping - lexical vs dynamic scope.
+Scope graphs as the modern formalism.
 How "declared before use" is actually checked.
 
-Type inference vs type checking - the Haskell example shows typeCheck 
-and mentions unify but doesn't distinguish checking (verify given types) 
+Type inference vs type checking - the Haskell example shows typeCheck
+and mentions unify but doesn't distinguish checking (verify given types)
 from inference (discover types). Hindley-Milner absent.
 
-Constraint satisfaction view - validation as constraint solving. 
+Constraint satisfaction view - validation as constraint solving.
 Connection to SAT/SMT when constraints get complex.

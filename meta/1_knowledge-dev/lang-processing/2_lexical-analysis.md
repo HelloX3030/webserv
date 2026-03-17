@@ -127,9 +127,9 @@ the lexer does not:
 
 these belong to later phases.
 
-the lexer's contract: 
+the lexer's contract:
 segment characters into tokens,
-annotate each with a type, 
+annotate each with a type,
 record source location for errors.
 
 
@@ -159,7 +159,8 @@ line structure — replace comment characters with spaces, not delete them.
 how many token types?
 
 
-minimalist approach (ConfigFrontend):
+minimalist approach
+e.g. in WebServ ConfigFrontend:
 ```
 STRING      — any non-structural character sequence
 LBRACE      — {
@@ -208,7 +209,9 @@ hand-written loop:
     emit token when pattern completes.
     simpler to understand, adequate for simple languages.
 
-the ConfigFrontend uses hand-written loop:
+
+WebServ:
+ConfigFrontend uses hand-written loop:
     4 token types, no complex patterns, no regex needed.
     a table-driven DFA would be overengineering.
 
@@ -217,6 +220,19 @@ the ConfigFrontend uses hand-written loop:
 
 
 ## in other languages
+
+Agda (dependently typed, lexer as proof):
+```agda
+-- token type indexed by the regular language it matches
+data Token : RegExp → Set where
+  TString : (s : String) → Matches stringPattern s → Token stringPattern
+  TLBrace : Token (char '{')
+  ...
+```
+
+in Agda, the token type can carry a proof that the lexeme
+matches the pattern — the type system enforces lexer correctness.
+
 
 Haskell (using Alex lexer generator):
 ```haskell
@@ -228,6 +244,7 @@ tokens :-
     ";"                     { \_ -> TSemi }
     [a-zA-Z0-9\/\.\-\_]+    { \s -> TString s }
 ```
+
 
 Rust (hand-written, typical pattern):
 ```rust
@@ -242,18 +259,6 @@ fn next_token(&mut self) -> Token {
     }
 }
 ```
-
-Agda (dependently typed, lexer as proof):
-```agda
--- token type indexed by the regular language it matches
-data Token : RegExp → Set where
-  TString : (s : String) → Matches stringPattern s → Token stringPattern
-  TLBrace : Token (char '{')
-  ...
-```
-
-in Agda, the token type can carry a proof that the lexeme
-matches the pattern — the type system enforces lexer correctness.
 
 
 ---

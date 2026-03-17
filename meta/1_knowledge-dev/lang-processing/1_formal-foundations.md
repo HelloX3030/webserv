@@ -3,7 +3,7 @@
 
 ## the Chomsky hierarchy
 
-Noam Chomsky (1956) classified formal languages into 4 types
+formal languages can be classified into 4 types
 based on the generative power of their grammars.
 
 ```
@@ -14,14 +14,12 @@ type 3: regular                   (A → aB or A → a)
 ```
 
 these form a strict inclusion chain:
-
 ```
 type 3 ⊂ type 2 ⊂ type 1 ⊂ type 0
 ```
 
 every regular language (type 3) is also context-free (type 2).
-every context-free language is also context-sensitive (type 1).
-and so on.
+every context-free language is also context-sensitive (type 1). etc
 
 lower type number means greater generative power.
 higher type number means more restrictive grammar rules.
@@ -96,6 +94,7 @@ semantic analysis handles type 1 (context-sensitive) constraints:
     "variable must be declared before use"
     "function call arguments must match parameter types"
     "CGI extension requires CGI path"
+
     these depend on context not expressible in context-free grammar.
     no single automaton — handled by ad hoc algorithms
     over the syntax tree (symbol tables, type environments).
@@ -122,8 +121,8 @@ separating phases lets each use the minimal machinery:
 - parser: PDA, O(n) for practical grammars, recursive descent
 - semantic: tree walks, symbol tables, type inference
 
-the separation is not modularity for its own sake.
-it is **computational economy** — using the weakest sufficient model.
+the separation is not modularity for its own sake, but
+**computational economy** — using the weakest sufficient model.
 
 
 ---
@@ -176,10 +175,10 @@ and parsers handle structure (nested patterns).
 
 context-free grammars (type 2) cannot express:
 
-three-way matching:
+3-way matching:
     the language { aⁿbⁿcⁿ | n ≥ 0 }.
     "abc", "aabbcc", "aaabbbccc" are in the language.
-    a stack can match two counts but not three simultaneously.
+    a stack can match 2 counts but not 3 simultaneously.
 
 declaration-before-use:
     "identifier x must be declared before any use of x."

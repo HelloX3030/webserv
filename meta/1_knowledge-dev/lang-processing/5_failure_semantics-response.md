@@ -109,10 +109,16 @@ this tells nothing — not where, not what, not why.
     explicitly anticipate mistakes.
 
 
+
 WebServ:
-ConfigFrontend uses fail-fast.
-rationale: config errors are fatal — the server cannot start.
-1 precise error is better than many cascading ones.
+
+ConfigFrontend
+    uses fail-fast.
+    rationale: config errors are fatal — the server cannot start.
+    1 precise error is better than many cascading ones.
+
+HttpRequestFrontend
+    upcoming
 
 
 ---
@@ -139,6 +145,7 @@ catch (const std::exception& e) { log::error(e.what()); exit(1); }
     − resource cleanup requires RAII or finally blocks
 
 
+
 **return values**: return error type, propagate explicitly.
 ```rust
 fn parse_port(s: &str, line: usize) -> Result<u16, ParseError> {
@@ -157,8 +164,11 @@ fn parse_port(s: &str, line: usize) -> Result<u16, ParseError> {
 C++ standard practice: exceptions for truly exceptional conditions.
 
 
+
 WebServ:
-config parsing errors are fatal startup failures — exceptions fit.
+
+ConfigFrontend:
+    startup failures are fatal — exceptions appropriate.
 
 
 ---
@@ -251,7 +261,11 @@ example with context:
 
 
 WebServ:
-the ConfigFrontend does not include snippets — it reports line only.
+
+ConfigFrontend
+    does not include snippets — it reports line only.
+
+
 for more complex languages, visual context aids comprehension.
 
 
@@ -259,27 +273,6 @@ for more complex languages, visual context aids comprehension.
 
 
 ## in other languages
-
-Haskell (using parsec):
-```haskell
--- parsec provides detailed error with expected/unexpected
--- and stack of labels
-parse serverBlock "config" input
--- on failure:
--- "config" (line 12, column 8):
--- unexpected ";"
--- expecting "{"
-```
-
-Rust (using nom with custom errors):
-```rust
-fn parse_port(input: &str) -> IResult<&str, u16, CustomError> {
-    let (input, digits) = digit1(input)?;
-    let port: u16 = digits.parse()
-        .map_err(|_| nom::Err::Failure(CustomError::InvalidPort))?;
-    Ok((input, port))
-}
-```
 
 Agda (errors as types):
 ```agda
@@ -293,6 +286,30 @@ in the types. the type system documents what errors are possible.
 
 
 
+Haskell (using parsec):
+```haskell
+-- parsec provides detailed error with expected/unexpected
+-- and stack of labels
+parse serverBlock "config" input
+-- on failure:
+-- "config" (line 12, column 8):
+-- unexpected ";"
+-- expecting "{"
+```
+
+
+
+Rust (using nom with custom errors):
+```rust
+fn parse_port(input: &str) -> IResult<&str, u16, CustomError> {
+    let (input, digits) = digit1(input)?;
+    let port: u16 = digits.parse()
+        .map_err(|_| nom::Err::Failure(CustomError::InvalidPort))?;
+    Ok((input, port))
+}
+```
+
+
 ---
 
 
@@ -300,43 +317,43 @@ in the types. the type system documents what errors are possible.
 
 Ontological gaps:
 
-Partiality as foundation - errors ARE partiality. 
-Parser: String → Maybe Tree. 
-Lexer: String → Maybe [Token]. 
+Partiality as foundation - errors ARE partiality.
+Parser: String → Maybe Tree.
+Lexer: String → Maybe [Token].
 Error handling is making partiality explicit in types and control flow. This grounds everything.
 
-Error as value vs error as effect - the fundamental dichotomy. 
-Either E A (error is data, first-class) vs throw/catch (error is control flow, effect). 
+Error as value vs error as effect - the fundamental dichotomy.
+Either E A (error is data, first-class) vs throw/catch (error is control flow, effect).
 Different ontological status. Different composition laws.
 
-Algebra of failure - how partial computations compose. Monad laws. 
+Algebra of failure - how partial computations compose. Monad laws.
 Short-circuit semantics. e1 >>= e2 fails if either fails.
 Applicative vs monadic error accumulation.
 
-Error provenance / causality - errors cause errors. Causal chains. 
+Error provenance / causality - errors cause errors. Causal chains.
 "Caused by" relation. Currently no structure for multi-level failure.
 
-Recoverability criteria - document lists strategies but not the decision function. 
+Recoverability criteria - document lists strategies but not the decision function.
 What makes an error recoverable? Domain knowledge encoded how?
 
 
 Mechanical gaps:
 
-Typed error hierarchies - sum types reflecting failure modes. 
+Typed error hierarchies - sum types reflecting failure modes.
 LexError | ParseError | SemanticError. Exhaustiveness checking.
 
-Context accumulation - Writer-like threading of diagnostic context. 
+Context accumulation - Writer-like threading of diagnostic context.
 How stack traces work. Source spans carried through transformations.
 
 
 
 Re: more general term than "error-handling":
 
-Partiality - the upstream mathematical concept. 
-A partial function may not yield a value for all inputs. 
+Partiality - the upstream mathematical concept.
+A partial function may not yield a value for all inputs.
 Error handling is the discipline of making partiality explicit and manageable.
 
-Failure semantics - PL theory level. What does failure mean? 
+Failure semantics - PL theory level. What does failure mean?
 What information accompanies it? How does it propagate?
 
 "Error handling" is downstream, implementation-flavoured. "Partiality" is the ontology.

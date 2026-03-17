@@ -103,17 +103,16 @@ number of fragments, any wildcard strategy that filters on `.cpp`.
 
 ## language perspectives
 
-Agda — no preprocessor; no TU concept. a file is a module. the
-structural problem does not arise; neither does the naming question.
+Agda — no preprocessor; no TU concept. a file is a module.
+the structural problem does not arise; neither does the naming question.
 
 Haskell — no preprocessor inclusion. Template Haskell splice files
 use `.hs` uniformly; the module system, not the file extension,
 determines compilation boundaries.
 
-Rust — `mod` declarations control compilation. a file included
-via `mod foo;` is a module, not a fragment; it is compiled as part
-of the crate but has its own namespace. the `.rs` extension is
-uniform. no analogous naming problem.
+Rust — `mod` declarations control compilation. a file included via `mod foo;`
+is a module, not a fragment; it is compiled as part of the crate
+but has its own namespace. the `.rs` extension is uniform. no analogous naming problem.
 
 the `.inc` convention is specific to the C preprocessor model.
 in languages with principled module systems, it does not appear.

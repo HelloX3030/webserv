@@ -7,9 +7,9 @@
 token stream → syntax tree
 ```
 
-the parser transforms a linear sequence of tokens into a
-hierarchical structure that represents the grammatical
-organisation of the input.
+the parser transforms a linear sequence of tokens
+into a hierarchical structure
+that represents the grammatical organisation of the input.
 
 "syntax" means arrangement. the parser discovers how tokens
 are arranged according to the grammar's rules.
@@ -25,6 +25,8 @@ a tree where:
 - leaf nodes represent tokens (terminals)
 - parent-child relationships represent "is composed of"
 
+
+WebServ ConfigFrontend:
 ```
 config file:
     server {
@@ -56,9 +58,10 @@ the parser's specification is a **context-free grammar** (CFG).
 a CFG consists of:
 - terminals: tokens (the leaves)
 - non-terminals: structural categories (internal nodes)
-- productions: rules of the form `A → α` where A is a non-terminal 
+- productions: rules of the form `A → α` where A is a non-terminal
 and α is a sequence of terminals and non-terminals
 - start symbol: the top-level non-terminal
+
 
 example (simplified config grammar):
 ```
@@ -115,8 +118,9 @@ bottom-up: start from tokens, reduce to non-terminals.
     - LR parsing (SLR, LALR, canonical LR)
     - shift-reduce with parse tables
 
+
 in WebServ:
-the ConfigFrontend uses **recursive descent**.
+. ConfigFrontend uses **recursive descent**.
 
 
 ---
@@ -132,7 +136,8 @@ grammar:
 server_block → "server" "{" { directive } "}"
 ```
 
-code:
+
+Example code - ConfigFrontend:
 ```cpp
 ServerConfig parse_server_block() {
     expect_STRING("server");
@@ -159,17 +164,16 @@ via recursive function calls.
 
 recursive descent implements **LL parsing**.
 
-LL(k) means: 
+LL(k) means:
 read input Left-to-right, produce Leftmost derivation,
 using k tokens of lookahead.
 
-LL(1) is the most common: one token of lookahead.
+LL(1) is the most common: 1 token of lookahead.
 at each decision point, the parser peeks at the next token
 and decides which production to use.
 
 this requires the grammar to be **LL(1)**: for each non-terminal,
-the possible productions must be distinguishable by looking at
-one token.
+the possible productions must be distinguishable by looking at 1 token.
 
 not LL(1):
 ```
@@ -185,7 +189,7 @@ solution: left-factor or increase lookahead.
 ---
 
 
-## the parse tree vs the syntax tree
+## parse tree vs syntax tree
 
 **parse tree** (concrete syntax tree): mirrors the grammar exactly.
 every production creates a node. includes all tokens.
@@ -239,7 +243,7 @@ fail fast:
 
 error recovery:
     attempt to resynchronise and continue.
-    report multiple errors in one pass.
+    report multiple errors in 1 pass.
     complex, can produce confusing cascading errors.
 
 
@@ -253,6 +257,17 @@ the operator will fix it and re-run.
 
 
 ## in other languages
+
+Agda (parser indexed by grammar):
+```agda
+-- parse function type: proof that input matches grammar
+parse : (g : CFG) → (input : List Token)
+      → Maybe (ParseTree g × List Token)
+```
+
+in dependently typed languages, the parser's type can encode
+the grammar itself — a successful parse is a proof of membership.
+
 
 Haskell (using parsec, a parser combinator library):
 ```haskell
@@ -269,7 +284,8 @@ directive = do
     return $ Directive name values
 ```
 
-Rust (using nom, another combinator library):
+
+Rust (using nom, a combinator library):
 ```rust
 fn server_block(input: &str) -> IResult<&str, ServerConfig> {
     let (input, _) = tag("server")(input)?;
@@ -281,16 +297,6 @@ fn server_block(input: &str) -> IResult<&str, ServerConfig> {
     Ok((input, ServerConfig { directives }))
 }
 ```
-
-Agda (parser indexed by grammar):
-```agda
--- parse function type: proof that input matches grammar
-parse : (g : CFG) → (input : List Token) 
-      → Maybe (ParseTree g × List Token)
-```
-
-in dependently typed languages, the parser's type can encode
-the grammar itself — a successful parse is a proof of membership.
 
 
 ---
@@ -333,22 +339,22 @@ everything before is linear. everything after is hierarchical.
 ---
 
 
-## next pass through this doc, info to add:
+## info to add to this file:
 
-Derivations - the document jumps from grammar to recogniser without making derivations explicit. 
-A derivation IS what parsing discovers. Leftmost vs rightmost derivation. 
+Derivations - the document jumps from grammar to recogniser without making derivations explicit.
+A derivation IS what parsing discovers. Leftmost vs rightmost derivation.
 The derivation tree as the mathematical object the parser constructs.
 
-FIRST/FOLLOW sets - the actual mechanism behind "how does LL(1) decide?" 
-the above doc says "peek at next token and decide" but doesn't show the mathematical structure that makes this possible. 
+FIRST/FOLLOW sets - the actual mechanism behind "how does LL(1) decide?"
+the above doc says "peek at next token and decide" but doesn't show the mathematical structure that makes this possible.
 These sets ARE the compiled form of the grammar's prediction logic.
 
-Ambiguity - what it means for a grammar to admit multiple parse trees for one input. 
-Why this matters (semantic indeterminacy). 
+Ambiguity - what it means for a grammar to admit multiple parse trees for one input.
+Why this matters (semantic indeterminacy).
 The undecidability of ambiguity detection. Disambiguation strategies.
 
-Grammar transformations - left factoring, left recursion elimination. 
-Currently I mention "not LL(1)" as a problem but not the systematic solutions. 
+Grammar transformations - left factoring, left recursion elimination.
+Currently I mention "not LL(1)" as a problem but not the systematic solutions.
 These transforms preserve the language while changing the grammar's form.
 
 
@@ -356,13 +362,13 @@ Mechanical gaps:
 
 Bottom-up in any depth - shift-reduce mechanics, handles, viable prefixes. You name LR but don't illuminate it.
 
-Complexity analysis - why O(n) for LL/LR, why O(n³) for general CFG (CYK/Earley). 
-derive it.
+Complexity analysis - why O(n) for LL/LR, why O(n³) for general CFG (CYK/Earley). derive it.
 
-Parser combinators as algebra - the Haskell example shows syntax, 
-but not the monadic structure that makes composition work. 
+Parser combinators as algebra - the Haskell example shows syntax,
+but not the monadic structure that makes composition work.
 Parsers form a monad; this is upstream to the code.
 
 
-Suggested priority for next pass: derivations → FIRST/FOLLOW → ambiguity. 
+Suggested priority for next pass:
+derivations → FIRST/FOLLOW → ambiguity.
 These three complete the ontological picture before descending into mechanics.
