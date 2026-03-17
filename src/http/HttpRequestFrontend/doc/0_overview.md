@@ -1,30 +1,34 @@
 # http request frontend — overview
 
 
+---
+
+
 ## ontology
 
-bytes arrive incrementally over a socket.
-the complete request is not available at once.
-between `read()` calls, something must remember parse progress.
-this is irreducible state.
+a stateful parser that transforms incrementally-arriving bytes into
+a structured HTTP request.
+
+bytes arrive over a socket in arbitrary chunks. the complete request
+is not available at once. between `read()` calls, something must
+remember parse progress. this is irreducible state.
+
 
 ```
-ConfigFrontend:      parse : String → Config                (pure)
-HttpRequestFrontend: feed  : Self × Bytes → Self × Result   (stateful)
+ConfigFrontend:      parse : String → Config              (pure)
+HttpRequestFrontend: advance : Self × Bytes → Self × Result   (stateful)
 ```
-    NB (ghr): see:
-        thread: 20260313-0_persistence_http-request-frontend
-        section: 2. Type notation
-    creation of documentation upcoming
-
 
 ConfigFrontend receives complete input, produces complete output,
-holds no state between calls. a namespace containing a pure fn
+holds no state between calls. a namespace containing a pure function
 is honest to this nature.
 
 HttpRequestFrontend receives partial input, may produce output,
-preserves state for next call. a struct holding state and exposing
+preserves state for the next call. a struct holding state and exposing
 methods is honest to this nature.
+
+the difference is not stylistic. it reflects a fundamental distinction:
+total functions over complete input vs partial functions over streaming input.
 
 
 ---
@@ -32,10 +36,8 @@ methods is honest to this nature.
 
 ## the suspended computation
 
-each `feed()` call advances a parse that may span many invocations.
-the internal state encodes: "given what we've seen, what remains?"
-
-functionally:
+each `advance()` call continues a parse that may span many invocations.
+internal state encodes: "given what we've seen, what remains?"
 
 ```
 data ParseState = Accumulating Buffer Phase | Complete HttpRequest | Error Code
@@ -43,130 +45,148 @@ data ParseState = Accumulating Buffer Phase | Complete HttpRequest | Error Code
 step : ParseState × Bytes → ParseState
 ```
 
-practically: Connection owns one instance per fd. methods are
-transformations of (self + input) → (self + result).
+Connection owns 1 instance per fd. methods are transformations of
+`(self, input) → (self, result)`.
+
+the computation is suspended between calls. the struct is the suspension.
 
 
 ---
 
 
 ## position in system
-
 ```
-phase 1: CONFIG FRONTEND    config file → ServerConfig[]     (startup)
-phase 2: RUNTIME            event loop, epoll, connections
+phase 1: CONFIG FRONTEND      config file → ServerConfig[]       (startup)
+phase 2: RUNTIME              event loop, epoll, connections
     └── per request:
-        a. REQUEST FRONTEND     bytes → HttpRequest
-        b. ROUTER               request + config → handler
-        c. HANDLER              → output
-        d. RESPONSE FRONTEND    output → bytes
+        a. REQUEST FRONTEND       bytes → HttpRequest
+        b. dispatch               method → handler
+        c. HANDLER                → response data
+        d. RESPONSE BUILDER       data → bytes
 ```
 
 the request frontend owns phase 2a.
-hands structured request to the router.
+it:
+receives bytes from Connection.
+produces `HttpRequest` for dispatch.
+knows nothing of routing, handling, or response generation.
 
 
 ---
 
 
-## integration point: Connection ↔ HttpRequestFrontend
+## language-theoretic classification
 
-Connection currently uses a placeholder `HttpParser` that accumulates
-bytes and returns a hardcoded response. HttpRequestFrontend replaces this.
+HTTP/1.1 request syntax is type 3 (regular) in the Chomsky hierarchy.
+see `2_grammar.md` for the formal specification.
 
-```cpp
-// Connection owns:
-HttpRequestFrontend http_frontend_;
+consequences:
+- no stack required (no nesting, no recursion)
+- finite automaton suffices (state machine with phases)
+- O(n) in input length, O(1) auxiliary space
 
-// Connection::handle_event calls:
-FeedResult result = http_frontend_.feed(buf, n);
+the 1 context-sensitive aspect — Content-Length determining body size —
+is semantic, not syntactic. handled at the HEADERS → BODY transition
+by computing `body_remaining_` from the parsed header value.
 
-switch (result.status) {
-    case FeedStatus::NeedMore:
-        return;  // back to epoll, wait for more bytes
-    case FeedStatus::Complete:
-        route(result.request);
-        if (result.request.keepAlive())
-            http_frontend_.reset();  // prepare for next request
-        break;
-    case FeedStatus::Error:
-        send_error_response(result.error_code);
-        break;
-}
-```
-
-the frontend knows nothing of fds, epoll, or connection lifecycle.
-it receives bytes, returns status. Connection owns the event loop
-integration.
+the "parser" is effectively a phased scanner.
+recursive descent would work but is unnecessary.
+see `1_decisions/0_lang-processing/` for detailed reasoning.
 
 
 ---
 
 
-## interface contract
-
+## interface
 
 ### types
-
 ```cpp
-enum class FeedStatus { NeedMore, Complete, Error };
+enum class ParseStatus { Incomplete, Complete, Failed };
 
-struct FeedResult
+struct ParseResult
 {
-    FeedStatus  status;
-    HttpRequest request;     // valid iff status == Complete
-    uint16_t    error_code;  // valid iff status == Error (400, 413, 501)
+    ParseStatus status;
+    HttpRequest request;     // valid iff Complete
+    uint16_t    error_code;  // valid iff Failed (400, 413, 501, 505)
 };
 
 struct HttpRequest
 {
     std::string method;
     std::string uri;
-    std::string http_version;               // "HTTP/1.0" or "HTTP/1.1"
+    std::string http_version;
     std::map<std::string, std::string> headers;  // keys normalised to lowercase
     std::string body;
 
-    bool keepAlive() const;     // pure derivation from version + Connection header
-    long contentLength() const; // -1 if absent or malformed
+    bool keepAlive() const;      // pure derivation from version + Connection header
+    long contentLength() const;  // -1 if absent or malformed
 };
 ```
 
-
 ### methods
-
 ```cpp
 struct HttpRequestFrontend
 {
-    FeedResult feed(const char* data, size_t len);
+    ParseResult advance(const char* data, size_t len);
     void reset();
 };
 ```
 
-`feed()`: append bytes to internal buffer, advance parse.
+`advance()`: append bytes to internal buffer, advance parse state.
 returns as soon as status is determinable.
 
 `reset()`: clear state for next request on persistent connection.
-called by Connection after response sent, iff keepAlive() is true.
+called by Connection after response sent, iff `keepAlive()` is true.
+buffer is not cleared — may contain bytes from pipelined next request.
 
 
-### input assumptions
-
-bytes may arrive in arbitrary chunks. chunk boundaries carry no
-semantic meaning — a chunk may split mid-method-name, mid-header,
-mid-body. the frontend handles all boundary positions.
+---
 
 
-### output guarantees
+## input assumptions
 
-on `Complete`: HttpRequest is fully populated. method is one of
-GET, POST, DELETE. headers map is complete. body contains exactly
-Content-Length bytes (or is empty if no body).
+bytes may arrive in arbitrary chunks. chunk boundaries carry no semantic meaning.
+a chunk may split mid-method, mid-header-name, mid-body.
+the frontend handles all boundary positions identically:
+accumulate, attempt phase completion, return or continue.
 
-on `Error`: error_code is an HTTP status code suitable for response.
-400 = malformed request. 413 = body exceeds limit. 501 = unknown method.
 
-on `NeedMore`: internal state preserved. next `feed()` call continues
-from where this one stopped.
+examples:
+```
+"GET /pa"           ← mid-uri
+"th HTTP/1.1\r\n"   ← completes request line
+
+"Content-Len"       ← mid-header-name
+"gth: 5\r\n\r\n"    ← completes headers
+"hello"             ← body
+
+
+"POST / HTTP/1.1\r\nContent-Length: 10\r\n\r\nhel"  ← request line + headers + partial body
+"lo worl"           ← more body
+"d"                 ← completes body
+```
+
+
+---
+
+
+## output guarantees
+
+**on Complete**: `HttpRequest` is fully populated.
+- `method` is one of GET, POST, DELETE
+- `uri` is the request target (origin-form)
+- `http_version` is "HTTP/1.0" or "HTTP/1.1"
+- `headers` map is complete, keys lowercase
+- `body` contains exactly Content-Length bytes (or empty if no body)
+
+**on Failed**: `error_code` is an HTTP status code.
+- 400 Bad Request: malformed syntax
+- 413 Content Too Large: body exceeds limit
+- 501 Not Implemented: unknown method or chunked encoding
+- 505 HTTP Version Not Supported: not HTTP/1.x
+
+**on Incomplete**: internal state preserved.
+next `advance()` call continues from current position.
 
 
 ---
@@ -176,10 +196,9 @@ from where this one stopped.
 
 1. accumulate bytes into internal buffer
 2. parse request-line: method SP uri SP version CRLF
-3. parse headers: name: value CRLF, until empty line
-4. parse body: exactly Content-Length bytes (if present)
-5. validate: method known, headers well-formed, body complete
-6. produce HttpRequest or error code
+3. parse headers: name ":" value CRLF, until empty line
+4. consume body: exactly Content-Length bytes (if present)
+5. produce `HttpRequest` or error code
 
 
 ---
@@ -187,11 +206,41 @@ from where this one stopped.
 
 ## what the frontend does not do
 
-- read bytes from fd (Connection's job)
-- decide whether to keep connection open (runtime's job)
-- manage fd lifecycle (runtime's job)
-- route requests (Router's job)
-- generate responses (Response Frontend's job)
+- read bytes from fd — Connection's responsibility
+- manage fd lifecycle — Connection's responsibility
+- decide persistence — runtime combines `keepAlive()` with response status
+- route requests — dispatch logic, downstream
+- generate responses — HttpResponseBuilder, downstream
+- execute handlers — handler functions, downstream
+- access filesystem — handlers only
+- know server configuration — receives `client_max_body_size` as parameter
+
+
+---
+
+
+## state
+```cpp
+struct HttpRequestFrontend
+{
+    std::string buffer_;         // accumulated unparsed bytes
+    ParsePhase  phase_;          // current phase
+    HttpRequest request_;        // being built incrementally
+    size_t      body_remaining_; // bytes still expected
+    uint16_t    error_code_;     // set on ERROR transition
+    size_t      max_body_size_;  // from config, for 413 detection
+};
+```
+
+`buffer_` accumulates bytes across `advance()` calls.
+consumed bytes are erased after each successful phase transition.
+
+`request_` fields are populated incrementally:
+method/uri/version after REQUEST_LINE, headers after each header line,
+body after BODY phase completes.
+
+`phase_` reflects current parse position. advances monotonically (except `reset()`).
+see `0b_state-machine.md` for transitions.
 
 
 ---
@@ -201,82 +250,30 @@ from where this one stopped.
 
 why struct, not namespace?
 
-state must persist across calls. Connection owns one instance per fd.
-the struct makes state visible and testable.
+state must persist across calls. Connection owns 1 instance per fd.
+the struct makes state explicit, visible, testable.
 
-```cpp
-struct HttpRequestFrontend
-{
-    // state
-    std::string buffer_;
-    ParsePhase phase_;
-    HttpRequest request_;       // being built incrementally
-    size_t body_remaining_;     // bytes still expected
-
-    // interface
-    FeedResult feed(const char* data, size_t len);
-    void reset();
-};
-```
-
-no encapsulation theatre. all members could be public — the struct
-exists to bundle related state, not to hide it.
-
+no encapsulation theatre. members could be public — the struct exists
+to bundle related state, not to hide it. private members are a courtesy
+to future maintainers: "these are internal, don't depend on them."
 
 ### comparison with ConfigFrontend
 
-|           | ConfigFrontend        | HttpRequestFrontend |
-| input     | complete file         | chunked bytes over time |
-| state across calls | none         | buffer + phase + partial request |
-| output    | always complete       | may be NeedMore |
-| lifetime  | single invocation     | persists across N feed() calls |
-| structure | namespace (process)   | struct (stateful machine) |
+|                      | ConfigFrontend          | HttpRequestFrontend         |
+|----------------------|-------------------------|-----------------------------|
+| input                | complete file           | chunked bytes over time     |
+| state across calls   | none                    | buffer + phase + partial request |
+| output               | always complete         | may be Incomplete           |
+| lifetime             | single invocation       | persists across N advance() |
+| structure            | namespace (process)     | struct (stateful machine)   |
 
-ConfigFrontend's `Frontend` struct exists within a single call to
-`parse()`. it is constructed, used, destroyed — no external reference.
-the namespace exposes a pure function; the struct is internal.
+ConfigFrontend's internal `Frontend` struct exists within a single
+call to `parse()`. constructed, used, destroyed — no external reference.
+the namespace exposes a pure function; the struct is implementation detail.
 
 HttpRequestFrontend's struct is owned by Connection, persists across
-multiple `feed()` calls, and must be externally accessible.
+multiple `advance()` calls, must be externally accessible.
 the struct is the interface.
-
-
----
-
-
-## fragment architecture
-
-implementation complexity warrants decomposition. the struct is
-defined in one compilation target; method definitions are split
-across fragment files included into that target.
-
-```
-HttpRequestFrontend.hpp     public interface (struct declaration)
-HttpRequestFrontend.cpp     compilation target, includes fragments
-fragments.inc
-```
-
-fragment files contain method definitions only. no includes, no
-guards. they compile as part of HttpRequestFrontend.cpp's TU.
-
-
----
-
-
-## persistence support
-
-the frontend exposes data the runtime needs for persistence decisions.
-see `persistence-support.md` for full specification.
-
-summary:
-- `http_version` field: HTTP/1.1 defaults to persistent, HTTP/1.0 does not
-- `headers["connection"]`: client can override default
-- `keepAlive()` method: pure derivation from version + header
-- `contentLength()` method: required for body boundary detection
-
-the frontend does not decide whether to persist. it exposes the data.
-the runtime (Connection) calls `keepAlive()` after response is sent,
-combines with response status, and decides.
 
 
 ---
@@ -285,20 +282,46 @@ combines with response status, and decides.
 ## error semantics
 
 parse errors produce error codes, not exceptions.
-the caller (Connection) must handle errors — it cannot ignore them.
-
+the caller must handle errors — cannot ignore the return value.
 ```cpp
-FeedResult result = frontend.feed(buf, n);
-if (result.status == FeedStatus::Error)
+ParseResult result = frontend.advance(buf, n);
+if (result.status == ParseStatus::Failed)
     send_error_response(result.error_code);
 ```
 
-error codes map directly to HTTP status codes:
-- 400 Bad Request: malformed request-line, malformed header, invalid method
-- 413 Content Too Large: body exceeds client_max_body_size
-- 501 Not Implemented: unknown HTTP method
+error codes map to HTTP status codes — the appropriate language
+for protocol-level failures. see `1_decisions/0_lang-processing/3_failure-response.md`.
 
-this follows the pattern established in ConfigFrontend:
-parse-time errors are reported with line numbers; semantic errors with context.
-here, errors are reported with HTTP status codes — the appropriate
-language for the HTTP protocol.
+fail-fast strategy: first error terminates parsing.
+no attempt to recover or accumulate multiple errors.
+protocol streams lack synchronisation points after corruption.
+
+
+---
+
+
+## persistence support
+
+the frontend exposes data the runtime needs for persistence decisions.
+see `3_integration.md` for the full contract.
+
+summary:
+- `http_version`: HTTP/1.1 defaults persistent, HTTP/1.0 does not
+- `headers["connection"]`: client can override default
+- `keepAlive()`: pure derivation from version + header
+
+the frontend does not decide whether to persist.
+it exposes the data. the runtime decides.
+
+
+---
+
+
+## references
+
+RFC 9110: HTTP Semantics
+RFC 9112: HTTP/1.1
+see `2_grammar.md` for complete reference list.
+
+`meta/1_knowledge-dev/language-processing/` for formal foundations.
+`meta/1_knowledge-dev/network-protocols/http/` for protocol documentation. (WIP)
