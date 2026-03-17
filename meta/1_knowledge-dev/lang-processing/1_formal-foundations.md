@@ -113,7 +113,7 @@ recursively enumerable language, which includes all programs.
 practically: no. the cost is prohibitive.
 
 type 3 recognition: O(n), constant space.
-type 2 recognition: O(n) for LL/LR grammars, O(n³) general.
+type 2 recognition: O(n) for LL/LR grammars, O(n³) general.*
 type 1 recognition: PSPACE-complete.
 
 separating phases lets each use the minimal machinery:
@@ -123,6 +123,15 @@ separating phases lets each use the minimal machinery:
 
 the separation is not modularity for its own sake, but
 **computational economy** — using the weakest sufficient model.
+
+
+*
+O(n³) — cubic in input length.
+This is the CYK (Cocke-Younger-Kasami) algorithm, the general case for context-free recognition.
+The exponent 3 comes from: for each pair of positions (i, j), try all midpoints k ∈ [i, j].
+3 nested loops over n.
+LL/LR parsers achieve O(n) because they restrict the grammar class —
+deterministic choice at each step, no backtracking/exploration.
 
 
 ---

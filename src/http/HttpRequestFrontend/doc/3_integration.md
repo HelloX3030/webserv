@@ -1,0 +1,1 @@
+Connection interface, dispatch contract
