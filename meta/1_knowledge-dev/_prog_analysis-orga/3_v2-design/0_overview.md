@@ -150,23 +150,10 @@ no routing logic — that's Router's job.
 
 ## vs v1
 
-| concern                | v1 (Lukas)                      | v2 (ghr)                    |
+| concern                | v1                              | v2                          |
 |------------------------|---------------------------------|-----------------------------|
 | routing                | duplicated in 3 handlers        | Router, single location     |
 | response data          | HttpResponseBuilder (mutable)   | HttpResponse (immutable)    |
 | serialization          | embedded in builder             | standalone pure function    |
 | handler input          | (config, path, body?)           | HandlerDecision             |
 | handler responsibility | routing + execution             | execution only              |
-
-
----
-
-
-## implementation order (future)
-
-1. HttpResponse struct
-2. serialize() function
-3. HandlerDecision struct
-4. Router::route() function
-5. handler refactor
-6. runtime integration

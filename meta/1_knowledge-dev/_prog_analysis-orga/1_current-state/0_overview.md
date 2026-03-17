@@ -61,7 +61,7 @@ Connection::handle_event(EPOLLOUT)
 bytes out
 ```
 
-HttpParser is a stub. no actual parsing occurs.
+HttpParser is a stub - no actual parsing occurs.
 response is generated immediately on any input.
 
 
@@ -184,6 +184,5 @@ struct HttpRequest {
 };
 ```
 
-output of HttpRequestFrontend.
-input to dispatch logic.
+output of HttpRequestFrontend, input to dispatch logic.
 does not currently exist in codebase.

@@ -150,7 +150,7 @@ Lukas can add error page lookup later if desired.
 
 ## what ghr does NOT do
 
-- Router — rejected by Lukas
+- Router — rejected
 - HttpResponseFrontend — `to_string()` already exists
 - error page lookup — impure, Lukas's concern
 - Connection modifications — Lukas's code

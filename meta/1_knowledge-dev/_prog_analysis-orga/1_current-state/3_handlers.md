@@ -7,9 +7,9 @@ HttpMethods_get.cpp, HttpMethods_post.cpp, HttpMethods_delete.cpp
 ---
 
 
-## structure of each handler
+## handler structure
 
-all 3 follow identical structure:
+all 3 have identical structure:
 
 ```
 1. location matching        (~15 lines, duplicated)
@@ -20,7 +20,7 @@ all 3 follow identical structure:
 6. response construction    (~5 lines)
 ```
 
-lines 1-4 are Router concerns, duplicated across all 3 handlers.
+1-4 are Router concerns, duplicated across all 3 handlers.
 
 
 ---
@@ -28,7 +28,7 @@ lines 1-4 are Router concerns, duplicated across all 3 handlers.
 
 ## duplicated routing logic
 
-extracted pattern (present in all 3):
+extracted pattern:
 
 ```cpp
 // 1. location matching — longest prefix match
@@ -139,9 +139,9 @@ return HttpResponseBuilder(200);
 ---
 
 
-## what handlers will become (ghr's v2)
+## ghr's v2: handlers (rewrite)
 
-after Router exists, handlers receive `HandlerDecision`:
+after Router exists, handlers will receive `HandlerDecision`:
 
 ```cpp
 HttpResponseBuilder handle_static_file(const HandlerDecision& decision)
@@ -169,9 +169,7 @@ handler trusts decision. no re-validation. Router is security boundary.
 
 ## v1 reality
 
-Lukas rejected Router. routing logic stays in handlers.
+Router rejected. routing logic stays in handlers.
 ghr's HttpRequestFrontend outputs HttpRequest.
 dispatch glue (in Connection) calls handlers with (config, uri, body).
 handlers do their own routing.
-
-architectural debt. documented for v2.
