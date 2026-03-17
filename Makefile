@@ -5,7 +5,7 @@ CXXFLAGS := -Wall -Wextra -Werror -std=c++17 -MMD -MP
 LDFLAGS  :=
 
 # --- verbosity ---
-# V=0 (default): silent build with informative one-line progress.
+# V=0 (default): silent build with informative 1-line progress.
 # V=1: full command echo — every flag visible, for build debugging.
 # usage: make V=1        make V=1 debug
 
@@ -66,7 +66,8 @@ DEP_FILES := $(REL_OBJS:.o=.d) $(DBG_OBJS:.o=.d) $(LKS_OBJS:.o=.d)
 .PHONY: clean fclean
 
 # 3 variants: release, debug, leak (rows)
-# per-variant:  build   clean        rebuild    run
+# per-variant (col):
+#               build     clean      rebuild    run
 .PHONY:         all                  re         run
 .PHONY:         debug   debugclean   debugre    debugrun
 .PHONY:         leaks   leaksclean   leaksre    leaksrun
@@ -77,7 +78,7 @@ DEP_FILES := $(REL_OBJS:.o=.d) $(DBG_OBJS:.o=.d) $(LKS_OBJS:.o=.d)
 # COMPILE_OBJ, which expands during phase 2 when these values
 # are active. EXTRA_LDFLAGS is composed into each link rule.
 
-$(NAME):     EXTRA_CFLAGS  := -O3 # ghr: read into optimisation => cross cpp unit optimisation (build process)
+$(NAME):     EXTRA_CFLAGS  := -O3
 $(NAME):     EXTRA_LDFLAGS :=
 
 $(DBG_NAME): EXTRA_CFLAGS  := -DDEBUG=1 -g -O0 -fno-omit-frame-pointer
@@ -103,7 +104,7 @@ re: fclean all
 
 # --- link rules ---
 # LDFLAGS and EXTRA_LDFLAGS carry the link-phase flags.
-# $^ expands to the full object list for this variant.
+# $^ expands to the full obj list for this variant.
 # echo line always visible; full command gated by Q.
 
 $(NAME): $(REL_OBJS)
