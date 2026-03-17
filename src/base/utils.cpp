@@ -43,9 +43,17 @@ LocationMatch match_location(const ServerConfig &config, const std::string &path
         }
         else if (path.compare(0, prefix.size(), prefix) == 0)
         {
-            // enforce boundary (avoid /api matching /apix)
-            if (path.size() == prefix.size() || path[prefix.size()] == '/')
+            if (prefix.back() == '/')
+            {
+                // prefix already enforces boundary
                 match = true;
+            }
+            else
+            {
+                // enforce boundary (avoid /api matching /apix)
+                if (path.size() == prefix.size() || path[prefix.size()] == '/')
+                    match = true;
+            }
         }
 
         if (match)
