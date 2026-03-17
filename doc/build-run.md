@@ -26,8 +26,8 @@ produces: `webserv_debug`
 
 ### leaks — `make leaks`
 
-adds `-DDEBUG=1 -g -O0 -fno-omit-frame-pointer`. disables
-optimisation and preserves stack frames so valgrind can
+adds `-DDEBUG=1 -g -O0 -fno-omit-frame-pointer`.
+disables optimisation and preserves stack frames so valgrind can
 produce accurate traces. use for:
 - memory leak detection
 - file descriptor leak detection
@@ -93,5 +93,4 @@ modify `CXXFLAGS` or any flag variable, existing object
 files will appear up-to-date and will not be recompiled.
 
 after any flag change: run `make re` (or the variant-specific
-`re` target) before the next build. this is a discipline
-requirement.
+`re` target) before the next build. this is a discipline requirement.

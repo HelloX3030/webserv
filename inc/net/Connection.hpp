@@ -3,7 +3,7 @@
 #include "base/Fd.hpp"
 #include "config/Config.hpp"
 #include "http/HttpRequestFrontend.hpp" // added — types available, not used yet
-#include "http/HttpParser.hpp"  // to be replaced with HttpRequestFrontend
+#include "http/HttpParser.hpp"  // to be replaced with HttpRequestFrontend once it's implemented
 #include "net/EPollHandler.hpp"
 
 // Forward Declarations

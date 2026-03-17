@@ -1,13 +1,17 @@
 # UPDATE 20260317
 
 Lukas wants to separate the routing logic, and own it.
-this documentation needs updating.
+therefore this directory needs updating.
 
 see:
   GitHub Issue #5
   20260317-1 (ghr personal sys)
   src/http/HttpRequestFrontend/doc/
     esp. 3_integration.md
+
+
+
+
 
 
 
