@@ -4,15 +4,40 @@
 ## context
 
 this document specifies how HttpRequestFrontend integrates with
-Connection and the broader runtime. it covers:
+Connection and the executor. it covers:
 
 - replacing Lukas' placeholder HttpParser
-- the interface contract between Connection and frontend
-- dispatch to handlers
+- the interface contract between components
 - error response generation
 - persistence (keep-alive) support
 - request pipelining
 - ownership model
+
+
+---
+
+
+## system flow
+
+```
+Connection (Lukas)
+    │
+    ├── owns HttpRequestFrontend (ghr)
+    │       │
+    │       └── advance() → ParseResult { HttpRequest }
+    │
+    └── calls Executor (Lukas)
+            │
+            ├── takes HttpRequest + ServerConfig
+            ├── routing: match location, resolve path
+            ├── validation: allowed_methods, upload_enable
+            ├── decision: CGI or static
+            └── execution: returns response string
+```
+
+3 components, 2 owners:
+- ghr: HttpRequestFrontend (bytes → HttpRequest)
+- Lukas: Connection (orchestration) + Executor (routing + handling)
 
 
 ---
@@ -49,13 +74,14 @@ this is a placeholder to establish the event loop.
 ### the separation
 
 ```
-bytes → HttpRequest → dispatch → handle → response bytes
-         ^^^^^^^
-         frontend's job
+bytes → HttpRequest → execute → response bytes
+         ^^^^^^^       ^^^^^^^
+         ghr           Lukas
 ```
 
-the frontend transforms bytes into structured data.
-it knows nothing of routing, handling, or response generation.
+frontend transforms bytes into structured data.
+executor transforms structured data into response.
+neither knows the other's internals.
 
 ### replacement contract
 
@@ -77,11 +103,10 @@ ParseResult result = request_frontend_.advance(buffer, n);
 switch (result.status)
 {
     case ParseStatus::Incomplete:
-        // wait for more bytes
         break;
 
     case ParseStatus::Complete:
-        write_buffer = dispatch(result.request);
+        write_buffer = executor.execute(result.request, config);
         if (result.request.keepAlive())
             request_frontend_.reset();
         else
@@ -117,11 +142,8 @@ private:
 };
 ```
 
-lifetime: frontend is constructed when Connection is constructed,
-destroyed when Connection is destroyed. 1:1 correspondence.
-
-the frontend is not shared across connections.
-each connection has independent parse state.
+lifetime: frontend constructed with Connection, destroyed with Connection.
+1:1 correspondence. not shared across connections.
 
 
 ---
@@ -129,7 +151,7 @@ each connection has independent parse state.
 
 ## construction and max_body_size_
 
-the frontend requires `max_body_size_` for 413 detection.
+frontend requires `max_body_size_` for 413 detection.
 this value comes from server configuration.
 
 ```cpp
@@ -157,41 +179,35 @@ HttpRequestFrontend::HttpRequestFrontend(size_t max_body_size)
 }
 ```
 
-note: `max_body_size_` is set once at construction.
-if virtual hosts have different limits, this requires resolution.
-current design: use default server's limit.
-future: re-evaluate after Host header parsed (complicates state machine).
+note: `max_body_size_` set at construction from default server config.
+if virtual hosts have different limits, requires re-evaluation after
+Host header parsed. current design: use default server's limit.
 
 
 ---
 
 
-## dispatch
+## executor interface
 
-dispatch is Connection's responsibility, not the frontend's.
+executor is Lukas' component. frontend provides HttpRequest.
 
-the frontend outputs HttpRequest. Connection routes to handlers.
+executor's 6 steps:
 
-```cpp
-std::string Connection::dispatch(const HttpRequest& request)
-{
-    const ServerConfig& config = get_server_config(request.headers.at("host"));
-
-    if (request.method == "GET")
-        return HttpMethods::http_get(config, request.uri);
-    if (request.method == "POST")
-        return HttpMethods::http_post(config, request.uri, request.body);
-    if (request.method == "DELETE")
-        return HttpMethods::http_delete(config, request.uri);
-
-    // unreachable: frontend rejects unknown methods with 501
-    return HttpResponseBuilder(500).to_string();
-}
+```
+step                  uses from HttpRequest
+──────────────────────────────────────────────
+match location        uri
+resolve path          uri
+check allowed_methods method
+check upload policy   method
+decide CGI/static     uri, headers
+execute CGI           method, uri, headers, body
 ```
 
-note: HttpMethods functions currently return response strings.
-they contain embedded routing logic. this is existing structure —
-frontend integration does not change it.
+body is raw — no parsing by frontend. CGI receives it verbatim.
+
+executor returns response string (via HttpResponseBuilder or directly).
+executor handles application errors: 404, 405, 403, 500, 502, 504, etc.
 
 
 ---
@@ -199,11 +215,13 @@ frontend integration does not change it.
 
 ## error response path
 
-when parsing fails, the frontend returns:
+### parse errors (frontend's domain)
+
+when parsing fails, frontend returns:
 - `ParseStatus::Failed`
 - `error_code` (400, 413, 501, or 505)
 
-Connection generates the error response:
+Connection generates error response:
 
 ```cpp
 if (result.status == ParseStatus::Failed)
@@ -213,17 +231,22 @@ if (result.status == ParseStatus::Failed)
 }
 ```
 
-error responses always close the connection.
-rationale: after a parse error, stream synchronisation is lost.
-we cannot reliably find the next request boundary.
+parse errors always close the connection.
+rationale: after parse failure, stream sync is lost.
+cannot reliably find next request boundary.
 
-HttpResponseBuilder already supports status-only construction:
+### application errors (executor's domain)
 
-```cpp
-explicit HttpResponseBuilder(int status);
-```
+executor handles:
+- 403 Forbidden (method not allowed, upload disabled)
+- 404 Not Found
+- 405 Method Not Allowed
+- 500 Internal Server Error
+- 502 Bad Gateway (CGI failure)
+- 504 Gateway Timeout (CGI timeout)
 
-this generates a minimal response with status line and empty body.
+executor returns error response via HttpResponseBuilder.
+persistence decision: executor's choice per error type.
 
 
 ---
@@ -233,7 +256,7 @@ this generates a minimal response with status line and empty body.
 
 ### what the frontend provides
 
-the frontend exposes data for persistence decisions.
+frontend exposes data for persistence decisions.
 it does not decide whether to persist.
 
 ```cpp
@@ -252,7 +275,7 @@ struct HttpRequest
 
 ### header normalisation
 
-header names are normalised to lowercase during parsing.
+header names normalised to lowercase during parsing.
 RFC 9110: "Field names are case-insensitive."
 
 ```cpp
@@ -262,7 +285,7 @@ std::transform(name.begin(), name.end(), name.begin(), ::tolower);
 headers[name] = value;
 ```
 
-lookup is then exact match:
+lookup is exact match:
 
 ```cpp
 auto it = headers.find("connection");
@@ -302,13 +325,11 @@ bool HttpRequest::keepAlive() const
 ```
 
 note: Connection header value comparison should be case-insensitive.
-RFC 9110 section 7.6.1: connection options are case-insensitive.
-implementation detail: normalise value to lowercase, or use
-case-insensitive comparison.
+implementation: normalise value to lowercase during comparison.
 
 ### contentLength() specification
 
-convenience accessor for Content-Length header.
+convenience accessor.
 
 ```cpp
 long HttpRequest::contentLength() const
@@ -331,20 +352,17 @@ long HttpRequest::contentLength() const
 }
 ```
 
-returns -1 if header absent or malformed.
-note: during parsing, malformed Content-Length triggers 400.
-this accessor is for post-parse convenience, not validation.
+returns -1 if absent or malformed.
+note: malformed Content-Length triggers 400 during parsing.
+this accessor is post-parse convenience.
 
 ### what the frontend does NOT do
 
-- decide whether to keep connection open (Connection's job)
-- track connection state across requests (Connection's job)
-- manage fd lifecycle (Connection's job)
-- know whether persistence is enabled in config (doesn't need to)
-- set response headers (HttpResponseBuilder's job)
-
-the frontend's only persistence-related responsibility:
-expose the data correctly.
+- decide whether to keep connection open
+- track connection state across requests
+- manage fd lifecycle
+- know persistence config
+- set response headers
 
 
 ---
@@ -363,7 +381,7 @@ is being processed.
 3. buffer_ contains leftover bytes (start of request2)
 4. Connection calls `reset()`
 5. reset() clears parse state but preserves buffer_
-6. next `advance()` call continues from existing buffer_ bytes
+6. next `advance()` continues from existing buffer_
 
 ### reset() semantics
 
@@ -379,7 +397,7 @@ void HttpRequestFrontend::reset()
 }
 ```
 
-### Connection's pipeline loop
+### pipeline processing
 
 after completing a request:
 
@@ -387,21 +405,12 @@ after completing a request:
 if (result.request.keepAlive())
 {
     request_frontend_.reset();
-    // immediately try to parse next request from buffered bytes
-    result = request_frontend_.advance("", 0);  // empty input, process buffer
-    // handle result...
+    // next read event processes buffered bytes
 }
 ```
 
-or simply wait for next epoll event — the buffered bytes will be
-processed on the next `advance()` call with new input appended.
-
-design choice: eager vs lazy pipeline processing.
-eager: call `advance("", 0)` immediately after reset.
-lazy: wait for next read event.
-
-lazy is simpler. eager reduces latency for pipelined requests.
-current recommendation: lazy. optimise later if needed.
+lazy processing: wait for next epoll event.
+buffered bytes processed on next `advance()` call.
 
 
 ---
@@ -426,25 +435,31 @@ void Connection::handle_read()
     switch (result.status)
     {
         case ParseStatus::Incomplete:
-            // remain in READ state, wait for more bytes
             break;
 
         case ParseStatus::Complete:
-            write_buffer = dispatch(result.request);
+        {
+            const ServerConfig& config = get_server_config(
+                result.request.headers.count("host")
+                    ? result.request.headers.at("host")
+                    : "");
+
+            write_buffer = executor.execute(result.request, config);
             write_offset = 0;
             state = ConnectionState::WRITE;
 
             if (result.request.keepAlive())
                 request_frontend_.reset();
             else
-                keep_alive = false;  // close after write completes
+                keep_alive = false;
             break;
+        }
 
         case ParseStatus::Failed:
             write_buffer = HttpResponseBuilder(result.error_code).to_string();
             write_offset = 0;
             state = ConnectionState::WRITE;
-            keep_alive = false;  // always close on error
+            keep_alive = false;
             break;
     }
 }
@@ -465,7 +480,6 @@ void Connection::handle_write()
 
     if (write_offset >= write_buffer.size())
     {
-        // write complete
         if (keep_alive)
             state = ConnectionState::READ;
         else
@@ -485,7 +499,7 @@ void Connection::handle_write()
 ```cpp
 struct HttpRequestFrontend
 {
-    HttpRequestFrontend(size_t max_body_size);
+    explicit HttpRequestFrontend(size_t max_body_size);
 
     ParseResult advance(const char* data, size_t len);
     void reset();
@@ -522,7 +536,7 @@ struct HttpRequest
 - `advance()` on each read
 - `reset()` after successful request iff `keepAlive()`
 - `HttpResponseBuilder(error_code)` on parse failure
-- `dispatch()` to route successful requests to handlers
+- `executor.execute(request, config)` for application logic
 
 
 ---
@@ -531,12 +545,12 @@ struct HttpRequest
 ## migration checklist
 
 1. add HttpRequest struct to `inc/http/HttpRequest.hpp`
-2. add ParseStatus, ParseResult, PhaseResult enums
+2. add ParseStatus, ParseResult, PhaseResult, ParsePhase enums
 3. implement HttpRequestFrontend with `advance()` and `reset()`
 4. implement `keepAlive()` and `contentLength()` on HttpRequest
-5. modify Connection:
-   - replace `HttpParser http_parser` with `HttpRequestFrontend request_frontend_`
+5. Lukas: implement executor with 6-step logic
+6. modify Connection:
+   - replace `HttpParser` with `HttpRequestFrontend`
    - update constructor to pass `max_body_size`
-   - replace `add_buffer` / `response_ready` / `take_response` with new flow
-6. implement `dispatch()` in Connection
+   - integrate executor call
 7. remove HttpParser (placeholder)
