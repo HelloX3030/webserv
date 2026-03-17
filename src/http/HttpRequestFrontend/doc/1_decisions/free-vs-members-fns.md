@@ -1,6 +1,16 @@
-free functions vs member functions
+# free functions vs member functions
 
-## ctx
+
+## the question
+
+should phase-parsing functions (`parse_request_line`, `parse_header_line`,
+`consume_body`) be member functions of `HttpRequestFrontend` or free
+functions taking the frontend as parameter?
+
+
+## the analysis + decision
+
+### ctx
 
 what are these functions?
 
@@ -21,7 +31,7 @@ they are stateful transformations of HttpRequestFrontend.
 
 ---
 
-## member function model
+### member function model
 ```cpp
 struct HttpRequestFrontend {
 private:
@@ -29,6 +39,7 @@ private:
     PhaseResult parse_header_line();
     PhaseResult consume_body();
 };
+```
 
 implicit this access to all fields
 natural C++ idiom for "operations on an object"
@@ -37,7 +48,7 @@ definition can be in any TU that includes the header
 
 ---
 
-## free function model
+### free function model
 
 ```cpp
 // internal header
@@ -50,7 +61,7 @@ requires either friend or public fields
 more amenable to testing in isolation (pass mock state)
 
 
-## the ontological question
+### the ontological question
 
 what is parse_request_line?
 
@@ -63,7 +74,7 @@ A emphasises the object as agent
 B emphasises the transformation as primary
 
 
-## practical considerations
+### practical considerations
 
 encapsulation: member functions access private fields naturally.
 free functions require either:
@@ -82,13 +93,13 @@ C++ idiom: member functions for operations that transform this.
 free functions for operations that don't privilege one argument.
 
 
-## ConfigFrontend precedent
+### ConfigFrontend precedent
 uses a namespace with free functions,
 but ConfigFrontend is a namespace exposing parse() — stateless.
 the internal Frontend struct uses member functions.
 
 
-## verdict
+### verdict
 
 member functions. reasons:
 
@@ -99,41 +110,11 @@ matches the pattern: advance() is public member, these are private members
 the struct already exists to hold state — methods are the natural interface to that state
 
 
+---
 
 
-```cpp
-// inc/http/HttpRequestFrontend.hpp
-struct HttpRequestFrontend
-{
-    // state
-    std::string buffer_;
-    ParsePhase  phase_;
-    HttpRequest request_;
-    size_t      body_remaining_;
-    uint16_t    error_code_;
+## the principle
 
-    // public interface
-    ParseResult advance(const char* data, size_t len);
-    void reset();
-
-private:
-    // phase parsers — implementations in separate .cpp files
-    PhaseResult parse_request_line();
-    PhaseResult parse_header_line();
-    PhaseResult consume_body();
-
-    // helpers
-    bool try_consume_crlf();
-    std::string_view peek_line() const;
-};
-```
-
-internal header (HttpRequestFrontend_internal.hpp) then only needs:
-
-```cpp
-#pragma once
-
-enum class PhaseResult { Advanced, NeedMore, Failed };
-```
-
-the phase functions are declared in the public header (as private), defined across multiple .cpp files. standard C++.
+operations intrinsic to an object's purpose are methods.
+operations that happen to use an object are free functions.
+parsing is intrinsic to a parser.
