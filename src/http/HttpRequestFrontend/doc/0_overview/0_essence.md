@@ -355,22 +355,12 @@ the struct is the interface.
 ---
 
 
-## error semantics
+## failure response
 
-parse errors produce error codes, not exceptions.
-the caller must handle errors — cannot ignore the return value.
-```cpp
-ParseResult result = frontend.advance(buf, n);
-if (result.status == ParseStatus::Failed)
-    send_error_response(result.error_code);
-```
+protocol violations produce HTTP error codes.
+first violation terminates parsing; no recovery attempted.
 
-error codes map to HTTP status codes — the appropriate language
-for protocol-level failures. see `1_decisions/0_lang-processing/3_failure-response.md`.
-
-fail-fast strategy: first error terminates parsing.
-no attempt to recover or accumulate multiple errors.
-protocol streams lack synchronisation points after corruption.
+see `1_decisions/4_failure/` for categories, strategy, and code mappings.
 
 
 ---

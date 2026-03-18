@@ -30,3 +30,22 @@ Content-Length is the only body-length mechanism.
 
 implement what the requirements demand.
 chunked is useful but not required. defer to v2.
+
+
+
+
+
+
+
+# update
+
+from 42 subject.pdf
+
+pg 11 of document
+pg 12 of pdf file
+
+
+
+Here are some specific remarks regarding CGIs:
+
+for chunked requests, your server needs to un-chunk them, the CGI will expect EOF as the end of the body
