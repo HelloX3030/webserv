@@ -47,6 +47,8 @@ enum class ParsePhase
 struct HttpRequestFrontend
 {
     // --- PUBLIC INTERFACE for Connection ---
+    // C++ structs default to public visibility,
+    // classes default to private
 
     // construction
     explicit HttpRequestFrontend(size_t max_body_size);
