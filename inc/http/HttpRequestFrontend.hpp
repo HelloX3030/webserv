@@ -6,7 +6,9 @@
 #include <cstdint>
 #include <string>
 
-// external result status — returned to Connection
+// --- PUBLIC INTERFACE for Connection ---
+
+// result status returned to Connection after each advance() call
 enum class ParseStatus
 {
     Incomplete, // need more bytes
@@ -14,7 +16,17 @@ enum class ParseStatus
     Failed      // parse error, error_code set
 };
 
-// internal phase result — returned by phase parsers
+// result bundle returned by advance()
+struct ParseResult
+{
+    ParseStatus status;
+    HttpRequest request;    // valid iff Complete
+    uint16_t    error_code; // valid iff Failed (400, 413, 501, 505)
+};
+
+// --- INTERNAL -— implementation detail, do not depend on ---
+
+// ctrl flow between phase parsers
 enum class PhaseResult
 {
     Advanced, // phase completed, transitioned to next
@@ -22,7 +34,7 @@ enum class PhaseResult
     Failed    // parse error, transitioned to ERROR
 };
 
-// current parse phase
+// parse position
 enum class ParsePhase
 {
     REQUEST_LINE,
@@ -32,30 +44,24 @@ enum class ParsePhase
     ERROR
 };
 
-struct ParseResult
-{
-    ParseStatus status;
-    HttpRequest request;    // valid iff Complete
-    uint16_t    error_code; // valid iff Failed (400, 413, 501, 505)
-};
-
 struct HttpRequestFrontend
 {
-public:
+    // --- PUBLIC INTERFACE for Connection ---
 
-        // construction
-        explicit HttpRequestFrontend(size_t max_body_size);
+    // construction
+    explicit HttpRequestFrontend(size_t max_body_size);
 
-        /* advance: append bytes to internal buffer, advance parse state.
-        return as soon as status is determinable. */
-        ParseResult advance(const char* data, size_t len);
-        /* reset: clear state for next request on persistent connection.
-        called by Connection after response sent, iff `keepAlive()` is true.
-        buffer is not cleared — may contain bytes from pipelined next request. */
-        void        reset();
+    /* append bytes to internal buffer, advance parse state.
+    return as soon as status is determinable. */
+    ParseResult advance(const char* data, size_t len);
 
-private:
-    // internal: implementation detail
+    /* clear state for next request on persistent connection.
+    called by Connection after response sent, iff `keepAlive()` is true.
+    buffer is not cleared — may contain bytes from pipelined next request. */
+    void        reset();
+
+
+private: // --- INTERNAL: implementation detail
 
     // state
     std::string buffer_;
