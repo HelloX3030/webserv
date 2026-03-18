@@ -113,11 +113,12 @@ the computation is suspended between calls. the struct is the suspension.   ****
 
     more precisely:
     Between advance() calls, the computation halts mid-parse.
-    The struct's fields — buffer_, phase_, request_, body_remaining_
-    — encode exactly the information needed to resume.
+    The struct's fields: buffer_, phase_, request_, body_remaining_
+    encode exactly the information needed to resume.
+
     This is a continuation reified as data:
     the "what remains to do" is captured in phase_,
-    the "what we've accumulated" is captured in buffer_ and request_.
+    the "what's been' accumulated" is captured in buffer_ and request_.
     Each advance() call is a step function that transforms this reified continuation.
 
     technical term is defunctionalisation:
@@ -171,21 +172,6 @@ concretely in WebServ:
 2. dispatch               method → handler
 3. HANDLER                → response data
 4. RESPONSE BUILDER       data → bytes
-
-
-
-
-Ownership in WebServ team project:
-
-1. ghr
-2. Lukas
-3. Lukas
-4. ?? ghr originally planned,
-Lukas originally rejected to have this as individual component,
-but since 20260317 has recognised its necessity...
-and would like to own
-
-
 
 
 ---
@@ -313,15 +299,6 @@ next `advance()` call continues from current position.
 ---
 
 
-## state
-
-see HttpRequestFrontend.hpp
-struct HttpRequestFrontend
-
-
----
-
-
 ## struct rationale
 
 why struct, not namespace?
@@ -332,6 +309,7 @@ the struct makes state explicit, visible, testable.
 no encapsulation theatre. members could be public — the struct exists
 to bundle related state, not to hide it. private members are a courtesy
 to future maintainers: "these are internal, don't depend on them."
+
 
 ### comparison with ConfigFrontend
 
