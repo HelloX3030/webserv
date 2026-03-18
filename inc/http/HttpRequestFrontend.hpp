@@ -53,7 +53,12 @@ struct HttpRequestFrontend
     explicit HttpRequestFrontend(size_t max_body_size);
 
     // public interface
+    /* advance: append bytes to internal buffer, advance parse state.
+    return as soon as status is determinable. */
     ParseResult advance(const char* data, size_t len);
+    /* reset: clear state for next request on persistent connection.
+    called by Connection after response sent, iff `keepAlive()` is true.
+    buffer is not cleared — may contain bytes from pipelined next request. */
     void        reset();
 
   private:

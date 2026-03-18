@@ -23,6 +23,6 @@ struct HttpRequest
     bool keepAlive() const;
 
     /* convenience accessor for Content-Length header.
-    returns -1 if absent or malformed. */
+    -1 if absent or malformed. */
     long contentLength() const;
 };

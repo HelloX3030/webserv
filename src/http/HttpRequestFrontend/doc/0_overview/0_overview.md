@@ -1,9 +1,5 @@
 # http request frontend — overview
 
-
----
-
-
 ## ontology
 
 a stateful parser that transforms incrementally-arriving bytes into
@@ -14,22 +10,34 @@ is not available at once. between `read()` calls, something must
 remember parse progress. this is irreducible state.
 
 
+in type-theoretic notation:
 ```
-ConfigFrontend:      parse : String → Config              (pure)
-HttpRequestFrontend: advance : Self × Bytes → Self × Result   (stateful)
+ConfigFrontend:         parse   :   String          →    Config ∪ Error  (pure)
+HttpRequestFrontend:    advance :   Self × Bytes    →    Self × Result   (stateful)
 ```
 
 ConfigFrontend receives complete input, produces complete output,
-holds no state between calls. a namespace containing a pure function
-is honest to this nature.
+holds no state between calls. a namespace containing a pure fn is honest here.
 
 HttpRequestFrontend receives partial input, may produce output,
-preserves state for the next call. a struct holding state and exposing
-methods is honest to this nature.
+preserves state for the next call.
+The output may be Incomplete — meaning the function cannot yet produce a result.
+This is partiality over the semantic output (HttpRequest), even though the function itself terminates.
+a struct holding state and exposing methods is honest to this nature.
 
-the difference is not stylistic. it reflects a fundamental distinction:
-total functions over complete input vs partial functions over streaming input.
 
+the difference reflects a fundamental distinction:
+total functions over complete input vs partial functions over streaming input.*
+
+    * total vs partial functions:
+    from domain theory and denotational semantics.
+    A total function is defined for all inputs in its domain — it always terminates with a value.
+    A partial function may be undefined for some inputs — it may diverge, or require more input to produce output.
+
+    a central distinction in type theory.
+    e.g. in Agda:
+    Total functions are the default. Every function must terminate.
+    Partial functions require explicit handling: coinduction, partiality monad, or fuel.
 
 ---
 
@@ -40,37 +48,133 @@ each `advance()` call continues a parse that may span many invocations.
 internal state encodes: "given what we've seen, what remains?"
 
 ```
-data ParseState = Accumulating Buffer Phase | Complete HttpRequest | Error Code
+data    ParseState = Accumulating Buffer Phase | Complete HttpRequest | Error Code **
 
-step : ParseState × Bytes → ParseState
+step : ParseState × Bytes → ParseState ***
 ```
+
 
 Connection owns 1 instance per fd. methods are transformations of
 `(self, input) → (self, result)`.
 
-the computation is suspended between calls. the struct is the suspension.
+
+the computation is suspended between calls. the struct is the suspension.   ****
+
+
+**
+    ParseState notation: Haskell algebraic data type syntax
+
+        `data` keyword introduces a sum type.
+        `=` separates the type name from its constructors.
+        `|` separates variants (disjoint union).
+
+    Reading:
+    ParseState is a type with 3 constructors.
+    Accumulating Buffer Phase — a constructor taking 2 arguments.
+    Complete HttpRequest — a constructor taking 1 argument.
+    Error Code — a constructor taking 1 argument.
+
+    The C++ approximation would be:
+    `std::variant<Accumulating, Complete, Error>`
+    with each variant holding its payload.
+
+
+***
+    step notation: type-theoretic / mathematical notation:
+
+        `step` is the name
+        `:` means "has type"
+        `×` is product (pair/tuple)
+        `→` is function arrow
+
+    In Agda this would be: `step : ParseState × Bytes → ParseState`
+    In Haskell: `step :: (ParseState, Bytes) -> ParseState`
+    In C++: `ParseState step(ParseState, Bytes)`
+
+
+    META:
+    This documentation mixes notations.
+    For consistency, I should pick one: Agda-style throughout, or Haskell-style throughout.
+    Mixing with C-like prototypes creates confusion.
+
+
+****
+
+    more precisely:
+    Between advance() calls, the computation halts mid-parse.
+    The struct's fields — buffer_, phase_, request_, body_remaining_
+    — encode exactly the information needed to resume.
+    This is a continuation reified as data:
+    the "what remains to do" is captured in phase_,
+    the "what we've accumulated" is captured in buffer_ and request_.
+    Each advance() call is a step function that transforms this reified continuation.
+
+    technical term is defunctionalisation:
+    representing a suspended computation as data rather than as a closure.
+    In languages with first-class continuations (Scheme, Haskell with Cont),
+    you'd capture the continuation directly.
+    In C++, you manually encode it as struct fields.
 
 
 ---
 
 
-## position in system
-```
-phase 1: CONFIG FRONTEND      config file → ServerConfig[]       (startup)
+## position in system - dependency graph
 
-phase 2: RUNTIME              event loop, epoll, connections
-    └── per request:
-        a. REQUEST FRONTEND       bytes → HttpRequest
-        b. dispatch               method → handler
-        c. HANDLER                → response data
-        d. RESPONSE BUILDER       data → bytes
+```
+                    ┌────────────────┐
+                    │  CONFIG FILE   │
+                    └───────┬────────┘
+                            │ ConfigFrontend::parse()
+                            ▼
+                    ┌────────────────┐
+                    │ ServerConfig[] │
+                    └───────┬────────┘
+                            │
+              ┌─────────────┴─────────────┐
+              │         RUNTIME           │
+              │  (event loop, epoll, fds) │
+              └─────────────┬─────────────┘
+                            │ per connection
+                            ▼
+              ┌───────────────────────────────────┐
+              │  HttpRequestFrontend::advance()   │
+              │  dispatch → handler → response    │
+              └───────────────────────────────────┘
 ```
 
-the request frontend owns phase 2a.
-it:
-    receives bytes from Connection.
-    produces `HttpRequest` for dispatch.
-    knows nothing of routing, handling, or response generation.
+archetypal flow for request-response protocols:
+
+1. deserialise request
+2. route to handler
+3. execute handler
+4. serialise response
+
+(HTTP, SMTP, DNS, RPC - all follow this)
+
+
+
+concretely in WebServ:
+
+1. REQUEST FRONTEND       bytes → HttpRequest
+2. dispatch               method → handler
+3. HANDLER                → response data
+4. RESPONSE BUILDER       data → bytes
+
+
+
+
+Ownership in WebServ team project:
+
+1. ghr
+2. Lukas
+3. Lukas
+4. ?? ghr originally planned,
+Lukas originally rejected to have this as individual component,
+but since 20260317 has recognised its necessity...
+and would like to own
+
+
 
 
 ---
@@ -84,7 +188,7 @@ see `2_grammar.md` for the formal specification.
 consequences:
 - no stack required (no nesting, no recursion)
 - finite automaton suffices (state machine with phases)
-- O(n) in input length, O(1) auxiliary space
+- O(n) in input length, O(1) auxiliary space  *
 
 the 1 context-sensitive aspect — Content-Length determining body size —
 is semantic, not syntactic. handled at the HEADERS → BODY transition
@@ -95,50 +199,40 @@ recursive descent would work but is unnecessary.
 see `1_decisions/0_lang-processing/` for detailed reasoning.
 
 
+*
+    O(n) time: execution time grows linearly with input size
+
+    O(1) auxiliary space:
+    memory usage beyond the input and output is constant, regardless of input size
+
+
+    For the HTTP parser:
+
+        Input: the byte stream (size n)
+        Output: HttpRequest (proportional to input — headers, body)
+        Auxiliary space: the extra memory used during parsing
+
+    A recursive descent parser for a deeply nested grammar might use O(d) stack space
+    where d is nesting depth. A CYK parser uses O(n²) table space.
+
+    The HTTP parser uses O(1) auxiliary space because:
+
+        no recursion (no stack growth)
+        no parse table (no dynamic allocation proportional to input)
+        only fixed-size state: phase_, body_remaining_, error_code_
+
+    The buffer grows with input, but that's the input itself, not auxiliary.
+
+
+
+
 ---
 
 
 ## interface
 
-### types
-```cpp
-enum class ParseStatus { Incomplete, Complete, Failed };
-
-struct ParseResult
-{
-    ParseStatus status;
-    HttpRequest request;     // valid iff Complete
-    uint16_t    error_code;  // valid iff Failed (400, 413, 501, 505)
-};
-
-struct HttpRequest
-{
-    std::string method;
-    std::string uri;
-    std::string http_version;
-    std::map<std::string, std::string> headers;  // keys normalised to lowercase
-    std::string body;
-
-    bool keepAlive() const;      // pure derivation from version + Connection header
-    long contentLength() const;  // -1 if absent or malformed
-};
-```
-
-### methods
-```cpp
-struct HttpRequestFrontend
-{
-    ParseResult advance(const char* data, size_t len);
-    void reset();
-};
-```
-
-`advance()`: append bytes to internal buffer, advance parse state.
-returns as soon as status is determinable.
-
-`reset()`: clear state for next request on persistent connection.
-called by Connection after response sent, iff `keepAlive()` is true.
-buffer is not cleared — may contain bytes from pipelined next request.
+see `inc/http/HttpRequest.hpp` for the HttpRequest struct.
+see `inc/http/HttpRequestFrontend.hpp` for ParseResult, ParseStatus, ParsePhase.
 
 
 ---
@@ -146,13 +240,15 @@ buffer is not cleared — may contain bytes from pipelined next request.
 
 ## input assumptions
 
-bytes may arrive in arbitrary chunks. chunk boundaries carry no semantic meaning.
+bytes may arrive in arbitrary chunks.
+chunk boundaries carry no semantic meaning -
 a chunk may split mid-method, mid-header-name, mid-body.
+
 the frontend handles all boundary positions identically:
 accumulate, attempt phase completion, return or continue.
 
+e.g.:
 
-examples:
 ```
 "GET /pa"           ← mid-uri
 "th HTTP/1.1\r\n"   ← completes request line
@@ -166,6 +262,7 @@ examples:
 "lo worl"           ← more body
 "d"                 ← completes body
 ```
+
 
 
 ---
