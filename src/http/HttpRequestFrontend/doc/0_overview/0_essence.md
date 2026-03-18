@@ -194,7 +194,7 @@ and would like to own
 ## language-theoretic classification
 
 HTTP/1.1 request syntax is type 3 (regular) in the Chomsky hierarchy.
-see `2_grammar.md` for the formal specification.
+see `1_grammar.md` for the formal specification.
 
 consequences:
 - no stack required (no nesting, no recursion)
@@ -368,16 +368,8 @@ see `1_decisions/4_failure/` for categories, strategy, and code mappings.
 
 ## persistence support
 
-the frontend exposes data the runtime needs for persistence decisions.
-see `3_integration.md` for the full contract.
-
-summary:
-- `http_version`: HTTP/1.1 defaults persistent, HTTP/1.0 does not
-- `headers["connection"]`: client can override default
-- `keepAlive()`: pure derivation from version + header
-
-the frontend does not decide whether to persist.
-it exposes the data. the runtime decides.
+the frontend exposes data for persistence decisions; the runtime decides.
+see `3_integration/`.
 
 
 ---
@@ -387,7 +379,7 @@ it exposes the data. the runtime decides.
 
 RFC 9110: HTTP Semantics
 RFC 9112: HTTP/1.1
-see `2_grammar.md` for complete reference list.
+see `1_grammar.md` for reference list.
 
 `meta/1_knowledge-dev/language-processing/` for formal foundations.
 `meta/1_knowledge-dev/network-protocols/http/` for protocol documentation. (WIP)
