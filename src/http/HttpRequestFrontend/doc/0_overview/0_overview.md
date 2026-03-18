@@ -301,7 +301,7 @@ next `advance()` call continues from current position.
 ---
 
 
-## what the frontend does
+## what the http request frontend does
 
 1. accumulate bytes into internal buffer
 2. parse request-line: method SP uri SP version CRLF
@@ -313,43 +313,10 @@ next `advance()` call continues from current position.
 ---
 
 
-## what the frontend does not do
-
-- read bytes from fd — Connection's responsibility
-- manage fd lifecycle — Connection's responsibility
-- decide persistence — runtime combines `keepAlive()` with response status
-- route requests — dispatch logic, downstream
-- generate responses — HttpResponseBuilder, downstream
-- execute handlers — handler functions, downstream
-- access filesystem — handlers only
-- know server configuration — receives `client_max_body_size` as parameter
-
-
----
-
-
 ## state
-```cpp
+
+see HttpRequestFrontend.hpp
 struct HttpRequestFrontend
-{
-    std::string buffer_;         // accumulated unparsed bytes
-    ParsePhase  phase_;          // current phase
-    HttpRequest request_;        // being built incrementally
-    size_t      body_remaining_; // bytes still expected
-    uint16_t    error_code_;     // set on ERROR transition
-    size_t      max_body_size_;  // from config, for 413 detection
-};
-```
-
-`buffer_` accumulates bytes across `advance()` calls.
-consumed bytes are erased after each successful phase transition.
-
-`request_` fields are populated incrementally:
-method/uri/version after REQUEST_LINE, headers after each header line,
-body after BODY phase completes.
-
-`phase_` reflects current parse position. advances monotonically (except `reset()`).
-see `0b_state-machine.md` for transitions.
 
 
 ---

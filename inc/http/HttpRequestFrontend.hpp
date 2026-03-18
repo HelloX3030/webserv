@@ -66,18 +66,24 @@ struct HttpRequestFrontend
 private: // --- INTERNAL: implementation detail
 
     // state
-    std::string buffer_;
-    ParsePhase  phase_;
-    HttpRequest request_;
-    size_t      body_remaining_;
-    uint16_t    error_code_;
-    size_t      max_body_size_;
+    std::string buffer_;            // accumulated unparsed bytes
+    // consumed bytes erased after each successful phase transition.
+
+    ParsePhase  phase_;             // current phase/parse position
+    // advances monotonically (except `reset()`)
+
+    HttpRequest request_;           // built incrementally
+    size_t      body_remaining_;    // bytes still expected
+    uint16_t    error_code_;        // set on ERROR transition
+    size_t      max_body_size_;     // from config, for 413 detection
+
 
     // phase parsers
     PhaseResult parse_request_line();
     PhaseResult parse_header_line();
     PhaseResult consume_body();
 
+    
     // helpers
     bool             find_crlf(size_t& pos) const;
     std::string_view extract_line(size_t crlf_pos) const;
