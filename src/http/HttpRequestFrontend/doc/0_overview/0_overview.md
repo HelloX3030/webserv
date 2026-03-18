@@ -94,8 +94,19 @@ the computation is suspended between calls. the struct is the suspension.   ****
 
     META:
     This documentation mixes notations.
-    For consistency, I should pick one: Agda-style throughout, or Haskell-style throughout.
-    Mixing with C-like prototypes creates confusion.
+    annotate blocks (code, specifications, statements...) with the language.
+    e.g.
+    ```agda
+    step : ParseState × Bytes → ParseState
+    ```
+    make the notation explicit. No ambiguity about which formal system I'm operating in.
+
+
+    Also - ADD TO STYLE & CONTENT GUIDE:
+    When writing documentation: potentially
+    default to Agda-style for specifications,
+    Haskell-style for data definitions,
+    <lang of prog> only when showing the actual implementation (if different)
 
 
 ****
