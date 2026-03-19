@@ -197,6 +197,20 @@ CRLF           = %x0D %x0A
 ```
 
 
+
+NB.
+
+    OCTET — from Latin octo (eight).
+    means 8-bit byte.
+    the term exists because "byte" was historically ambiguous (some architectures had 6-bit or 9-bit bytes).
+    "octet" is unambiguous: exactly 8 bits.
+    used in IETF RFCs for precision.
+
+    octal — base-8 numeral system.
+    unrelated to OCTET except shared etymology.
+
+
+
 ---
 
 
@@ -215,12 +229,13 @@ body: trivial.
     consume exactly n bytes where n = Content-Length.
     no structure to parse.
 
+
 the only context-sensitive aspect: Content-Length value (in headers)
 determines body length (later in stream). this is semantic, not syntactic.
 the parser handles it by computing `body_remaining_` at HEADERS→BODY transition.
 
-consequence: no stack needed. the "parser" is effectively a scanner
-with phase state. recursive descent is unnecessary but harmless.
+consequence: no stack needed. the "parser" is effectively a scanner with phase state.
+recursive descent is unnecessary but harmless.
 
 
 ---
