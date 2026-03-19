@@ -1,2 +1,0 @@
-"frontend" in compiler terminology
-The compiler pipeline splits at a clean boundary: everything that operates on the source language (lexing, parsing, semantic analysis, IR construction) is the frontend; everything that operates on the target (optimisation, code generation, linking) is the backend. The frontend's output is a structured, language-independent representation — here std::vector<ServerConfig>. The term is precise: ConfigFrontend is a compiler frontend for the config file format. Same usage as in Clang (clang frontend → LLVM IR → LLVM backend).
