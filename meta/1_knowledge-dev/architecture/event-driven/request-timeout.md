@@ -20,8 +20,7 @@ memory allocated for buffers and connection state.
 
 multiply by enough misbehaving or crashed clients → fd exhaustion.
 
-this is not a polling failure.
-polling works correctly — it wakes when data arrives.
+this is not a polling failure - polling works correctly — it wakes when data arrives.
 the problem: data never arrives.
 
 ---
@@ -31,12 +30,12 @@ the problem: data never arrives.
 `poll()`/`epoll_wait()` accepts a `timeout_ms` parameter.
 
 when it returns with no events (timeout fired):
-sweep all active connections.
-check each connection's last-activity timestamp.
-any connection idle beyond threshold → close it, free fd.
+  sweep all active connections.
+  check each connection's last-activity timestamp.
+  any connection idle beyond threshold → close it, free fd.
 
 no signals needed.
-timeout handled entirely within event loop via `timeout_ms` 
+timeout handled entirely within event loop via `timeout_ms`
 and a timestamp per connection.
 
 ---
@@ -45,7 +44,6 @@ and a timestamp per connection.
 
 nginx, Apache: 60 seconds default for request receipt.
 
-webserv is not nginx.
 exact value matters less than having the mechanism.
 this is resource hygiene, not performance tuning.
 

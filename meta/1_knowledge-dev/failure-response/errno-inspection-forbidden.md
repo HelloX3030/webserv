@@ -1,4 +1,9 @@
+ctx: WebServ
+
 # errno inspection after I/O — forbidden
+per 42 subject
+
+---
 
 ## rule
 
@@ -89,5 +94,5 @@ even within a single expression, sequencing can introduce intervening calls.
 ## connection to IO-multiplexing.md
 
 the poll/epoll model's purpose is to eliminate speculation about
-fd readiness. you ask the kernel, the kernel tells you. 
+fd readiness. you ask the kernel, the kernel tells you.
 you act only on confirmed readiness.
