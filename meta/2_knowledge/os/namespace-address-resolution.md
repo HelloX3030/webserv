@@ -1,3 +1,9 @@
+note (ghr) - future:
+extract upstream information (upstream of GNU-Linux systems)
+to general computational systems
+
+---
+
 # namespace & address resolution
 
 ---
@@ -57,7 +63,7 @@ namespaces provide:
 
 ---
 
-## POSIX-compliant systems: the functions - roles
+## Unix -> GNU-Linux-based systems: the functions - roles
 
 file namespace operations:
 - `stat`, `access` - query entity properties through name
@@ -74,6 +80,7 @@ binding operation:
 - `bind` - create the mapping itself:
 associate name/address with socket entity
 
+---
 
 ## key questions to explore
 
@@ -87,8 +94,8 @@ associate name/address with socket entity
    - inverse of resolution?
 
 3. why does `getaddrinfo` return multiple addresses?
-   - one name can map to many entities (load balancing, IPv4+IPv6)
-   - but one file path maps to one inode (usually)
+   - 1 name can map to many entities (load balancing, IPv4+IPv6)
+   - but 1 file path maps to 1 inode (usually)
    - what determines cardinality of the mapping?
 
 4. what about `chdir`?
