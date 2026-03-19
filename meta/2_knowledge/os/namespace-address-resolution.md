@@ -1,14 +1,14 @@
 # namespace & address resolution
 
+---
 
 ## essence
 
 what is namespace resolution?
 
 a namespace is a bijective (or surjective) mapping between 2 domains:
-- symbolic domain: human-meaningful names, paths, identifiers
-- physical domain: machine-addressable entities (handles, addresses,
-  locations)
+- symbolic: human-meaningful names, paths, identifiers
+- physical: machine-addressable entities (handles, addresses, locations)
 
 resolution is the computational act of traversing this mapping:
 `name ↦ entity`
@@ -16,12 +16,14 @@ resolution is the computational act of traversing this mapping:
 not "lookup" - it's a crossing between ontological levels:
 from meaning-space to address-space.
 
+---
 
-## the fundamental problem
+## fundamental problem
 
 why does this exist at all?
 
-because computation requires dual representation of identity:
+
+computation requires dual representation of identity:
 
 1. human cognition operates in semantic/symbolic space
    - hierarchical paths: `/etc/nginx/nginx.conf`
@@ -35,6 +37,7 @@ because computation requires dual representation of identity:
 
 resolution is the morphism between these spaces.
 
+---
 
 ## telos
 
@@ -42,8 +45,7 @@ maintain the illusion of persistence and meaning in a system built on
 ephemeral numerical handles.
 
 without namespaces:
-- you'd reference files by inode number (but inodes change across mounts,
-  filesystems)
+- you'd reference files by inode nr (but inodes change across mounts, filesystems)
 - network targets by IP (but IPs change, are not human-memorable)
 - no hierarchy, no semantic organization
 
@@ -53,7 +55,9 @@ namespaces provide:
 - hierarchy: structure that mirrors human understanding
 
 
-## the functions - ontological roles
+---
+
+## POSIX-compliant systems: the functions - roles
 
 file namespace operations:
 - `stat`, `access` - query entity properties through name
@@ -67,7 +71,7 @@ network namespace operations:
 - `getsockname` - inverse: given socket, what is its address?
 
 binding operation:
-- `bind` - create the mapping itself: 
+- `bind` - create the mapping itself:
 associate name/address with socket entity
 
 
