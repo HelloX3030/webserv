@@ -12,9 +12,9 @@ src/http/HttpRequestFrontend/doc/
 
 ---
 
-## future topics
+## future topics (ghr)
 
-domains and concepts to master for complete HTTP knowledge:
+domains & concepts to return to for deeper HTTP knowledge:
 
 ### protocol mechanics
 - chunked transfer encoding (Transfer-Encoding: chunked)
