@@ -1,3 +1,0 @@
-upcoming
-
-request/response anatomy

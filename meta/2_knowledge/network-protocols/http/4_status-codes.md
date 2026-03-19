@@ -2,11 +2,9 @@
 
 3-digit integers.
 
-range [100, 599]
-total defined space per HTTP spec (RFC 9110, 2022).
+range: total defined space per HTTP spec (RFC 9110, 2022): [100, 599]
 
 leading digit — class:
-
 ```
 1xx — informational
 2xx — success

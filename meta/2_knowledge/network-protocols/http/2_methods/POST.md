@@ -1,8 +1,10 @@
+submit entity to resource (create, process).
+
 # POST
 
 ## ontology
 
-POST is one of three HTTP methods webserv implements. a method is the
+POST is 1 of 3 HTTP methods webserv implements. a method is the
 token in the request line that specifies what operation the client
 requests the server perform on the identified resource.
 
