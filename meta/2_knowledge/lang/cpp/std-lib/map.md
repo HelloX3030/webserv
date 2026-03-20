@@ -130,9 +130,9 @@ of key membership.
 
 `Data.Map.Strict` — a purely functional AVL tree.
 immutability means every insert returns a new map;
-the old map is unchanged. structural sharing makes this
-efficient: only the path from root to the modified node
-is copied.
+the old map is unchanged. structural sharing makes this efficient:
+only the path from root to the modified node is copied.
+
 ```haskell
 import qualified Data.Map.Strict as Map
 
