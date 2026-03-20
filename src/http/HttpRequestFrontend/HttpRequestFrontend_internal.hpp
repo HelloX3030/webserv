@@ -1,3 +1,15 @@
 #pragma once
 
-enum class PhaseResult { Advanced, NeedMore, Failed };
+#include <cstddef>
+
+/* CRLF: the HTTP/1.1 line terminator (RFC 9112 section 2.2).
+carriage return ('\r', 0x0D) followed by line feed ('\n', 0x0A). */
+constexpr std::size_t CRLF_LEN = 2;  // sizeof '\r' + sizeof '\n'
+
+// ctrl flow between phase parsers
+enum class PhaseResult
+{
+    Advanced, // phase completed, transitioned to next
+    NeedMore, // insufficient bytes, remain in phase
+    Failed    // parse error, transitioned to ERROR
+};

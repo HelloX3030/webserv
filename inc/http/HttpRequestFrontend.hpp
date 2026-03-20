@@ -24,15 +24,7 @@ struct ParseResult
     uint16_t    error_code; // valid iff Failed (400, 413, 501, 505)
 };
 
-// --- INTERNAL -— implementation detail, do not depend on ---
-
-// ctrl flow between phase parsers
-enum class PhaseResult
-{
-    Advanced, // phase completed, transitioned to next
-    NeedMore, // insufficient bytes, remain in phase
-    Failed    // parse error, transitioned to ERROR
-};
+// --- INTERNAL — implementation detail, do not depend on ---
 
 // parse position
 enum class ParsePhase
@@ -65,7 +57,7 @@ struct HttpRequestFrontend
 
 private: // --- INTERNAL: implementation detail
 
-    // state
+    // -- state --
     std::string buffer_;            // accumulated unparsed bytes
     // consumed bytes erased after each successful phase transition.
 
@@ -78,14 +70,14 @@ private: // --- INTERNAL: implementation detail
     size_t      max_body_size_;     // from config, for 413 detection
 
 
-    // phase parsers
+    // -- phase parsers --
     PhaseResult parse_request_line();
     PhaseResult parse_header_line();
     PhaseResult consume_body();
 
-    
-    // helpers
+
+    // -- helpers --
     bool             find_crlf(size_t& pos) const;
     std::string_view extract_line(size_t crlf_pos) const;
-    void             consume_through(size_t pos);
+    void             consume_line(size_t pos);
 };
