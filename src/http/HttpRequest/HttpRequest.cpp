@@ -18,6 +18,12 @@ long HttpRequest::contentLength() const
     {
         size_t pos;
         long   n = std::stol(it->second, &pos);
+        /* stol consumes as many characters as form a valid integer,
+        stopping at the first non-digit. pos receives the index of
+        that stopping point. if pos < size(), unconsumed characters
+        remain — the value is not a pure integer (e.g. "42abc").
+        such values are rejected: -1 returned. */
+
         if (pos != it->second.size() || n < 0)
             return -1;
         return n;
