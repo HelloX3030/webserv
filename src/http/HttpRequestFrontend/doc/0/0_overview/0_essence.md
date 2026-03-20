@@ -32,11 +32,11 @@ total functions over complete input vs partial functions over streaming input.*
     * total vs partial functions:
     from domain theory and denotational semantics.
     A total function is defined for all inputs in its domain — it always terminates with a value.
-    A partial function may be undefined for some inputs — it may diverge, or require more input to produce output.
+    A partial function may be undefined for some inputs —
+    it may diverge, or require more input to produce output.
 
     a central distinction in type theory.
-    e.g. in Agda:
-    Total functions are the default. Every function must terminate.
+    e.g. in Agda: total functions are the default. Every function must terminate.
     Partial functions require explicit handling: coinduction, partiality monad, or fuel.
 
 ---
@@ -94,19 +94,21 @@ the computation is suspended between calls. the struct is the suspension.   ****
 
     META:
     This documentation mixes notations.
+
     annotate blocks (code, specifications, statements...) with the language.
     e.g.
     ```agda
     step : ParseState × Bytes → ParseState
     ```
-    make the notation explicit. No ambiguity about which formal system I'm operating in.
+    to make the notation explicit.
+    No ambiguity about which formal system I'm operating in.
 
 
     Also - ADD TO STYLE & CONTENT GUIDE:
-    When writing documentation: potentially
-    default to Agda-style for specifications,
-    Haskell-style for data definitions,
-    <lang of prog> only when showing the actual implementation (if different)
+    When writing documentation, potentially:
+      default to Agda-style for specifications,
+      Haskell-style for data definitions,
+      <lang of prog> only when showing the actual implementation (if different)
 
 
 ****
@@ -121,7 +123,7 @@ the computation is suspended between calls. the struct is the suspension.   ****
     the "what's been' accumulated" is captured in buffer_ and request_.
     Each advance() call is a step function that transforms this reified continuation.
 
-    technical term is defunctionalisation:
+    technical term: defunctionalisation:
     representing a suspended computation as data rather than as a closure.
     In languages with first-class continuations (Scheme, Haskell with Cont),
     you'd capture the continuation directly.
