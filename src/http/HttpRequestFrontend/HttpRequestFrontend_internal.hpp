@@ -13,3 +13,11 @@ enum class PhaseResult
     NeedMore, // insufficient bytes, remain in phase
     Failed    // parse error, transitioned to ERROR
 };
+
+/* sub-state within BODY phase when chunked encoding is active.
+alternates between reading a chunk-size line and reading chunk data. */
+enum class ChunkPhase
+{
+    SIZE, // waiting for hex chunk-size CRLF
+    DATA  // consuming chunk_remaining_ bytes, then CRLF
+};

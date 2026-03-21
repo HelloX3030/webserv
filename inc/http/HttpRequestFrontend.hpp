@@ -68,6 +68,11 @@ private: // --- INTERNAL: implementation detail
     uint16_t    error_code_;        // set on ERROR transition
     size_t      max_body_size_;     // from config, for 413 detection
 
+    bool        body_chunked_;      // Transfer-Encoding: chunked present
+    size_t      chunk_remaining_;   // bytes left in current chunk (DATA sub-phase)
+    ChunkPhase  chunk_phase_;       // sub-state within chunked BODY
+
+    
     // -- phase parsers --
     PhaseResult parse_request_line();
     PhaseResult parse_header_line();

@@ -22,13 +22,10 @@ while phase_ == HEADERS.
 
 2 outcomes per call:
     empty line (crlf_pos == 0): headers complete.
-        extract Content-Length, set body_remaining_, transition phase_.
+        determine body encoding, set body_remaining_ or body_chunked_,
+        transition phase_.
     non-empty line: one header parsed and accumulated.
-        remain in HEADERS; advance() loops back.
-
-the empty-line check is a natural consequence of find_crlf semantics:
-if buffer_ begins with CRLF, crlf_pos == 0 and extract_line returns
-an empty string_view. no special sentinel needed. */
+        remain in HEADERS; advance() loops back. */
 PhaseResult HttpRequestFrontend::parse_header_line()
 {
     size_t crlf_pos;
@@ -37,24 +34,29 @@ PhaseResult HttpRequestFrontend::parse_header_line()
 
     std::string_view line = extract_line(crlf_pos);
 
-    /* empty line: the blank CRLF terminating the header section.
-    all headers now in request_.headers. compute body. */
+    /* empty line: the blank CRLF terminating the header section. */
     if (line.empty())
     {
-        /* Transfer-Encoding: chunked — not implemented.
-        detected here rather than during header accumulation because
-        the transition is the earliest point at which the complete
-        set of headers is available for cross-header checks. */
         auto te = request_.headers.find("transfer-encoding");
-        if (te != request_.headers.end() && te->second == "chunked")
+        bool chunked = (te != request_.headers.end()
+                        && te->second == "chunked");
+
+        if (chunked)
         {
-            error_code_ = 501;
-            phase_      = ParsePhase::ERROR;
-            return PhaseResult::Failed;
+            /* subject (§7 CGI): server un-chunks before passing body
+            to CGI; CGI receives EOF-terminated plain stream.
+            413 cannot be checked here — decoded size is unknown
+            until chunks are accumulated. checked per-chunk in BODY. */
+            body_chunked_   = true;
+            chunk_remaining_ = 0;
+            chunk_phase_    = ChunkPhase::SIZE;
+            body_remaining_ = 0;
+            consume_line(crlf_pos);
+            phase_ = ParsePhase::BODY;
+            return PhaseResult::Advanced;
         }
 
-        /* extract Content-Length. absent → 0 (no body).
-        value was already trimmed at insertion; parse directly. */
+        /* Content-Length path. absent → 0 (no body). */
         size_t content_length = 0;
         auto   cl = request_.headers.find("content-length");
         if (cl != request_.headers.end())
@@ -82,8 +84,6 @@ PhaseResult HttpRequestFrontend::parse_header_line()
             }
         }
 
-        /* 413 check before allocation: reject oversized bodies
-        at the earliest possible moment. */
         if (content_length > max_body_size_)
         {
             error_code_ = 413;
@@ -91,6 +91,7 @@ PhaseResult HttpRequestFrontend::parse_header_line()
             return PhaseResult::Failed;
         }
 
+        body_chunked_   = false;
         body_remaining_ = content_length;
         consume_line(crlf_pos);
         phase_ = (body_remaining_ == 0) ? ParsePhase::COMPLETE
@@ -111,15 +112,19 @@ PhaseResult HttpRequestFrontend::parse_header_line()
     std::string_view raw_name  = line.substr(0, colon);
     std::string_view raw_value = line.substr(colon + 1);
 
-    /* normalise name to lowercase.
-    RFC 9110 section 5.1: field names are case-insensitive.
-    normalising at parse time means all consumers use a single form. */
+    /* normalise name to lowercase: quotient over the case-equivalence
+    relation on field names (RFC 9110 §5.1). all consumers downstream
+    operate on the quotient space, never the raw surface form. */
     std::string name(raw_name);
     std::transform(name.begin(), name.end(), name.begin(),
                    [](unsigned char c) { return std::tolower(c); });
 
     std::string value(trim_ows(raw_value));
 
+    /* duplicate headers: last value wins.
+    RFC 9112 §6.3.5 permits rejecting duplicate Content-Length
+    with differing values as 400; subject is silent on this.
+    last-value-wins is acceptable for webserv's scope. */
     request_.headers[name] = std::move(value);
 
     consume_line(crlf_pos);

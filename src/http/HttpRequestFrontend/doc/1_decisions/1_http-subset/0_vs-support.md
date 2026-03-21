@@ -1,7 +1,5 @@
 ## version support: HTTP/1.0 and HTTP/1.1
 
-### the question
-
 which HTTP versions to accept?
 
 ### the analysis
