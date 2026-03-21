@@ -5,8 +5,8 @@
 on success: pos set to index of '\r', returns true.
 on failure: pos unchanged, returns false.
 
-CRLF is the HTTP/1.1 line terminator (RFC 9112 section 2.2).
-bare LF is non-conformant; this function requires the full sequence. */
+CRLF is the HTTP/1.1 line terminator.
+bare LF is non-conformant; this fn requires the full sequence. */
 bool HttpRequestFrontend::find_crlf(size_t& pos) const
 {
     if (buffer_.size() < CRLF_LEN)
