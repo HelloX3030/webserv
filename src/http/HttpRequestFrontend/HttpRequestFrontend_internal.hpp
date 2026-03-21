@@ -20,4 +20,4 @@ enum class ChunkPhase
 {
     SIZE, // waiting for hex chunk-size CRLF
     DATA  // consuming chunk_remaining_ bytes, then CRLF
-};
+}; 

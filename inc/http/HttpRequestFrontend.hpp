@@ -6,6 +6,10 @@
 #include <cstdint>
 #include <string>
 
+// forward declarations — definitions in HttpRequestFrontend_internal.hpp
+enum class PhaseResult : int;
+enum class ChunkPhase : int;
+
 // --- PUBLIC INTERFACE for Connection ---
 
 // result status returned to Connection after each advance() call
@@ -72,7 +76,7 @@ private: // --- INTERNAL: implementation detail
     size_t      chunk_remaining_;   // bytes left in current chunk (DATA sub-phase)
     ChunkPhase  chunk_phase_;       // sub-state within chunked BODY
 
-    
+
     // -- phase parsers --
     PhaseResult parse_request_line();
     PhaseResult parse_header_line();
