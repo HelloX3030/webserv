@@ -22,8 +22,8 @@ while phase_ == HEADERS.
 
 2 outcomes per call:
     empty line (crlf_pos == 0): headers complete.
-        determine body encoding, set body_remaining_ or body_chunked_,
-        transition phase_.
+        enforce Host (HTTP/1.1), determine body encoding,
+        set body_remaining_ or body_chunked_, transition phase_.
     non-empty line: one header parsed and accumulated.
         remain in HEADERS; advance() loops back. */
 PhaseResult HttpRequestFrontend::parse_header_line()
@@ -37,7 +37,18 @@ PhaseResult HttpRequestFrontend::parse_header_line()
     /* empty line: the blank CRLF terminating the header section. */
     if (line.empty())
     {
-        auto te = request_.headers.find("transfer-encoding");
+        /* RFC 9112 §3.2: HTTP/1.1 requests without a Host header
+        must be rejected with 400. checked here — the earliest point
+        at which the complete header set is available. */
+        if (request_.http_version == "HTTP/1.1" &&
+            request_.headers.find("host") == request_.headers.end())
+        {
+            error_code_ = 400;
+            phase_      = ParsePhase::ERROR;
+            return PhaseResult::Failed;
+        }
+
+        auto te      = request_.headers.find("transfer-encoding");
         bool chunked = (te != request_.headers.end()
                         && te->second == "chunked");
 
@@ -47,10 +58,10 @@ PhaseResult HttpRequestFrontend::parse_header_line()
             to CGI; CGI receives EOF-terminated plain stream.
             413 cannot be checked here — decoded size is unknown
             until chunks are accumulated. checked per-chunk in BODY. */
-            body_chunked_   = true;
+            body_chunked_    = true;
             chunk_remaining_ = 0;
-            chunk_phase_    = ChunkPhase::SIZE;
-            body_remaining_ = 0;
+            chunk_phase_     = ChunkPhase::SIZE;
+            body_remaining_  = 0;
             consume_line(crlf_pos);
             phase_ = ParsePhase::BODY;
             return PhaseResult::Advanced;

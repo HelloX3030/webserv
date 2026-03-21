@@ -15,7 +15,7 @@ must the server handle `Transfer-Encoding: chunked`?
 
 42 subject §7 (CGI communication):
 > for chunked requests, your server needs to un-chunk them;
-> the CGI will expect EOF as the end of the body
+the CGI will expect EOF as the end of the body
 
 chunked un-chunking is mandatory. the earlier decision (501) was
 made without this evidence and is rescinded.
