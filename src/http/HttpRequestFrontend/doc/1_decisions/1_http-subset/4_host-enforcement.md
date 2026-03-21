@@ -15,9 +15,6 @@ a client sending an HTTP/1.1 request must include a single
 `Host` header field. a server receiving a request without
 `Host` must respond with 400 Bad Request.
 
-this a requirement. the subject mandates accurate
-status codes per the HTTP specification.
-
 
 ---
 
@@ -27,7 +24,6 @@ status codes per the HTTP specification.
 HTTP/1.1 requests with no `Host` header are rejected with 400.
 
 HTTP/1.0: no enforcement. `Host` was not defined until HTTP/1.1;
-requiring it for 1.0 requests would be anachronistic.
 
 
 ---
@@ -49,8 +45,6 @@ incrementally and `Host` may appear at any position.
 ## what is checked
 
 presence of the key `"host"` in `request_.headers`.
-the key is already normalised to lowercase at insertion,
-so the check is an exact match.
 
 the value is not validated — `Host` value checking
 (virtual host selection, malformed host syntax) belongs

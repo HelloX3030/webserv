@@ -20,29 +20,40 @@ to the next phase. if malformed input detected, transition to ERROR.
 
 ## state
 
-```cpp
-enum class ParsePhase { REQUEST_LINE, HEADERS, BODY, COMPLETE, ERROR };
+see `inc/http/HttpRequestFrontend.hpp` for struct fields.
+see `HttpRequestFrontend_internal.hpp` for `PhaseResult`, `ChunkPhase`.
 
-struct HttpRequestFrontend
-{
-    std::string buffer_;         // accumulated unparsed bytes
-    ParsePhase  phase_;          // current phase
-    HttpRequest request_;        // being built incrementally
-    size_t      body_remaining_; // bytes still expected
-    uint16_t    error_code_;     // set on ERROR transition
-    size_t      max_body_size_;  // from config, for 413 detection
-};
+the struct holds:
+
+```
+buffer          accumulated unparsed bytes
+phase           current phase
+request         being built incrementally
+body_remaining  bytes still expected (Content-Length path)
+error_code      set on ERROR transition
+max_body_size   from config, for 413 detection
+body_chunked    Transfer-Encoding: chunked present
+chunk_remaining bytes left in current chunk (DATA sub-phase)
+chunk_phase     sub-state within chunked BODY (SIZE / DATA)
 ```
 
-`buffer_` accumulates bytes across `advance()` calls. consumed bytes
+`buffer` accumulates bytes across `advance()` calls. consumed bytes
 are erased after each successful phase transition.
 
-`request_` fields are populated incrementally: method/uri/version
+`request` fields are populated incrementally: method/uri/version
 after REQUEST_LINE completes, headers after each header line,
 body after BODY completes.
 
-`max_body_size_` is set at construction from server configuration.
-used at HEADERS → BODY transition to detect 413 before body accumulation.
+`max_body_size` is set at construction from server configuration.
+for Content-Length bodies: checked at HEADERS → BODY transition
+(fail-fast: reject before allocating).
+for chunked bodies: checked per-chunk as decoded bytes accumulate
+(total decoded size unknown at transition).
+
+`body_chunked` determines the BODY phase path.
+`chunk_phase` and `chunk_remaining` are the sub-state machine
+within the chunked path: SIZE reads a hex size line,
+DATA consumes that many bytes plus trailing CRLF.
 
 
 ---
@@ -66,14 +77,21 @@ used at HEADERS → BODY transition to detect 413 before body accumulation.
                               │ empty line (CRLF alone)
                               ▼
                     ┌───────────────────┐
-                    │       BODY        │  ← skip if Content-Length absent or 0
+                    │       BODY        │  ← skip if no body
                     └─────────┬─────────┘
-                              │ body_remaining_ == 0
+                              │ all body bytes consumed
                               ▼
                     ┌───────────────────┐
                     │     COMPLETE      │
                     └───────────────────┘
 ```
+
+BODY skip condition: Content-Length absent or 0, and not chunked.
+
+BODY has 2 internal paths (not separate phases):
+- Content-Length: consume exactly `body_remaining` bytes.
+- chunked: sub-state machine (SIZE / DATA) decoding frames
+  until zero-size chunk + trailing CRLF.
 
 ERROR reachable from REQUEST_LINE, HEADERS, or BODY.
 COMPLETE and ERROR are terminal — no further transitions.
@@ -96,8 +114,8 @@ validation sequence:
 4. version token — must be `HTTP/1.0` or `HTTP/1.1`
 
 success:
-    populate request_.method, request_.uri, request_.http_version.
-    erase consumed bytes from buffer_.
+    populate request method, uri, http_version.
+    erase consumed bytes from buffer.
     transition → HEADERS.
 
 failure conditions:
@@ -117,23 +135,29 @@ waiting for: `Header-Name: Header-Value CRLF` or empty line `CRLF`
 scan buffer for CRLF. if not found, return NeedMore.
 
 if line is empty (just CRLF):
-    headers complete.
-    extract Content-Length from headers (0 if absent).
-    if Content-Length > max_body_size_: error 413, transition → ERROR.
-    set body_remaining_ = Content-Length.
-    if body_remaining_ == 0: transition → COMPLETE.
-    else: transition → BODY.
+    headers complete. determine body encoding:
+
+    chunked path (Transfer-Encoding: chunked present):
+        set body_chunked = true, chunk_phase = SIZE,
+        chunk_remaining = 0.
+        transition → BODY.
+        note: 413 cannot be checked here — decoded size unknown
+        until chunks accumulate. checked per-chunk in BODY.
+
+    Content-Length path:
+        extract Content-Length from headers (0 if absent).
+        if Content-Length > max_body_size: error 413 → ERROR.
+        set body_remaining = Content-Length.
+        if body_remaining == 0: transition → COMPLETE.
+        else: transition → BODY.
 
 if line is non-empty:
     find colon. if absent, error 400.
     extract name (before colon), value (after colon, trimmed).
     normalise name to lowercase.
-    insert into request_.headers.
-    erase consumed bytes from buffer_.
+    insert into request headers.
+    erase consumed bytes from buffer.
     remain in HEADERS.
-
-note: 413 is detected at the HEADERS → BODY transition, not during
-body accumulation. this is fail-fast: reject before allocating.
 
 
 ---
@@ -141,19 +165,48 @@ body accumulation. this is fail-fast: reject before allocating.
 
 ## phase: BODY
 
-waiting for: `body_remaining_` bytes.
+branches on `body_chunked`.
 
-if buffer_.size() >= body_remaining_:
-    extract exactly body_remaining_ bytes into request_.body.
-    erase consumed bytes from buffer_.
-    transition → COMPLETE.
+### Content-Length path
 
-else:
-    return NeedMore.
+waiting for: `body_remaining` bytes in buffer.
 
-note: buffer_ may contain more bytes than body_remaining_ if
-the client pipelined requests. we consume exactly body_remaining_,
-leaving the rest for the next request after reset().
+sufficient bytes → extract, erase, transition → COMPLETE.
+insufficient → NeedMore.
+
+note: buffer may contain more than body_remaining if the client
+pipelined requests. extract exactly body_remaining, leaving the
+rest for the next request after reset().
+
+
+### chunked path
+
+sub-state machine alternating SIZE and DATA.
+
+chunk_phase == SIZE:
+    scan buffer for CRLF. if not found, return NeedMore.
+    extract line, parse as hex integer → chunk_size.
+    if chunk_size == 0:
+        last-chunk. verify trailing CRLF is also present
+        (buffer must contain size line + CRLF + trailer CRLF).
+        if not: return NeedMore.
+        consume both lines atomically. transition → COMPLETE.
+    if decoded accumulation + chunk_size > max_body_size:
+        error 413 → ERROR.
+    consume size line. set chunk_remaining = chunk_size.
+    chunk_phase → DATA.
+
+chunk_phase == DATA:
+    waiting for: chunk_remaining + CRLF bytes in buffer.
+    if insufficient: return NeedMore.
+    validate trailing CRLF after chunk data. if absent: 400 → ERROR.
+    append chunk_remaining bytes to request body.
+    consume chunk_remaining + CRLF bytes from buffer.
+    chunk_phase → SIZE.
+
+returns Advanced after each sub-state transition.
+the while loop in advance() re-enters consume_body(),
+processing all available chunks within a single advance() call.
 
 
 ---
@@ -161,7 +214,7 @@ leaving the rest for the next request after reset().
 
 ## phase: COMPLETE
 
-terminal. request_ is valid. advance() returns Complete.
+terminal. request is valid. advance() returns Complete.
 
 
 ---
@@ -169,7 +222,7 @@ terminal. request_ is valid. advance() returns Complete.
 
 ## phase: ERROR
 
-terminal. error_code_ is set. advance() returns Failed.
+terminal. error_code is set. advance() returns Failed.
 
 
 ---
@@ -177,71 +230,39 @@ terminal. error_code_ is set. advance() returns Failed.
 
 ## advance() control flow
 
-internal result type for phase-parsing functions:
+see `HttpRequestFrontend.cpp` for implementation.
 
-```cpp
-enum class PhaseResult { Advanced, NeedMore, Failed };
+phase parsers return a 3-valued result:
+- Advanced: phase completed, transitioned to next phase.
+- NeedMore: insufficient bytes, remain in current phase.
+- Failed: parse error, transitioned to ERROR.
+
+```
+advance(data, len):
+    append data to buffer
+
+    loop:
+        match phase:
+            REQUEST_LINE → call parse_request_line()
+            HEADERS      → call parse_header_line()
+            BODY         → call consume_body()
+            COMPLETE     → return Complete with request
+            ERROR        → return Failed with error_code
+
+        if NeedMore → return Incomplete
+        if Failed   → return Failed with error_code
+        if Advanced → continue loop
 ```
 
-`Advanced` — phase completed, transitioned to next phase.
-`NeedMore` — insufficient bytes, remain in current phase.
-`Failed` — parse error, transitioned to ERROR.
+the loop handles the case where a single advance() call provides
+enough bytes to complete multiple phases. it runs until NeedMore,
+Complete, or Failed.
 
-```cpp
-ParseResult HttpRequestFrontend::advance(const char* data, size_t len)
-{
-    buffer_.append(data, len);
-
-    while (true)
-    {
-        switch (phase_)
-        {
-            case ParsePhase::REQUEST_LINE:
-            {
-                PhaseResult r = parse_request_line();
-                if (r == PhaseResult::NeedMore)
-                    return {ParseStatus::Incomplete, {}, 0};
-                if (r == PhaseResult::Failed)
-                    return {ParseStatus::Failed, {}, error_code_};
-                break;  // Advanced — loop continues
-            }
-
-            case ParsePhase::HEADERS:
-            {
-                PhaseResult r = parse_header_line();
-                if (r == PhaseResult::NeedMore)
-                    return {ParseStatus::Incomplete, {}, 0};
-                if (r == PhaseResult::Failed)
-                    return {ParseStatus::Failed, {}, error_code_};
-                break;
-            }
-
-            case ParsePhase::BODY:
-            {
-                PhaseResult r = consume_body();
-                if (r == PhaseResult::NeedMore)
-                    return {ParseStatus::Incomplete, {}, 0};
-                if (r == PhaseResult::Failed)
-                    return {ParseStatus::Failed, {}, error_code_};
-                break;
-            }
-
-            case ParsePhase::COMPLETE:
-                return {ParseStatus::Complete, request_, 0};
-
-            case ParsePhase::ERROR:
-                return {ParseStatus::Failed, {}, error_code_};
-        }
-    }
-}
-```
-
-the while loop handles the case where a single `advance()` call
-provides enough bytes to complete multiple phases. we loop until
-we hit NeedMore, Complete, or Failed.
-
-each `parse_*` function returns a 3-valued result. control flow
-is explicit at every call site. no implicit state inspection.
+for chunked bodies: consume_body() returns Advanced after each
+sub-state transition (SIZE → DATA, DATA → SIZE, or last-chunk
+→ COMPLETE). the loop re-enters consume_body(), processing all
+available chunks within a single advance() call without returning
+Incomplete between chunks.
 
 
 ---
@@ -258,8 +279,9 @@ is explicit at every call site. no implicit state inspection.
 | unsupported version (not HTTP/1.x) | 505 | REQUEST_LINE |
 | malformed header (missing colon) | 400 | HEADERS |
 | Content-Length non-numeric or negative | 400 | HEADERS |
-| Content-Length exceeds max_body_size_ | 413 | HEADERS |
-| chunked Transfer-Encoding (not implemented) | 501 | HEADERS |
+| Content-Length exceeds max_body_size | 413 | HEADERS |
+| invalid chunk-size (non-hex or overflow) | 400 | BODY |
+| decoded body exceeds max_body_size | 413 | BODY |
 
 
 ---
@@ -267,26 +289,33 @@ is explicit at every call site. no implicit state inspection.
 
 ## reset()
 
+see `HttpRequestFrontend.cpp` for implementation.
+
 called by Connection after response sent, iff keepAlive() is true.
 
-```cpp
-void HttpRequestFrontend::reset()
-{
-    // buffer_ may contain bytes from next request — do not clear
-    phase_ = ParsePhase::REQUEST_LINE;
-    request_ = HttpRequest{};
-    body_remaining_ = 0;
-    error_code_ = 0;
-    // max_body_size_ unchanged — same config for connection lifetime
-}
+```
+reset():
+    preserve buffer (may contain pipelined bytes)
+    phase          ← REQUEST_LINE
+    request        ← empty
+    body_remaining ← 0
+    error_code     ← 0
+    body_chunked   ← false
+    chunk_remaining ← 0
+    chunk_phase    ← SIZE
+    max_body_size unchanged
 ```
 
-buffer_ is not cleared. pipelined requests leave trailing bytes
+buffer is not cleared. pipelined requests leave trailing bytes
 after the current request's body. these bytes belong to the next
 request and must survive the reset.
 
-max_body_size_ is not reset — it derives from server configuration
+max_body_size is not reset — it derives from server configuration
 and remains constant for the connection's lifetime.
+
+chunked fields are reset defensively: they are always set fresh at
+HEADERS → BODY transition, but reset ensures no ghost state from
+a previous chunked request survives into a subsequent parse.
 
 
 ---
@@ -294,22 +323,30 @@ and remains constant for the connection's lifetime.
 
 ## invariants
 
-1. buffer_ contains all unparsed bytes. consumed bytes are erased.
+1. buffer contains all unparsed bytes. consumed bytes are erased.
 
-2. phase_ reflects current parse position.
+2. phase reflects current parse position.
     only advances, never retreats (except reset()).
 
-3. request_ fields are valid for completed phases only.
+3. request fields are valid for completed phases only.
    method/uri/version valid after REQUEST_LINE.
    headers valid after HEADERS.
    body valid after BODY (or empty if no body).
 
-4. body_remaining_ is computed from Content-Length at HEADERS → BODY
-   transition. decremented as bytes are consumed. 0 when BODY → COMPLETE.
+4. body_remaining: for Content-Length bodies, computed at
+   HEADERS → BODY transition, 0 when BODY → COMPLETE.
+   for chunked bodies, unused (chunk_remaining tracks per-chunk).
 
-5. error_code_ is 0 unless phase_ is ERROR.
+5. error_code is 0 unless phase is ERROR.
 
-6. max_body_size_ is constant after construction.
+6. max_body_size is constant after construction.
+
+7. body_chunked is set at HEADERS → BODY transition.
+   determines which path consume_body() takes.
+
+8. chunk_phase alternates SIZE → DATA → SIZE within
+   the chunked BODY path. chunk_remaining is valid
+   only during DATA and counts down to 0.
 
 
 ---
@@ -337,8 +374,15 @@ bytes arrive at arbitrary boundaries. examples:
 "d"                 ← completes body
 ```
 
+```
+"POST / HTTP/1.1\r\nTransfer-Encoding: chunked\r\n\r\n5\r\nhel"
+                    ← headers + chunk size + partial chunk data
+"lo\r\n3\r\nwo"    ← chunk CRLF + next chunk size + partial data
+"rld\r\n0\r\n\r\n" ← completes chunk + last-chunk + trailer CRLF
+```
+
 the state machine handles all cases identically: accumulate into
-buffer_, scan for phase completion, consume and transition or
+buffer, scan for phase completion, consume and transition or
 return NeedMore.
 
 

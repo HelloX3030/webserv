@@ -157,7 +157,7 @@ the computation is suspended between calls. the struct is the suspension.   ****
               └───────────────────────────────────┘
 ```
 
-archetypal flow for request-response protocols:
+upstream/general flow for request-response protocols:
 
 1. deserialise request
 2. route to handler
@@ -274,12 +274,14 @@ e.g.:
 - `uri` is the request target (origin-form)
 - `http_version` is "HTTP/1.0" or "HTTP/1.1"
 - `headers` map is complete, keys lowercase
-- `body` contains exactly Content-Length bytes (or empty if no body)
+- `body` contains decoded body bytes: exactly Content-Length bytes,
+  or the concatenation of all decoded chunks (chunked encoding).
+  empty if no body.
 
 **on Failed**: `error_code` is an HTTP status code.
 - 400 Bad Request: malformed syntax
 - 413 Content Too Large: body exceeds limit
-- 501 Not Implemented: unknown method or chunked encoding
+- 501 Not Implemented: unknown method
 - 505 HTTP Version Not Supported: not HTTP/1.x
 
 **on Incomplete**: internal state preserved.
@@ -294,7 +296,7 @@ next `advance()` call continues from current position.
 1. accumulate bytes into internal buffer
 2. parse request-line: method SP uri SP version CRLF
 3. parse headers: name ":" value CRLF, until empty line
-4. consume body: exactly Content-Length bytes (if present)
+4. consume body: Content-Length bytes, or decode chunked frames
 5. produce `HttpRequest` or error code
 
 

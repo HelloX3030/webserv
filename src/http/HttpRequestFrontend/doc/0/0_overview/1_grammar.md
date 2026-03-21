@@ -136,12 +136,17 @@ message-body   = *OCTET
 ```
 
 body length determined by:
-1. `Content-Length` header: exactly that many bytes
-2. `Transfer-Encoding: chunked`: chunked encoding (not implemented in webserv)
-3. connection close: read until EOF (HTTP/1.0 fallback)
+1. `Transfer-Encoding: chunked`: chunked encoding.
+   length determined by chunk boundaries.
+2. `Content-Length` header: exactly that many bytes.
+3. connection close: read until EOF (HTTP/1.0 fallback).
 
-webserv implements Content-Length only.
-absence of Content-Length with no body indication: body is empty.
+precedence matters: Transfer-Encoding takes priority over
+Content-Length (RFC 9112 §6.1). if both present, Content-Length
+is ignored.
+
+webserv implements Content-Length and chunked Transfer-Encoding.
+absence of both with no body indication: body is empty.
 
 
 ---
@@ -150,18 +155,19 @@ absence of Content-Length with no body indication: body is empty.
 ## webserv subset
 
 the full grammar is permissive. webserv restricts:
+
 ```
 methods accepted:    GET, POST, DELETE
-                     (others: 501 Not Implemented)
+(others: 501 Not Implemented)
 
 versions accepted:   HTTP/1.0, HTTP/1.1
-                     (others: 505 HTTP Version Not Supported)
+(others: 505 HTTP Version Not Supported)
 
 request-target:      origin-form only
-                     (absolute-form, authority-form, asterisk-form: 400)
+(absolute-form, authority-form, asterisk-form: 400)
 
-body encoding:       Content-Length only
-                     (chunked: 501 Not Implemented)
+body encoding:       Content-Length and chunked Transfer-Encoding
+(chunk extensions and trailers: ignored)
 ```
 
 
@@ -183,7 +189,11 @@ header-line    = header-name ":" OWS header-value OWS CRLF
 header-name    = 1*token-char
 header-value   = *value-char
 
-body           = <Content-Length octets>
+body           = <Content-Length octets> / chunked-body
+chunked-body   = *chunk last-chunk CRLF
+chunk          = chunk-size CRLF chunk-data CRLF
+chunk-size     = 1*HEXDIG
+last-chunk     = "0" CRLF
 
 ; character classes
 token-char     = ALPHA / DIGIT / "!" / "#" / "$" / "%" / "&" / "'"

@@ -4,6 +4,7 @@
 
 an associative container mapping keys to values,
 maintaining keys in sorted order at all times.
+
 ```cpp
 std::map<Key, Value>
 ```
@@ -35,8 +36,7 @@ these together bound tree height to 2 log₂(n + 1),
 guaranteeing O(log n) worst-case on all operations.
 
 the tree structure makes sorted iteration a by-product:
-in-order traversal yields keys in ascending order at no
-extra cost.
+in-order traversal yields keys in ascending order at no extra cost.
 
 
 ---
@@ -87,8 +87,7 @@ for (auto& [k, v] : m) { }  // in ascending key order
 
 `operator[]` silently inserts a default-constructed value
 if the key is absent. on a `const` map it does not compile.
-`find` is the correct lookup when insertion on miss is
-not desired.
+`find` is the correct lookup when insertion on miss is not desired.
 
 
 ---
@@ -120,10 +119,9 @@ simplicity: no hash function required for `std::string`.
 
 ### Agda
 
-no mutable map in the standard library; purely functional
-maps are finger trees or AVL trees via `Data.Map` in
-Haskell's sense. in Agda, association lists suffice for
-small structures; dependently typed maps can carry proofs
+no mutable map in the standard library; purely functional maps are finger trees
+or AVL trees via `Data.Map` in Haskell's sense. in Agda, association lists
+suffice for small structures; dependently typed maps can carry proofs
 of key membership.
 
 ### Haskell
@@ -145,15 +143,15 @@ m' = Map.insert "content-length" "42" m
 
 `std::collections::BTreeMap` — sorted, O(log n), B-tree
 (not red-black). `HashMap` — unordered, O(1) average.
+
 ```rust
 use std::collections::BTreeMap;
 let mut m: BTreeMap<String, String> = BTreeMap::new();
 m.insert("content-length".to_string(), "42".to_string());
 ```
 
-Rust's ownership model prevents iterator invalidation by
-construction: holding an iterator borrows the map,
-preventing concurrent mutation.
+Rust's ownership model prevents iterator invalidation by construction:
+holding an iterator borrows the map, preventing concurrent mutation.
 
 
 ---
@@ -166,5 +164,4 @@ cppreference: https://en.cppreference.com/w/cpp/container/map
 Meyers, S. Effective STL (2001). item 19: understand the
 difference between equality and equivalence.
 
-ISO/IEC 14882 (C++ standard), section 26.5 (associative
-containers).
+ISO/IEC 14882 (C++ standard), section 26.5 (associative containers).
