@@ -43,8 +43,6 @@ enum class ParsePhase
 struct HttpRequestFrontend
 {
     // --- PUBLIC INTERFACE for Connection ---
-    // C++ structs default to public visibility, classes to private
-
     // construction
     explicit HttpRequestFrontend(size_t max_body_size);
 
@@ -57,25 +55,18 @@ struct HttpRequestFrontend
     buffer is not cleared — may contain bytes from pipelined next request. */
     void        reset();
 
-
 private: // --- INTERNAL: implementation detail
-
     // -- state --
     std::string buffer_;            // accumulated unparsed bytes
-    // consumed bytes erased after each successful phase transition.
-
     ParsePhase  phase_;             // current phase/parse position
     // advances monotonically (except `reset()`)
-
     HttpRequest request_;           // built incrementally
     size_t      body_remaining_;    // bytes still expected
     uint16_t    error_code_;        // set on ERROR transition
     size_t      max_body_size_;     // from config, for 413 detection
-
     bool        body_chunked_;      // Transfer-Encoding: chunked present
     size_t      chunk_remaining_;   // bytes left in current chunk (DATA sub-phase)
     ChunkPhase  chunk_phase_;       // sub-state within chunked BODY
-
 
     // -- phase parsers --
     PhaseResult parse_request_line();
