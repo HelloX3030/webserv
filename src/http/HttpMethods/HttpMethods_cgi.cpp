@@ -9,11 +9,26 @@
 namespace WebServ
 {
 
-HttpResponseBuilder http_cgi(const std::filesystem::path &script_path, const std::string &interpreter, HttpMethod method, const std::string &target, const std::map<std::string, std::string> &headers, const std::string &body)
+HttpResponseBuilder http_cgi(
+    const std::filesystem::path &script_path,
+    const std::string &interpreter,
+    HttpMethod method,
+    const std::string &target,
+    const std::map<std::string, std::string> &headers,
+    const std::string &body)
 {
 #ifdef DEBUG
     logging::log(HTTP_METHOD_CGI, "script=\"" + script_path.string() + "\" interpreter=\"" + interpreter + "\"");
 #endif
+
+    // ---- check script exists ----
+    if (!std::filesystem::exists(script_path))
+    {
+#ifdef DEBUG
+        logging::log(HTTP_METHOD_CGI, "Script does not exist -> 404");
+#endif
+        return HttpResponseBuilder(404);
+    }
 
     int in_pipe[2];
     int out_pipe[2];
@@ -47,14 +62,18 @@ HttpResponseBuilder http_cgi(const std::filesystem::path &script_path, const std
         (void)headers;
 
         execve(argv[0], argv, envp);
-        exit(1);
+
+        // ---- exec failed ----
+        _exit(1);
     }
 
     close(in_pipe[0]);
     close(out_pipe[1]);
 
     // write body
-    write(in_pipe[1], body.data(), body.size());
+    if (!body.empty())
+        write(in_pipe[1], body.data(), body.size());
+
     close(in_pipe[1]);
 
     // read output
@@ -67,7 +86,26 @@ HttpResponseBuilder http_cgi(const std::filesystem::path &script_path, const std
 
     close(out_pipe[0]);
 
-    waitpid(pid, NULL, 0);
+    int status;
+    waitpid(pid, &status, 0);
+
+    // ---- child failed ----
+    if (!WIFEXITED(status) || WEXITSTATUS(status) != 0)
+    {
+#ifdef DEBUG
+        logging::log(HTTP_METHOD_CGI, "CGI execution failed -> 500");
+#endif
+        return HttpResponseBuilder(500);
+    }
+
+    // ---- empty output is invalid CGI ----
+    if (output.empty())
+    {
+#ifdef DEBUG
+        logging::log(HTTP_METHOD_CGI, "Empty CGI output -> 500");
+#endif
+        return HttpResponseBuilder(500);
+    }
 
     HttpResponseBuilder result(200);
     result.set_body(output);

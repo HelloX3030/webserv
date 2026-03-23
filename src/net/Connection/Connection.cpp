@@ -76,7 +76,7 @@ void Connection::handle_event(uint32_t events)
                 HttpResponseBuilder result = WebServ::http_handle_request(
                     *this,
                     HttpMethod::POST,
-                    "/cgi-bin/test.py",
+                    "/cgi-bin/test1.py",
                     {{"Host", "localhost"},
                      {"Content-Type", "text/plain"}},
                     "Hello from POST");
