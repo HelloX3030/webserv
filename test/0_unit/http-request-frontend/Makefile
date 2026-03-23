@@ -35,8 +35,9 @@ SRCS := main.cpp                                    \
 # test TUs — added manually as written.
 # each registers its tests at static initialisation;
 # no edits to main.cpp needed.
-SRCS += test_request_line.cpp	\
-        test_headers.cpp
+SRCS += test_request_line.cpp \
+        test_headers.cpp \
+        test_body.cpp
 
 # --- variant binaries ---
 NAME       := test_frontend

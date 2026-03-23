@@ -21,6 +21,8 @@ static const std::string CHUNKED_PREFIX =
     "Transfer-Encoding: chunked\r\n"
     "\r\n";
 
+static const std::string TERM = "\r\n";
+
 
 // --- Content-Length: partial delivery ---
 
@@ -241,6 +243,62 @@ TEST(body_chunked_bad_trailer_crlf)
     assert_eq(uint16_t(400), r.error_code);
 }
 
+// ── edge cases: encoding interaction, hex variants ──
+
+TEST(body_te_not_chunked_falls_through)
+{
+    HttpRequestFrontend fe(MAX_BODY);
+    std::string input = PREFIX
+        + "Transfer-Encoding: gzip\r\n"
+        + "Content-Length: 3\r\n"
+        + TERM
+        + "abc";
+    ParseResult r = advance_all(fe, input);
+    assert_eq(ParseStatus::Complete, r.status);
+    assert_eq(std::string("abc"), r.request.body);
+}
+
+TEST(body_te_chunked_overrides_cl)
+{
+    HttpRequestFrontend fe(MAX_BODY);
+    std::string input = PREFIX
+        + "Content-Length: 999\r\n"
+        + "Transfer-Encoding: chunked\r\n"
+        + TERM
+        + "5\r\nhello\r\n"
+        + "0\r\n\r\n";
+    ParseResult r = advance_all(fe, input);
+    assert_eq(ParseStatus::Complete, r.status);
+    assert_eq(std::string("hello"), r.request.body);
+}
+
+TEST(body_chunked_multi_digit_hex)
+{
+    HttpRequestFrontend fe(MAX_BODY);
+    std::string data(26, 'x');
+    std::string input = PREFIX
+        + "Transfer-Encoding: chunked\r\n"
+        + TERM
+        + "1a\r\n" + data + "\r\n"
+        + "0\r\n\r\n";
+    ParseResult r = advance_all(fe, input);
+    assert_eq(ParseStatus::Complete, r.status);
+    assert_eq(size_t(26), r.request.body.size());
+    assert_eq(data, r.request.body);
+}
+
+TEST(body_chunked_leading_zeros)
+{
+    HttpRequestFrontend fe(MAX_BODY);
+    std::string input = PREFIX
+        + "Transfer-Encoding: chunked\r\n"
+        + TERM
+        + "005\r\nhello\r\n"
+        + "0\r\n\r\n";
+    ParseResult r = advance_all(fe, input);
+    assert_eq(ParseStatus::Complete, r.status);
+    assert_eq(std::string("hello"), r.request.body);
+}
 
 // --- pipelining: reset + second request from residual buffer ---
 
