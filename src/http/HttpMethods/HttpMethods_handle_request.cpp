@@ -8,8 +8,7 @@
 namespace WebServ
 {
 
-// TODO => move it to proper location + connect it with HttpRequestFrontend
-HttpResponseBuilder wip_handle_request(const Connection &connection, HttpMethod method, std::string target, std::map<std::string, std::string> headers, std::string body)
+HttpResponseBuilder http_handle_request(const Connection &connection, HttpMethod method, std::string target, std::map<std::string, std::string> headers, std::string body)
 {
 #ifdef DEBUG
     logging::log(HANDLE_REQUEST, "Method=" + std::to_string(static_cast<int>(method)) + " target=\"" + target + "\" body_size=" + std::to_string(body.size()));
