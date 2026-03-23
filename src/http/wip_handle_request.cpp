@@ -159,7 +159,7 @@ HttpResponseBuilder wip_handle_request(const Connection &connection, HttpMethod 
 #ifdef DEBUG
         logging::log(HANDLE_REQUEST, "Calling http_get");
 #endif
-        // return http_get(*safe, index_files);
+        return http_get(*safe, match.location->index_files);
 
     case HttpMethod::POST:
 #ifdef DEBUG
