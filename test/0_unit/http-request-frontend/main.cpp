@@ -1,6 +1,14 @@
 #include "test_harness.hpp"
 
-int main()
+#include <cstring>
+
+int main(int argc, char* argv[])
 {
-    return run_all_tests();
+    bool verbose = false;
+    for (int i = 1; i < argc; ++i)
+    {
+        if (std::strcmp(argv[i], "-v") == 0)
+            verbose = true;
+    }
+    return run_all_tests(verbose);
 }

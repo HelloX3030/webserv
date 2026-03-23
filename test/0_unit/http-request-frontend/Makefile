@@ -100,6 +100,9 @@ leaksre: leaksclean leaks
 run: $(NAME)
 	./$(NAME)
 
+runv: $(NAME)
+	./$(NAME) -v
+
 debugrun: $(DBG_NAME)
 	./$(DBG_NAME)
 

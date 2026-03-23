@@ -93,17 +93,22 @@ sole reason this macro exists. */
 /* runner. iterates the registry, catches failures per test.
 second catch: prevents a bug in test code (e.g. out-of-range,
 null deref) from killing the entire suite. */
-inline int run_all_tests()
+inline int run_all_tests(bool verbose = false)
 {
     int passed = 0;
     int failed = 0;
 
     for (const auto& t : test_registry())
     {
+        if (verbose)
+            std::cerr << "RUN   " << t.name << "\n";
+
         try
         {
             t.fn();
             ++passed;
+            if (verbose)
+                std::cerr << "  OK\n";
         }
         catch (const AssertionFailure& e)
         {
