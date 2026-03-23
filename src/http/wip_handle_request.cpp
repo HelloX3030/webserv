@@ -159,7 +159,7 @@ HttpResponseBuilder wip_handle_request(const Connection &connection, HttpMethod 
 #ifdef DEBUG
         logging::log(HANDLE_REQUEST, "Calling http_get");
 #endif
-        return http_get(*config, safe->string());
+        // return http_get(*safe, index_files);
 
     case HttpMethod::POST:
 #ifdef DEBUG
@@ -171,7 +171,7 @@ HttpResponseBuilder wip_handle_request(const Connection &connection, HttpMethod 
 #ifdef DEBUG
         logging::log(HANDLE_REQUEST, "Calling http_delete");
 #endif
-        return http_delete(*config, safe->string());
+        return http_delete(*safe);
 
     default:
 #ifdef DEBUG

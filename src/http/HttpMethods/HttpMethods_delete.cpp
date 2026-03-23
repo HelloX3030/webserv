@@ -6,89 +6,21 @@
 namespace WebServ
 {
 
-[[nodiscard]] HttpResponseBuilder http_delete(const ServerConfig &config, const std::string &path)
+HttpResponseBuilder http_delete(const std::filesystem::path &resolved_path)
 {
 #ifdef DEBUG
-    logging::log(HTTP_METHOD_DELETE, "Path=\"" + path + "\"");
+    logging::log(HTTP_METHOD_DELETE, "resolved_path=\"" + resolved_path.string() + "\"");
 #endif
 
-    // find matching location (longest prefix match)
-    const Location *location = NULL;
-    std::string location_prefix;
-
-    for (std::map<std::string, Location>::const_iterator it = config.locations.begin();
-         it != config.locations.end(); ++it)
-    {
-        if (path.find(it->first) == 0)
-        {
-            if (it->first.size() > location_prefix.size())
-            {
-                location = &it->second;
-                location_prefix = it->first;
-            }
-        }
-    }
-
-    if (!location)
+    if (!std::filesystem::exists(resolved_path))
     {
 #ifdef DEBUG
-        logging::log(HTTP_METHOD_DELETE, "No matching location -> 404");
+        logging::log(HTTP_METHOD_DELETE, "Target does not exist -> 404");
 #endif
         return HttpResponseBuilder(404);
     }
 
-#ifdef DEBUG
-    logging::log(HTTP_METHOD_DELETE, "Matched location prefix=\"" + location_prefix + "\" root=\"" + location->root + "\"");
-#endif
-
-    // check allowed methods
-    if (location->allowed_methods.count(HttpMethod::DELETE) == 0)
-    {
-#ifdef DEBUG
-        logging::log(HTTP_METHOD_DELETE, "DELETE not allowed -> 405");
-#endif
-        return HttpResponseBuilder(405);
-    }
-
-    std::string base = location->root;
-
-#ifdef DEBUG
-    logging::log(HTTP_METHOD_DELETE, "Using root base=\"" + base + "\"");
-#endif
-
-    // remove location prefix
-    std::string relative = path.substr(location_prefix.size());
-    if (!relative.empty() && relative[0] == '/')
-        relative = relative.substr(1);
-
-#ifdef DEBUG
-    logging::log(HTTP_METHOD_DELETE, "Relative path=\"" + relative + "\"");
-#endif
-
-    // traversal protection
-    auto safe = utils::resolve_path(base, relative);
-
-    if (!safe)
-    {
-#ifdef DEBUG
-        logging::log(HTTP_METHOD_DELETE, "resolve_path rejected traversal -> 403");
-#endif
-        return HttpResponseBuilder(403);
-    }
-
-#ifdef DEBUG
-    logging::log(HTTP_METHOD_DELETE, "Resolved safe path=\"" + safe->string() + "\"");
-#endif
-
-    if (!std::filesystem::exists(*safe))
-    {
-#ifdef DEBUG
-        logging::log(HTTP_METHOD_DELETE, "File does not exist -> 404");
-#endif
-        return HttpResponseBuilder(404);
-    }
-
-    if (std::filesystem::is_directory(*safe))
+    if (std::filesystem::is_directory(resolved_path))
     {
 #ifdef DEBUG
         logging::log(HTTP_METHOD_DELETE, "Target is directory -> 403");
@@ -102,7 +34,13 @@ namespace WebServ
 
     try
     {
-        std::filesystem::remove(*safe);
+        if (!std::filesystem::remove(resolved_path))
+        {
+#ifdef DEBUG
+            logging::log(HTTP_METHOD_DELETE, "remove() returned false -> 500");
+#endif
+            return HttpResponseBuilder(500);
+        }
     }
     catch (...)
     {
