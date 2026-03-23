@@ -5,7 +5,7 @@
 #include <string>
 
 /*
-Config.cpp — display serialisation for Config data types.
+display serialisation for Config data types.
 
 programmer-facing: complete field coverage, labelled and indented.
 does not reconstruct valid nginx syntax — renders state for inspection.

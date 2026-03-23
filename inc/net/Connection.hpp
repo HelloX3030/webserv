@@ -2,7 +2,8 @@
 
 #include "base/Fd.hpp"
 #include "config/Config.hpp"
-#include "http/HttpParser.hpp"
+#include "http/HttpRequestFrontend.hpp" // added — types available, not used yet
+#include "http/HttpParser.hpp"  // to be replaced with HttpRequestFrontend once it's implemented
 #include "net/EPollHandler.hpp"
 
 // Forward Declarations
@@ -21,12 +22,12 @@ class Connection final : public EpollHandler
 {
   private:
     Fd fd;
-    ConnectionState state;
+    ConnectionState     state;
     HttpParser http_parser;
-    std::size_t write_offset;
-    std::string write_buffer;
-    Listener &listener;
-    bool keep_alive;
+    std::size_t         write_offset;
+    std::string         write_buffer;
+    Listener            &listener;
+    bool                keep_alive;
 
   public:
     Connection() = delete;

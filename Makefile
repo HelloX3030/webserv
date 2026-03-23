@@ -1,10 +1,10 @@
-# ─── toolchain ────────────────────────────────────────────────
+# --- toolchain ---
 
 CXX      := c++
 CXXFLAGS := -Wall -Wextra -Werror -std=c++17 -MMD -MP
 LDFLAGS  :=
 
-# ─── verbosity ────────────────────────────────────────────────
+# --- verbosity ---
 # V=0 (default): silent build with informative one-line progress.
 # V=1: full command echo — every flag visible, for build debugging.
 # usage: make V=1        make V=1 debug
@@ -16,13 +16,13 @@ else
   Q :=
 endif
 
-# ─── paths ────────────────────────────────────────────────────
+# --- paths ---
 
 SRC_DIR  := src
 INC_DIR  := inc
-INCLUDES := -I $(INC_DIR)	# resolve unqualified include paths relative to include/
+INCLUDES := -I $(INC_DIR)	# resolve unqualified include paths relative to inc/
 
-# ─── variant names and objdirs ────────────────────────────────
+# --- variant names and objdirs ---
 
 NAME     := webserv
 DBG_NAME := webserv_debug
@@ -32,7 +32,7 @@ OBJ_DIR     := obj
 DBG_OBJ_DIR := obj_debug
 LKS_OBJ_DIR := obj_leaks
 
-# ─── src collection ────────────────────────────────────────
+# --- src collection ---
 # rwildcard: recursive wildcard traversal.
 # used for SRC_FILES only — H_FILES is eliminated;
 # header dependencies are derived per-TU by -MMD.
@@ -43,7 +43,7 @@ rwildcard = $(foreach d,$(wildcard $1*),\
 
 SRC_FILES := $(call rwildcard,$(SRC_DIR)/,*.cpp)
 
-# ─── precondition guard ───────────────────────────────────────
+# --- precondition guard ---
 # fail at parse time if no sources found — prevents a silent
 # hollow-binary build from an empty or mislocated src tree.
 
@@ -51,7 +51,7 @@ ifeq ($(SRC_FILES),)
   $(error no source files found under $(SRC_DIR)/)
 endif
 
-# ─── derived object and dependency lists ──────────────────────
+# --- derived object and dependency lists ---
 # := ensures immediate expansion after all inputs are defined.
 # each variant has its own object list; DEP_FILES spans all 3.
 
@@ -86,7 +86,7 @@ $(DBG_NAME): EXTRA_LDFLAGS :=
 $(LKS_NAME): EXTRA_CFLAGS  := -DDEBUG=1 -g -O0 -fno-omit-frame-pointer
 $(LKS_NAME): EXTRA_LDFLAGS :=
 
-# ─── 42-required targets ──────────────────────────────────────
+# --- 42-required targets ---
 
 all: $(NAME)
 # 1st target in file = default goal, so `make`≡ `make all`
@@ -101,7 +101,7 @@ fclean: clean
 
 re: fclean all
 
-# ─── link rules ───────────────────────────────────────────────
+# --- link rules ---
 # LDFLAGS and EXTRA_LDFLAGS carry the link-phase flags.
 # $^ expands to the full object list for this variant.
 # echo line always visible; full command gated by Q.
@@ -118,7 +118,7 @@ $(LKS_NAME): $(LKS_OBJS)
 	@echo "  LD   $@"
 	$(Q)$(CXX) $(LDFLAGS) $(EXTRA_LDFLAGS) $^ -o $@
 
-# ─── compilation rule body ────────────────────────────────────
+# --- compilation rule body ---
 # define/endef stores text; expansion deferred to phase 2.
 # EXTRA_CFLAGS expands with the target-specific value active.
 # mkdir: always @, pure infrastructure.
@@ -131,7 +131,7 @@ define COMPILE_OBJ
 $(Q)$(CXX) $(CXXFLAGS) $(EXTRA_CFLAGS) $(INCLUDES) -c $< -o $@
 endef
 
-# ─── pattern rules ────────────────────────────────────────────
+# --- pattern rules ---
 # 3 heads required: Make's pattern matching is syntactic;
 # the directory prefix cannot be a variable. shared body
 # via COMPILE_OBJ; EXTRA_CFLAGS provides variant-specific
@@ -146,20 +146,19 @@ $(DBG_OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 $(LKS_OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	$(COMPILE_OBJ)
 
-# ─── dependency inclusion ─────────────────────────────────────
-# placed after all pattern rules. .d files contain explicit
-# rules; explicit rules take precedence over pattern rules for
-# the same target. the dash suppresses errors on the first
-# build when no .d files exist yet.
+# --- dependency inclusion ---
+# placed after all pattern rules. .d files contain explicit rules;
+# explicit rules take precedence over pattern rules for the same target.
+# the dash suppresses errors on the 1st build when no .d files exist yet.
 
 -include $(DEP_FILES)
 
-# ─── variant targets ──────────────────────────────────────────
+# --- variant targets ---
 
 debug: $(DBG_NAME)
 leaks: $(LKS_NAME)
 
-# ─── variant maintenance ──────────────────────────────────────
+# --- variant maintenance ---
 # variant-specific re targets for iterating on a single variant
 # without paying the cost of cleaning all 3.
 

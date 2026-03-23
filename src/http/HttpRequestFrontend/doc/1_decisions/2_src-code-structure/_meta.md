@@ -1,0 +1,3 @@
+how to organise (structure & name) the source code implementation?
+
+derived from general programming conventions, C++ practice...
