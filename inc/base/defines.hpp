@@ -60,6 +60,7 @@ constexpr const char *EPOLL_HANDLER = "EPollHandler";
 constexpr const char *HTTP_METHOD_GET = "HttpGET";
 constexpr const char *HTTP_METHOD_POST = "HttpPOST";
 constexpr const char *HTTP_METHOD_DELETE = "HttpDELETE";
+constexpr const char *HTTP_METHOD_CGI = "HttpDELETE";
 
 // Log Msg
 constexpr const char *PARSE_SERVER_CONFIG = "Parse Server Config";

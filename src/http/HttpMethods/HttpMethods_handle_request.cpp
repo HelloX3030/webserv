@@ -146,10 +146,19 @@ HttpResponseBuilder http_handle_request(const Connection &connection, HttpMethod
     logging::log(HANDLE_REQUEST, "Resolved path=\"" + safe->string() + "\"");
 #endif
 
-    // TODO: CGI or static
 #ifdef DEBUG
-    logging::log(HANDLE_REQUEST, "Dispatching (CGI not implemented)");
+    logging::log(HANDLE_REQUEST, "Checking CGI");
 #endif
+
+    // handle cgi
+    bool is_cgi = !match.location->cgi_extension.empty() && safe->extension() == match.location->cgi_extension;
+    if (is_cgi)
+    {
+#ifdef DEBUG
+        logging::log(HANDLE_REQUEST, "Dispatching to CGI");
+#endif
+        return http_cgi(*safe, match.location->cgi_path, method, path, headers, body);
+    }
 
     // dispatch by method
     switch (method)

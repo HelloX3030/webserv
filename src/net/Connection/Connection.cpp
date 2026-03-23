@@ -69,7 +69,18 @@ void Connection::handle_event(uint32_t events)
                 }
 
                 // TODO: remove, here only for testing
-                HttpResponseBuilder result = WebServ::http_handle_request(*this, HttpMethod::POST, "/upload/test.txt", {{"Host", "localhost"}}, "Moin Moin");
+                // HttpResponseBuilder result = WebServ::http_handle_request(*this, HttpMethod::POST, "/upload/test.txt", {{"Host", "localhost"}}, "Moin Moin");
+                // std::cout << format::header("Connection::http_handle_request response_buffer_start") << std::endl;
+                // std::cout << result.to_string();
+                // std::cout << format::header("Connection::http_handle_request response_buffer_end") << std::endl;
+                HttpResponseBuilder result = WebServ::http_handle_request(
+                    *this,
+                    HttpMethod::POST,
+                    "/cgi-bin/test.py",
+                    {{"Host", "localhost"},
+                     {"Content-Type", "text/plain"}},
+                    "Hello from POST");
+
                 std::cout << format::header("Connection::http_handle_request response_buffer_start") << std::endl;
                 std::cout << result.to_string();
                 std::cout << format::header("Connection::http_handle_request response_buffer_end") << std::endl;
