@@ -7,7 +7,6 @@ LDFLAGS  :=
 # --- verbosity ---
 # V=0 (default): silent build with informative 1-line progress.
 # V=1: full command echo — every flag visible, for build debugging.
-# usage: make V=1        make V=1 debug
 
 V ?= 0
 ifeq ($(V),0)
