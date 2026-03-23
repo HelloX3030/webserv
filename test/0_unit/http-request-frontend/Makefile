@@ -1,5 +1,3 @@
-# test/0_unit/http-request-frontend/Makefile
-#
 # standalone unit test driver for HttpRequestFrontend.
 # exercises advance() directly — no I/O, no Connection, no epoll.
 #
@@ -10,23 +8,20 @@
 # the unit under test is C++17 — C++20 is a strict superset.
 
 # --- paths ---
-
 ROOT     := ../../..
 INC_DIR  := $(ROOT)/inc
 SRC_DIR  := $(ROOT)/src
 INCLUDES := -I $(INC_DIR)
 
 # --- toolchain ---
-
 CXX      := c++
 CXXFLAGS := -Wall -Wextra -Werror -std=c++20
 
 # --- sources ---
 # test driver + the TUs it exercises.
-# HttpRequestFrontend: 5 TUs (constructor/advance/reset, buffer,
-# request-line, headers, body).
+# HttpRequestFrontend: 5 TUs:
+# (constructor/advance/reset, buffer, request-line, headers, body).
 # HttpRequest: 1 TU (keepAlive, contentLength).
-
 FE_DIR := $(SRC_DIR)/http/HttpRequestFrontend
 
 SRCS := main.cpp                                    \
@@ -37,32 +32,29 @@ SRCS := main.cpp                                    \
         $(FE_DIR)/HttpRequestFrontend_4_body.cpp     \
         $(SRC_DIR)/http/HttpRequest/HttpRequest.cpp
 
-# test TUs — added as written. each registers its tests at
-# static initialisation; no edits to main.cpp needed.
+# test TUs — added manually as written.
+# each registers its tests at static initialisation;
+# no edits to main.cpp needed.
 SRCS += test_request_line.cpp	\
         test_headers.cpp
 
 # --- variant binaries ---
-
 NAME       := test_frontend
 DBG_NAME   := test_frontend_debug
 LEAKS_NAME := test_frontend_leaks
 
 # --- variant flags ---
-
 REL_FLAGS   :=
 DBG_FLAGS   := -DDEBUG=1 -g -O0 -fno-omit-frame-pointer
 LEAKS_FLAGS := -g -O0 -fno-omit-frame-pointer
 
 # --- phony declarations ---
-
 .PHONY: all clean re
 .PHONY: debug debugclean debugre
 .PHONY: leaks leaksclean leaksre
 .PHONY: run debugrun leaksrun
 
 # --- build targets ---
-
 all: $(NAME)
 
 $(NAME): $(SRCS)
@@ -79,7 +71,6 @@ $(LEAKS_NAME): $(SRCS)
 	$(CXX) $(CXXFLAGS) $(LEAKS_FLAGS) $(INCLUDES) $^ -o $@
 
 # --- clean targets ---
-
 clean:
 	$(RM) $(NAME)
 
@@ -96,7 +87,6 @@ debugre: debugclean debug
 leaksre: leaksclean leaks
 
 # --- run targets ---
-
 run: $(NAME)
 	./$(NAME)
 
