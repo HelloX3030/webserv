@@ -2,8 +2,8 @@
 #include "HttpRequestFrontend_internal.hpp"
 
 /* construction.
-max_body_size from server configuration — constant for connection
-lifetime. all other fields initialised to their pre-parse state.
+max_body_size from server configuration — constant for connection lifetime.
+all other fields initialised to their pre-parse state.
 see state machine doc invariants 1–8. */
 HttpRequestFrontend::HttpRequestFrontend(size_t max_body_size)
     : buffer_()

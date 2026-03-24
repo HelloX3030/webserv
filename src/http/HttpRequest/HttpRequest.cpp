@@ -1,10 +1,12 @@
 #include "http/HttpRequest.hpp"
 
+#include <algorithm>
+#include <cctype>
 #include <stdexcept>
 
 /* content-length header value as a signed integer.
-headers are normalised to lowercase at parse time, so the key is
-"content-length". the value must be a non-negative decimal integer;
+headers are normalised to lowercase at parse time, so the key is "content-length".
+the value must be a non-negative decimal integer;
 anything else (absent, non-numeric, negative) returns -1.
 
 callers treat -1 as "no body" — not an error at this layer. */
@@ -40,11 +42,13 @@ the Connection header if present.
 HTTP/1.1 §9.3: connections are persistent by default.
 HTTP/1.0: connections are not persistent by default.
 
-RFC 9112 section 9.3 / RFC 7230 section 6.3:
+RFC 9112 §9.3 / RFC 9110 §7.6.1:
   Connection: close     → override to non-persistent
   Connection: keep-alive → override to persistent
 
-the Connection header value is already normalised to lowercase. */
+RFC 9110 §7.6.1: connection option values are case-insensitive.
+header names are lowercased at parse time; values are not.
+normalisation to lowercase is performed here at comparison time. */
 bool HttpRequest::keepAlive() const
 {
     bool persistent = (http_version == "HTTP/1.1");
@@ -52,9 +56,12 @@ bool HttpRequest::keepAlive() const
     auto it = headers.find("connection");
     if (it != headers.end())
     {
-        if (it->second == "close")
+        std::string val = it->second;
+        std::transform(val.begin(), val.end(), val.begin(),
+                       [](unsigned char c) { return std::tolower(c); });
+        if (val == "close")
             return false;
-        if (it->second == "keep-alive")
+        if (val == "keep-alive")
             return true;
     }
     return persistent;
