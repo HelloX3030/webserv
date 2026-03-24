@@ -331,3 +331,49 @@ TEST(headers_keepalive_http10_keepalive)
     assert_eq(ParseStatus::Complete, r.status);
     ASSERT_TRUE(r.request.keepAlive());
 }
+
+TEST(headers_keepalive_connection_case_insensitive_close)
+{
+    HttpRequestFrontend fe(MAX_BODY);
+    std::string input = RL
+        + "Host: localhost\r\n"
+        + "Connection: Close\r\n"
+        + TERM;
+    ParseResult r = advance_all(fe, input);
+    assert_eq(ParseStatus::Complete, r.status);
+    ASSERT_TRUE(!r.request.keepAlive());
+}
+
+TEST(headers_keepalive_connection_case_insensitive_close_caps)
+{
+    HttpRequestFrontend fe(MAX_BODY);
+    std::string input = RL
+        + "Host: localhost\r\n"
+        + "Connection: CLOSE\r\n"
+        + TERM;
+    ParseResult r = advance_all(fe, input);
+    assert_eq(ParseStatus::Complete, r.status);
+    ASSERT_TRUE(!r.request.keepAlive());
+}
+
+TEST(headers_keepalive_connection_case_insensitive_keepalive)
+{
+    HttpRequestFrontend fe(MAX_BODY);
+    std::string input = RL_10
+        + "Connection: Keep-Alive\r\n"
+        + TERM;
+    ParseResult r = advance_all(fe, input);
+    assert_eq(ParseStatus::Complete, r.status);
+    ASSERT_TRUE(r.request.keepAlive());
+}
+
+TEST(headers_keepalive_connection_case_insensitive_keepalive_caps)
+{
+    HttpRequestFrontend fe(MAX_BODY);
+    std::string input = RL_10
+        + "Connection: KEEP-ALIVE\r\n"
+        + TERM;
+    ParseResult r = advance_all(fe, input);
+    assert_eq(ParseStatus::Complete, r.status);
+    ASSERT_TRUE(r.request.keepAlive());
+}
