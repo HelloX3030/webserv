@@ -57,7 +57,7 @@ struct ListenAddress
     bool operator==(const ListenAddress &other) const;
 };
 
-// ListenAdress now Hashable
+// ListenAddress now Hashable
 namespace std
 {
 template <>
@@ -100,17 +100,17 @@ time & confirmed in validator.
 */
 struct Location
 {
-    std::string root;
-    std::vector<std::string> index_files;
-    std::set<HttpMethod> allowed_methods; // default: {GET, POST, DELETE}
-    bool autoindex;                       // default: false
-    std::string cgi_extension;
-    std::string cgi_path;
-    std::optional<size_t> client_max_body_size; // default: std::nullopt (inherit)
-    bool upload_enable;
-    std::string upload_store;
-    std::optional<uint16_t> return_code;
-    std::string return_path;
+    std::string                 root;
+    std::vector<std::string>    index_files;
+    std::set<HttpMethod>        allowed_methods; // default: {GET, POST, DELETE}
+    bool                        autoindex;       // default: false
+    std::string                 cgi_extension;
+    std::string                 cgi_path;
+    std::optional<size_t>       client_max_body_size; // default: std::nullopt (inherit)
+    bool                        upload_enable;
+    std::string                 upload_store;
+    std::optional<uint16_t>     return_code;
+    std::string                 return_path;
 };
 
 /*

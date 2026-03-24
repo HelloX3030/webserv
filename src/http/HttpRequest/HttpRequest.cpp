@@ -5,7 +5,8 @@
 #include <stdexcept>
 
 /* content-length header value as a signed integer.
-headers are normalised to lowercase at parse time, so the key is "content-length".
+headers are normalised to lowercase at parse time,
+so the key is "content-length".
 the value must be a non-negative decimal integer;
 anything else (absent, non-numeric, negative) returns -1.
 
@@ -36,8 +37,8 @@ long HttpRequest::contentLength() const
     }
 }
 
-/* persistence is determined by the version default, overridden by
-the Connection header if present.
+/* persistence is determined by the version default,
+overridden by the Connection header if present.
 
 HTTP/1.1 §9.3: connections are persistent by default.
 HTTP/1.0: connections are not persistent by default.
