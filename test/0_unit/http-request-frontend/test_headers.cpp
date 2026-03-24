@@ -87,16 +87,32 @@ TEST(headers_empty_value)
     assert_eq(std::string(""), r.request.headers.at("x-empty"));
 }
 
-TEST(headers_duplicate_last_wins)
+TEST(headers_duplicate_comma_concat)
 {
     HttpRequestFrontend fe(MAX_BODY);
     std::string input = RL
-        + "Host: first\r\n"
-        + "Host: second\r\n"
+        + "Host: localhost\r\n"
+        + "Accept: text/html\r\n"
+        + "Accept: application/json\r\n"
         + TERM;
     ParseResult r = advance_all(fe, input);
     assert_eq(ParseStatus::Complete, r.status);
-    assert_eq(std::string("second"), r.request.headers.at("host"));
+    assert_eq(std::string("text/html, application/json"),
+              r.request.headers.at("accept"));
+}
+
+TEST(headers_duplicate_three_values)
+{
+    HttpRequestFrontend fe(MAX_BODY);
+    std::string input = RL
+        + "Host: localhost\r\n"
+        + "X-Custom: a\r\n"
+        + "X-Custom: b\r\n"
+        + "X-Custom: c\r\n"
+        + TERM;
+    ParseResult r = advance_all(fe, input);
+    assert_eq(ParseStatus::Complete, r.status);
+    assert_eq(std::string("a, b, c"), r.request.headers.at("x-custom"));
 }
 
 TEST(headers_value_with_colon)
