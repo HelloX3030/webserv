@@ -240,6 +240,46 @@ TEST(headers_content_length_at_max)
     assert_eq(std::string("12345"), r.request.body);
 }
 
+TEST(headers_content_length_duplicate_same_value)
+{
+    HttpRequestFrontend fe(MAX_BODY);
+    std::string input = RL
+        + "Host: localhost\r\n"
+        + "Content-Length: 5\r\n"
+        + "Content-Length: 5\r\n"
+        + TERM
+        + "hello";
+    ParseResult r = advance_all(fe, input);
+    assert_eq(ParseStatus::Complete, r.status);
+    assert_eq(std::string("hello"), r.request.body);
+}
+
+TEST(headers_content_length_duplicate_differing_values)
+{
+    HttpRequestFrontend fe(MAX_BODY);
+    std::string input = RL
+        + "Host: localhost\r\n"
+        + "Content-Length: 5\r\n"
+        + "Content-Length: 10\r\n"
+        + TERM;
+    ParseResult r = advance_all(fe, input);
+    assert_eq(ParseStatus::Failed, r.status);
+    assert_eq(uint16_t(400), r.error_code);
+}
+
+TEST(headers_content_length_duplicate_differing_first_larger)
+{
+    HttpRequestFrontend fe(MAX_BODY);
+    std::string input = RL
+        + "Host: localhost\r\n"
+        + "Content-Length: 100\r\n"
+        + "Content-Length: 5\r\n"
+        + TERM;
+    ParseResult r = advance_all(fe, input);
+    assert_eq(ParseStatus::Failed, r.status);
+    assert_eq(uint16_t(400), r.error_code);
+}
+
 
 // --- Transfer-Encoding: chunked branching ---
 
