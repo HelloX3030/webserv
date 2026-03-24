@@ -132,10 +132,27 @@ PhaseResult HttpRequestFrontend::parse_header_line()
 
     std::string value(trim_ows(raw_value));
 
-    /* duplicate headers: last value wins.
-    RFC 9112 §6.3.5 permits rejecting duplicate Content-Length
-    with differing values as 400; subject is silent on this.
-    last-value-wins is acceptable for webserv's scope. */
+    /* Content-Length: duplicate with differing values is a smuggling vector.
+    RFC 9110 §8.6: differing values must be rejected. same value may be
+    collapsed to one instance. we reject all duplicates for simplicity. */
+    if (name == "content-length")
+    {
+        auto it = request_.headers.find("content-length");
+        if (it != request_.headers.end())
+        {
+            if (it->second != value)
+            {
+                error_code_ = 400;
+                phase_      = ParsePhase::ERROR;
+                return PhaseResult::Failed;
+            }
+            /* same value — keep first, ignore duplicate */
+            consume_line(crlf_pos);
+            return PhaseResult::Advanced;
+        }
+    }
+
+    /* general headers: last value wins (to be changed to comma-concat). */
     request_.headers[name] = std::move(value);
 
     consume_line(crlf_pos);
