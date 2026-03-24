@@ -152,8 +152,14 @@ PhaseResult HttpRequestFrontend::parse_header_line()
         }
     }
 
-    /* general headers: last value wins (to be changed to comma-concat). */
-    request_.headers[name] = std::move(value);
+    /* general headers: comma-concat per RFC 9110 §5.3.
+    multiple field lines with the same name are combined into
+    one field value, separated by ", ". */
+    auto it = request_.headers.find(name);
+    if (it == request_.headers.end())
+        request_.headers[name] = std::move(value);
+    else
+        it->second += ", " + value;
 
     consume_line(crlf_pos);
     return PhaseResult::Advanced;
