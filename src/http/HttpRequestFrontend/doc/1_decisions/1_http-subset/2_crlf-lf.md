@@ -1,12 +1,12 @@
 ## bare LF tolerance: strict
 
-### the question
+### question
 
 RFC 9112 requires CRLF as line terminator.
 some implementations send bare LF.
 should the parser tolerate it?
 
-### the analysis
+### analysis
 
 tolerating bare LF:
 - accepts non-conformant clients
@@ -22,11 +22,11 @@ the "be liberal in what you accept" principle (Postel's law) argues for toleranc
 experience shows this creates compatibility debt —
 non-conformant implementations proliferate because they work.
 
-### the decision
+### decision
 
 strict. require CRLF. bare LF is 400 Bad Request.
 
-### the principle
+### principle
 
 strictness at boundaries prevents error propagation.
 a parser that accepts garbage encourages garbage.
