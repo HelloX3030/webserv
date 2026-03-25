@@ -1,13 +1,88 @@
 #include "base/defines.hpp"
 #include "base/logging.hpp"
 #include "http/HttpMethods.hpp"
+
+#include <cctype>
 #include <fcntl.h>
+#include <filesystem>
+#include <map>
+#include <string>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <vector>
 
 namespace WebServ
 {
+
+namespace
+{
+
+std::vector<char *> build_cgi_env(
+    const std::filesystem::path &script_path,
+    HttpMethod method,
+    const std::string &target,
+    const std::map<std::string, std::string> &headers,
+    const std::string &body)
+{
+    std::vector<std::string> env;
+
+    // REQUEST_METHOD
+    env.push_back("REQUEST_METHOD=" + to_string(method));
+
+    // QUERY_STRING
+    std::string query;
+    size_t qpos = target.find('?');
+    if (qpos != std::string::npos)
+        query = target.substr(qpos + 1);
+
+    env.push_back("QUERY_STRING=" + query);
+
+    // CONTENT_LENGTH
+    env.push_back("CONTENT_LENGTH=" + std::to_string(body.size()));
+
+    // CONTENT_TYPE
+    std::map<std::string, std::string>::const_iterator it = headers.find("Content-Type");
+
+    if (it != headers.end())
+        env.push_back("CONTENT_TYPE=" + it->second);
+
+    // SCRIPT_FILENAME
+    env.push_back("SCRIPT_FILENAME=" + script_path.string());
+
+    // CGI defaults
+    env.push_back("GATEWAY_INTERFACE=CGI/1.1");
+    env.push_back("SERVER_PROTOCOL=HTTP/1.1");
+
+    // pass HTTP headers
+    for (std::map<std::string, std::string>::const_iterator h = headers.begin(); h != headers.end(); ++h)
+    {
+        std::string key = h->first;
+        std::string value = h->second;
+
+        for (size_t i = 0; i < key.size(); ++i)
+        {
+            if (key[i] == '-')
+                key[i] = '_';
+            else
+                key[i] = std::toupper(static_cast<unsigned char>(key[i]));
+        }
+
+        env.push_back("HTTP_" + key + "=" + value);
+    }
+
+    // convert to char**
+    std::vector<char *> envp;
+
+    for (size_t i = 0; i < env.size(); ++i)
+        envp.push_back(const_cast<char *>(env[i].c_str()));
+
+    envp.push_back(NULL);
+
+    return envp;
+}
+
+} // anonymous namespace
 
 HttpResponseBuilder http_cgi(
     const std::filesystem::path &script_path,
@@ -17,6 +92,7 @@ HttpResponseBuilder http_cgi(
     const std::map<std::string, std::string> &headers,
     const std::string &body)
 {
+
 #ifdef DEBUG
     logging::log(HTTP_METHOD_CGI, "script=\"" + script_path.string() + "\" interpreter=\"" + interpreter + "\"");
 #endif
@@ -29,6 +105,8 @@ HttpResponseBuilder http_cgi(
 #endif
         return HttpResponseBuilder(404);
     }
+
+    std::vector<char *> envp = build_cgi_env(script_path, method, target, headers, body);
 
     int in_pipe[2];
     int out_pipe[2];
@@ -55,16 +133,10 @@ HttpResponseBuilder http_cgi(
         argv[1] = const_cast<char *>(script_path.c_str());
         argv[2] = NULL;
 
-        // TODO build envp
-        char *envp[] = {NULL};
-        (void)method;
-        (void)target;
-        (void)headers;
-
-        execve(argv[0], argv, envp);
+        execve(argv[0], argv, envp.data());
 
         // ---- exec failed ----
-        _exit(1);
+        _exit(127);
     }
 
     close(in_pipe[0]);
