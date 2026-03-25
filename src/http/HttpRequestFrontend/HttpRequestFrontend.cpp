@@ -1,5 +1,6 @@
 #include "http/HttpRequestFrontend.hpp"
 #include "HttpRequestFrontend_internal.hpp"
+#include <cassert>
 
 /* construction.
 max_body_size from server configuration — constant for connection lifetime.
@@ -32,6 +33,9 @@ each phase parser returns PhaseResult:
     Failed   → parse error, error_code_ set, return Failed. */
 ParseResult HttpRequestFrontend::advance(const char* data, size_t len)
 {
+    assert(phase_ != ParsePhase::COMPLETE && "advance() called after parse complete");
+    assert(phase_ != ParsePhase::ERROR && "advance() called after parse error");
+
     buffer_.append(data, len);
 
     while (true)
@@ -44,7 +48,11 @@ ParseResult HttpRequestFrontend::advance(const char* data, size_t len)
                 if (r == PhaseResult::NeedMore)
                     return {ParseStatus::Incomplete, {}, 0};
                 if (r == PhaseResult::Failed)
+                {
+                    assert(phase_ == ParsePhase::ERROR);
+                    assert(error_code_ != 0);
                     return {ParseStatus::Failed, {}, error_code_};
+                }
                 break;
             }
 
@@ -54,7 +62,11 @@ ParseResult HttpRequestFrontend::advance(const char* data, size_t len)
                 if (r == PhaseResult::NeedMore)
                     return {ParseStatus::Incomplete, {}, 0};
                 if (r == PhaseResult::Failed)
+                {
+                    assert(phase_ == ParsePhase::ERROR);
+                    assert(error_code_ != 0);
                     return {ParseStatus::Failed, {}, error_code_};
+                }
                 break;
             }
 
@@ -64,14 +76,20 @@ ParseResult HttpRequestFrontend::advance(const char* data, size_t len)
                 if (r == PhaseResult::NeedMore)
                     return {ParseStatus::Incomplete, {}, 0};
                 if (r == PhaseResult::Failed)
+                {
+                    assert(phase_ == ParsePhase::ERROR);
+                    assert(error_code_ != 0);
                     return {ParseStatus::Failed, {}, error_code_};
+                }
                 break;
             }
 
             case ParsePhase::COMPLETE:
+                assert(error_code_ == 0);
                 return {ParseStatus::Complete, request_, 0};
 
             case ParsePhase::ERROR:
+                assert(false && "unreachable: ERROR phase at loop entry");
                 return {ParseStatus::Failed, {}, error_code_};
         }
     }
@@ -94,4 +112,7 @@ void HttpRequestFrontend::reset()
     body_chunked_    = false;
     chunk_remaining_ = 0;
     chunk_phase_     = ChunkPhase::SIZE;
+
+    assert(phase_ == ParsePhase::REQUEST_LINE);
+    assert(error_code_ == 0);
 }

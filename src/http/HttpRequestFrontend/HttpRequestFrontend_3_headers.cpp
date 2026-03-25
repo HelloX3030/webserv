@@ -2,6 +2,7 @@
 #include "HttpRequestFrontend_internal.hpp"
 
 #include <algorithm>
+#include <cassert>
 #include <cctype>
 #include <stdexcept>
 
@@ -28,6 +29,8 @@ while phase_ == HEADERS.
         remain in HEADERS; advance() loops back. */
 PhaseResult HttpRequestFrontend::parse_header_line()
 {
+    assert(phase_ == ParsePhase::HEADERS);
+
     size_t crlf_pos;
     if (!find_crlf(crlf_pos))
         return PhaseResult::NeedMore;
@@ -64,6 +67,11 @@ PhaseResult HttpRequestFrontend::parse_header_line()
             body_remaining_  = 0;
             consume_line(crlf_pos);
             phase_ = ParsePhase::BODY;
+
+            assert(phase_ == ParsePhase::BODY);
+            assert(body_chunked_ == true);
+            assert(chunk_phase_ == ChunkPhase::SIZE);
+
             return PhaseResult::Advanced;
         }
 
@@ -107,6 +115,11 @@ PhaseResult HttpRequestFrontend::parse_header_line()
         consume_line(crlf_pos);
         phase_ = (body_remaining_ == 0) ? ParsePhase::COMPLETE
                                         : ParsePhase::BODY;
+
+        assert(body_remaining_ <= max_body_size_);
+        assert(body_chunked_ == false);
+        assert(phase_ == ParsePhase::BODY || phase_ == ParsePhase::COMPLETE);
+
         return PhaseResult::Advanced;
     }
 

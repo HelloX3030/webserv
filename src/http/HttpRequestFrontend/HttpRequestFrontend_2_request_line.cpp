@@ -1,6 +1,7 @@
 #include "http/HttpRequestFrontend.hpp"
 #include "HttpRequestFrontend_internal.hpp"
 
+#include <cassert>
 #include <cctype>
 
 /* request-line phase parser.
@@ -23,6 +24,8 @@ buffer_ advanced past line;
 phase_ → HEADERS. */
 PhaseResult HttpRequestFrontend::parse_request_line()
 {
+    assert(phase_ == ParsePhase::REQUEST_LINE);
+
     size_t crlf_pos;
     if (!find_crlf(crlf_pos))
         return PhaseResult::NeedMore;
@@ -112,5 +115,11 @@ PhaseResult HttpRequestFrontend::parse_request_line()
 
     consume_line(crlf_pos);
     phase_ = ParsePhase::HEADERS;
+
+    assert(phase_ == ParsePhase::HEADERS);
+    assert(!request_.method.empty());
+    assert(!request_.uri.empty());
+    assert(!request_.http_version.empty());
+
     return PhaseResult::Advanced;
 }

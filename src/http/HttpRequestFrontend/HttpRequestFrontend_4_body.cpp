@@ -1,6 +1,7 @@
 #include "http/HttpRequestFrontend.hpp"
 #include "HttpRequestFrontend_internal.hpp"
 
+#include <cassert>
 #include <stdexcept>
 #include <string>
 
@@ -56,10 +57,14 @@ error assignment:
     decoded body exceeds max_body_size_         → 413 */
 PhaseResult HttpRequestFrontend::consume_body()
 {
+    assert(phase_ == ParsePhase::BODY);
+
     /* ── Content-Length path ── */
 
     if (!body_chunked_)
     {
+        assert(body_remaining_ <= max_body_size_);
+
         if (buffer_.size() < body_remaining_)
             return PhaseResult::NeedMore;
 
@@ -69,6 +74,9 @@ PhaseResult HttpRequestFrontend::consume_body()
         request_.body.append(buffer_, 0, body_remaining_);
         buffer_.erase(0, body_remaining_);
         phase_ = ParsePhase::COMPLETE;
+
+        assert(phase_ == ParsePhase::COMPLETE);
+
         return PhaseResult::Advanced;
     }
 
@@ -119,6 +127,10 @@ PhaseResult HttpRequestFrontend::consume_body()
 
             buffer_.erase(0, total);
             phase_ = ParsePhase::COMPLETE;
+
+            assert(phase_ == ParsePhase::COMPLETE);
+            assert(request_.body.size() <= max_body_size_);
+
             return PhaseResult::Advanced;
         }
 
@@ -135,11 +147,18 @@ PhaseResult HttpRequestFrontend::consume_body()
         consume_line(crlf_pos);
         chunk_remaining_ = chunk_size;
         chunk_phase_     = ChunkPhase::DATA;
+
+        assert(chunk_phase_ == ChunkPhase::DATA);
+        assert(chunk_remaining_ > 0);
+
         return PhaseResult::Advanced;
     }
 
     /* chunk_phase_ == ChunkPhase::DATA
     need chunk_remaining_ data bytes + trailing CRLF. */
+
+    assert(chunk_phase_ == ChunkPhase::DATA);
+    assert(chunk_remaining_ > 0);
 
     size_t need = chunk_remaining_ + CRLF_LEN;
     if (buffer_.size() < need)
@@ -158,5 +177,9 @@ PhaseResult HttpRequestFrontend::consume_body()
     request_.body.append(buffer_, 0, chunk_remaining_);
     buffer_.erase(0, need);
     chunk_phase_ = ChunkPhase::SIZE;
+
+    assert(chunk_phase_ == ChunkPhase::SIZE);
+    assert(request_.body.size() <= max_body_size_);
+
     return PhaseResult::Advanced;
 }
