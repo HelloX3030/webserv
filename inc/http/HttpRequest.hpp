@@ -17,7 +17,7 @@ struct HttpRequest
     std::map<std::string, std::string> headers;      // keys normalised to lowercase
     std::string                        body;         // raw bytes, exactly Content-Length
 
-    /*  derive persistence from http_version and Connection header.
+    /*  derive persistence from http_version & Connection header.
     HTTP/1.1: persistent by default, close if Connection: close
     HTTP/1.0: not persistent by default, persist if Connection: keep-alive */
     bool keepAlive() const;

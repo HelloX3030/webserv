@@ -1,6 +1,6 @@
 # chunked transfer encoding
 
-## the question
+## question
 
 must the server handle `Transfer-Encoding: chunked`?
 
@@ -8,7 +8,7 @@ must the server handle `Transfer-Encoding: chunked`?
 ---
 
 
-## the requirement
+## requirement
 
 42 subject (body handling):
 > chunked transfer encoding: server un-chunks before passing to CGI
@@ -24,7 +24,7 @@ chunked un-chunking is mandatory.
 ---
 
 
-## the decision
+## decision
 
 chunked transfer encoding is implemented in `consume_body()`.
 
@@ -55,6 +55,7 @@ un-chunking in the frontend is the only coherent position.
 
 
 ## wire format (RFC 9112 §7.1)
+
 ```abnf
 chunked-body = *chunk last-chunk CRLF
 chunk        = chunk-size CRLF chunk-data CRLF

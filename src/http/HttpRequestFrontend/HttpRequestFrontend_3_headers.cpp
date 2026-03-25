@@ -134,7 +134,7 @@ PhaseResult HttpRequestFrontend::parse_header_line()
 
     /* Content-Length: duplicate with differing values is a smuggling vector.
     RFC 9110 §8.6: differing values must be rejected. same value may be
-    collapsed to one instance. we reject all duplicates for simplicity. */
+    collapsed to 1 instance. we reject all duplicates for simplicity. */
     if (name == "content-length")
     {
         auto it = request_.headers.find("content-length");
@@ -154,7 +154,7 @@ PhaseResult HttpRequestFrontend::parse_header_line()
 
     /* general headers: comma-concat per RFC 9110 §5.3.
     multiple field lines with the same name are combined into
-    one field value, separated by ", ". */
+    1 field value, separated by ", ". */
     auto it = request_.headers.find(name);
     if (it == request_.headers.end())
         request_.headers[name] = std::move(value);
