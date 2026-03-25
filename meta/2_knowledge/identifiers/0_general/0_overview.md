@@ -53,11 +53,13 @@ URL and URN are subsets of URI. the distinction is semantic, not syntactic.
 ## generic syntax
 
 RFC 3986 defines a scheme-independent structure:
+
 ```
 URI = scheme ":" hier-part [ "?" query ] [ "#" fragment ]
 ```
 
-five components:
+
+5 components:
 
 | component   | role                                      |
 |-------------|-------------------------------------------|
