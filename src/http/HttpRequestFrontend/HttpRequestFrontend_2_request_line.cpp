@@ -17,8 +17,10 @@ error assignment:
     version not matching HTTP/D.D           → 400
     version HTTP/D.D but not 1.0 or 1.1    → 505
 
-on success: request_.method, request_.uri, request_.http_version
-populated; buffer_ advanced past line; phase_ → HEADERS. */
+on success:
+request_.method, request_.uri, request_.http_version populated;
+buffer_ advanced past line;
+phase_ → HEADERS. */
 PhaseResult HttpRequestFrontend::parse_request_line()
 {
     size_t crlf_pos;

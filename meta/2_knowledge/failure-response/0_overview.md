@@ -76,7 +76,7 @@ communicated via log calls at the handling site.
 ---
 
 
-## the 2 failure classes
+## 3 failure classes
 
 **fatal**: the program cannot continue.
 examples: config file absent, config structurally invalid, epoll
@@ -93,6 +93,16 @@ the distinction determines propagation strategy:
 fatal failures use `throw` because they must escape deep call chains.
 recoverable failures are handled in-place because the program
 continues and the event loop must not be interrupted.
+
+
+#### UPCOMING: ####
+Assertions introduce a third class
+
+class: defect
+nature: programmer violated invariant
+response: abort immediately (debug); undefined behaviour (release)
+
+This is not error handling. A violated assertion means the code is wrong, not that inputs are bad.
 
 
 ---
@@ -136,7 +146,7 @@ see: observability/webserv_log-sys/2_error-formats.md
 
 ## propagation mechanism
 
-`std::runtime_error`, the exception hierarchy, 
+`std::runtime_error`, the exception hierarchy,
 and the throw/catch pattern in detail:
 
 see: failure-response/1_propagation.md
