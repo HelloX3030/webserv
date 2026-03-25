@@ -2,9 +2,16 @@
 
 #include <cstddef>
 
-/* CRLF: the HTTP/1.1 line terminator (RFC 9112 section 2.2).
-carriage return ('\r', 0x0D) followed by line feed ('\n', 0x0A). */
+/* CRLF: the HTTP/1.1 line terminator (RFC 9112 section 2.2):
+carriage return ('\r', 0x0D)
+followed by line feed ('\n', 0x0A). */
 constexpr std::size_t CRLF_LEN = 2;  // sizeof '\r' + sizeof '\n'
+
+/* input size limits — DoS protection.
+not configurable: no legitimate client exceeds these.
+values follow nginx/Apache industry defaults. */
+constexpr std::size_t MAX_REQUEST_LINE = 8192;  // method SP uri SP version
+constexpr std::size_t MAX_HEADER_BYTES = 32768; // total header section
 
 // ctrl flow between phase parsers
 enum class PhaseResult
@@ -20,4 +27,4 @@ enum class ChunkPhase
 {
     SIZE, // waiting for hex chunk-size CRLF
     DATA  // consuming chunk_remaining_ bytes, then CRLF
-}; 
+};

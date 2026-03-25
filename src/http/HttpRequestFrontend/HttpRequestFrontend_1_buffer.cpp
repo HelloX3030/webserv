@@ -1,6 +1,8 @@
 #include "http/HttpRequestFrontend.hpp"
 #include "HttpRequestFrontend_internal.hpp"
 
+#include <cassert>
+
 /* scan buffer_ for CRLF ("\r\n").
 on success: pos set to index of '\r', returns true.
 on failure: pos unchanged, returns false.
@@ -28,6 +30,8 @@ bool HttpRequestFrontend::find_crlf(size_t& pos) const
 precondition: find_crlf() returned true with this crlf_pos. */
 std::string_view HttpRequestFrontend::extract_line(size_t crlf_pos) const
 {
+    assert(crlf_pos + CRLF_LEN <= buffer_.size());
+
     return std::string_view(buffer_.data(), crlf_pos);
 }
 
@@ -36,5 +40,7 @@ called after successfully parsing a line.
 what remains in buffer_ is unparsed input for subsequent phases. */
 void HttpRequestFrontend::consume_line(size_t crlf_pos)
 {
+    assert(crlf_pos + CRLF_LEN <= buffer_.size());
+
     buffer_.erase(0, crlf_pos + CRLF_LEN);
 }

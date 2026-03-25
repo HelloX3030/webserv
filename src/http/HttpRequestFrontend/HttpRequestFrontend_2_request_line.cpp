@@ -5,18 +5,19 @@
 #include <cctype>
 
 /* request-line phase parser.
-RFC 9112 section 3: request-line = method SP request-target SP HTTP-version CRLF
+RFC 9112 section 3:
+request-line = method SP request-target SP HTTP-version CRLF
 
 the line is a flat byte sequence. structure is recovered by locating
 exactly 2 SP separators, yielding 3 tokens. no token may be empty;
 no SP may be doubled or leading/trailing (strict, per RFC 9112 section 3).
 
 error assignment:
-    token count != 3, empty token, extra SP  → 400
-    non-empty unknown method                 → 501
-    uri not beginning with '/'              → 400
-    version not matching HTTP/D.D           → 400
-    version HTTP/D.D but not 1.0 or 1.1    → 505
+    token count != 3, empty token, extra SP     |   400
+    non-empty unknown method                    |   501
+    uri not beginning with '/'                  |   400
+    version not matching HTTP/D.D               |   400
+    version HTTP/D.D but not 1.0 or 1.1         |   505
 
 on success:
 request_.method, request_.uri, request_.http_version populated;
@@ -28,7 +29,26 @@ PhaseResult HttpRequestFrontend::parse_request_line()
 
     size_t crlf_pos;
     if (!find_crlf(crlf_pos))
+    {
+        /* no CRLF yet. if buffer exceeds max line + terminator size,
+        no valid request-line can fit — reject immediately.
+        RFC 9110 specifies no limit; 8192 follows nginx/Apache defaults. */
+        if (buffer_.size() >= MAX_REQUEST_LINE + CRLF_LEN)
+        {
+            error_code_ = 414;
+            phase_      = ParsePhase::ERROR;
+            return PhaseResult::Failed;
+        }
         return PhaseResult::NeedMore;
+    }
+
+    /* CRLF found. crlf_pos is line length (excluding terminator). */
+    if (crlf_pos > MAX_REQUEST_LINE)
+    {
+        error_code_ = 414;
+        phase_      = ParsePhase::ERROR;
+        return PhaseResult::Failed;
+    }
 
     std::string_view line = extract_line(crlf_pos);
 

@@ -35,6 +35,18 @@ PhaseResult HttpRequestFrontend::parse_header_line()
     if (!find_crlf(crlf_pos))
         return PhaseResult::NeedMore;
 
+    /* check cumulative header size before processing.
+    line length = crlf_pos, plus CRLF terminator.
+    RFC 6585 §5: 431 if header section exceeds limit. */
+    size_t line_bytes = crlf_pos + CRLF_LEN;
+    if (header_bytes_ + line_bytes > MAX_HEADER_BYTES)
+    {
+        error_code_ = 431;
+        phase_      = ParsePhase::ERROR;
+        return PhaseResult::Failed;
+    }
+    header_bytes_ += line_bytes;
+
     std::string_view line = extract_line(crlf_pos);
 
     /* empty line: the blank CRLF terminating the header section. */

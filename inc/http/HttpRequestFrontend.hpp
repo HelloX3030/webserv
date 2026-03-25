@@ -62,6 +62,7 @@ private: // --- INTERNAL: implementation detail
     // advances monotonically (except `reset()`)
     HttpRequest request_;           // built incrementally
     size_t      body_remaining_;    // bytes still expected
+    size_t      header_bytes_;      // cumulative bytes consumed in header section
     uint16_t    error_code_;        // set on ERROR transition
     size_t      max_body_size_;     // from config, for 413 detection
     bool        body_chunked_;      // Transfer-Encoding: chunked present

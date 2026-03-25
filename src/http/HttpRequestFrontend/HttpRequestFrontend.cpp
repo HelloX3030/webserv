@@ -11,6 +11,7 @@ HttpRequestFrontend::HttpRequestFrontend(size_t max_body_size)
     , phase_(ParsePhase::REQUEST_LINE)
     , request_()
     , body_remaining_(0)
+    , header_bytes_(0)
     , error_code_(0)
     , max_body_size_(max_body_size)
     , body_chunked_(false)
@@ -108,6 +109,7 @@ void HttpRequestFrontend::reset()
     phase_           = ParsePhase::REQUEST_LINE;
     request_         = HttpRequest{};
     body_remaining_  = 0;
+    header_bytes_ = 0;
     error_code_      = 0;
     body_chunked_    = false;
     chunk_remaining_ = 0;
