@@ -1,4 +1,4 @@
-how is Content-Length known?
+How is Content-Length known?
 
 HTTP does not automatically compute Content-Length. The sender must provide it.
 
@@ -28,6 +28,6 @@ If the client says 13 and sends 20, we consume 13 and leave 7 bytes in the buffe
 
 This is why Content-Length accuracy is the client's responsibility. The protocol trusts it. The parser enforces it.
 
-For chunked encoding (not implementing in WebServ), there's no Content-Length —
+For chunked encoding, there's no Content-Length —
 the body is sent in chunks, each prefixed with its size, terminated by a zero-length chunk.
 This allows streaming without knowing total size upfront.

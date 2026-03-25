@@ -75,6 +75,7 @@ for requests, `start-line` is `request-line`.
 ## request line
 
 from RFC 9112 section 3:
+
 ```abnf
 request-line   = method SP request-target SP HTTP-version
 
@@ -83,7 +84,9 @@ request-target = origin-form / absolute-form / authority-form / asterisk-form
 HTTP-version   = "HTTP/" DIGIT "." DIGIT
 ```
 
+
 webserv implements origin-form only:
+
 ```abnf
 origin-form    = absolute-path [ "?" query ]
 absolute-path  = 1*( "/" segment )
@@ -142,8 +145,7 @@ body length determined by:
 3. connection close: read until EOF (HTTP/1.0 fallback).
 
 precedence matters: Transfer-Encoding takes priority over
-Content-Length (RFC 9112 §6.1). if both present, Content-Length
-is ignored.
+Content-Length (RFC 9112 §6.1). if both present, Content-Length is ignored.
 
 webserv implements Content-Length and chunked Transfer-Encoding.
 absence of both with no body indication: body is empty.
@@ -210,11 +212,9 @@ CRLF           = %x0D %x0A
 
 NB.
 
-    OCTET — from Latin octo (eight).
-    means 8-bit byte.
+    OCTET — from Latin octo (eight). means 8-bit byte.
     the term exists because "byte" was historically ambiguous (some architectures had 6-bit or 9-bit bytes).
-    "octet" is unambiguous: exactly 8 bits.
-    used in IETF RFCs for precision.
+    "octet" is unambiguous: exactly 8 bits. used in IETF RFCs for precision.
 
     octal — base-8 numeral system.
     unrelated to OCTET except shared etymology.

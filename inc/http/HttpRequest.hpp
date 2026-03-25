@@ -5,7 +5,7 @@
 #include <string>
 
 /*
-structured request passed to executor after parsing completes.
+structured request passed to executor after parsing completion.
 fields populated by HttpRequestFrontend.
 body is raw — no interpretation.
 */

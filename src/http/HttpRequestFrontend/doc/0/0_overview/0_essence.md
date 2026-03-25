@@ -2,8 +2,9 @@
 
 ## ontology
 
-a stateful parser that transforms incrementally-arriving bytes into
-a structured HTTP request.
+a stateful parser
+that transforms incrementally-arriving bytes
+into a structured HTTP request.
 
 bytes arrive over a socket in arbitrary chunks. the complete request
 is not available at once. between `read()` calls, something must
