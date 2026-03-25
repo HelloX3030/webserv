@@ -3,8 +3,6 @@
 what the frontend promises.
 failure is deviation from this specification.
 
-upstream: `meta/2_knowledge/failure/0_general/0_ontology.md`
-
 
 ---
 
@@ -37,7 +35,7 @@ ParseResult = Complete HttpRequest
             | Failed ErrorCode
 ```
 
-3 outcomes, exhaustive and mutually exclusive:
+3 outcomes, mutually exclusive & exhaustive:
 
 `Complete`: the byte stream contained a complete, valid HTTP request.
 the `HttpRequest` struct is fully populated. Connection may proceed
@@ -52,17 +50,15 @@ parsing cannot continue. the `ErrorCode` (400, 413, 501, 505) identifies
 the violation class. Connection sends the corresponding error response
 and closes or resets.
 
-there is no fourth case. the function always returns one of these.
-
 
 ---
 
 
 ## what "failure" means here
 
-from the ontology: failure is deviation from contract.
+failure is deviation from contract.
 
-for this component, "failure" has two distinct meanings:
+for this component, "failure" has 2 distinct meanings:
 
 **protocol failure**: the input violates HTTP. the frontend returns
 `Failed ErrorCode`. this is correct operation. the component
@@ -72,6 +68,7 @@ did not fail; the input did.
 **component failure**: the frontend itself malfunctions. it enters an
 impossible state, violates its own invariants, produces incorrect
 output for valid input. this is a bug. the code is wrong.
+
 
 the distinction matters:
 - protocol failure: expected, handled, returns error code
@@ -95,8 +92,8 @@ exhaustion) are invisible here.
 `ErrorCode`. it does not send responses, close connections, or log.
 those are Connection's responsibilities.
 
-the frontend is a pure transformation in the middle. its contract is
-narrow: bytes in, parse result out. nothing else.
+the frontend is a pure transformation in the middle. its contract is narrow:
+bytes in, parse result out. nothing else.
 
 
 ---
@@ -110,8 +107,8 @@ properties that must hold if the code is correct:
 REQUEST_LINE → HEADERS → BODY → COMPLETE (or ERROR).
 it never moves backward except via `reset()`.
 
-`body_remaining_` never exceeds `max_body_size_`. the check happens
-at the HEADERS → BODY transition.
+`body_remaining_` never exceeds `max_body_size_`.
+the check happens at the HEADERS → BODY transition.
 
 `buffer_` indices are always within bounds. `extract_line()` and
 `consume_line()` operate on positions returned by `find_crlf()`.
