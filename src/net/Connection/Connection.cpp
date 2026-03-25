@@ -82,10 +82,10 @@ void Connection::handle_event(uint32_t events)
                 std::cout << format::header("Connection::http_handle_request response_buffer_end") << std::endl;
 
                 // Test bash CGI
-                result = WebServ::http_handle_request(*this, HttpMethod::POST, "/cgi-bin/test-bash.sh", {{"Host", "localhost"}, {"Content-Type", "text/plain"}}, "Hello from POST");
-                std::cout << format::header("Connection::http_handle_request response_buffer_start") << std::endl;
-                std::cout << result.to_string();
-                std::cout << format::header("Connection::http_handle_request response_buffer_end") << std::endl;
+                // result = WebServ::http_handle_request(*this, HttpMethod::POST, "/cgi-bin/test-bash.sh", {{"Host", "localhost"}, {"Content-Type", "text/plain"}}, "Hello from POST");
+                // std::cout << format::header("Connection::http_handle_request response_buffer_start") << std::endl;
+                // std::cout << result.to_string();
+                // std::cout << format::header("Connection::http_handle_request response_buffer_end") << std::endl;
             }
             else if (n == 0)
             {

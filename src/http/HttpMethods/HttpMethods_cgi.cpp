@@ -94,7 +94,33 @@ HttpResponseBuilder http_cgi(
 {
 
 #ifdef DEBUG
-    logging::log(HTTP_METHOD_CGI, "script=\"" + script_path.string() + "\" interpreter=\"" + interpreter + "\"");
+    logging::log(HTTP_METHOD_CGI, "===== CGI INPUT BEGIN =====");
+
+    logging::log(HTTP_METHOD_CGI, "script_path=\"" + script_path.string() + "\"");
+
+    logging::log(HTTP_METHOD_CGI, "interpreter=\"" + interpreter + "\"");
+
+    logging::log(HTTP_METHOD_CGI, "method=\"" + to_string(method) + "\"");
+
+    logging::log(HTTP_METHOD_CGI, "target=\"" + target + "\"");
+
+    logging::log(HTTP_METHOD_CGI, "headers_count=" + std::to_string(headers.size()));
+
+    for (std::map<std::string, std::string>::const_iterator it = headers.begin();
+         it != headers.end();
+         ++it)
+    {
+        logging::log(HTTP_METHOD_CGI, "header: \"" + it->first + "\"=\"" + it->second + "\"");
+    }
+
+    logging::log(HTTP_METHOD_CGI, "body_size=" + std::to_string(body.size()));
+
+    if (!body.empty())
+    {
+        logging::log(HTTP_METHOD_CGI, "body=\"" + body + "\"");
+    }
+
+    logging::log(HTTP_METHOD_CGI, "===== CGI INPUT END =====");
 #endif
 
     // ---- check script exists ----
