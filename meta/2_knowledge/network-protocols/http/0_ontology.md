@@ -69,9 +69,9 @@ HTTP operates on resources.
 a resource is any addressable entity: a document, an image, a service,
 an abstract concept, a computation. resources are identified by URIs.
 
-```
-URI  →  resource  →  representation
-```
+    ```
+    URI  →  resource  →  representation
+    ```
 
     the URI identifies the resource.
     the resource is the abstract entity.
@@ -121,14 +121,14 @@ it does not define representation format (that is application-level)
 nor transport reliability (that is TCP's concern)
 nor security (that is TLS's concern).
 
-each layer has a single responsibility. HTTP's responsibility:
+HTTP's single responsibility:
 structure requests and responses for resource operations.
 
 
 ---
 
 
-## what HTTP is not
+## what HTTP is NOT
 
 **not a transport protocol** — TCP provides reliable delivery.
 HTTP consumes that service; it does not provide it.

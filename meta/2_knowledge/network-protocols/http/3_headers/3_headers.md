@@ -1,3 +1,0 @@
-# header field semantics.
-# not an exhaustive list — the important ones.
-# Content-Length, Host, Content-Type, Connection...
