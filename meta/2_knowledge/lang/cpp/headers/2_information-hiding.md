@@ -22,13 +22,13 @@ into Modules" (1972). the paper that founded modular programming.
 
 3 concrete consequences of exposing implementation:
 
-    coupling: 
+    coupling:
     clients depend on internals. changing internals breaks clients.
     the more exposed, the more breakage per change.
 
-    recompilation: 
+    recompilation:
     in C++, any change to a header triggers recompilation of
-    all translation units that include it. 
+    all translation units that include it.
     exposed internals = more header changes = slower builds.
 
     cognitive load: readers must distinguish "what I can use" from "what
@@ -58,8 +58,8 @@ private:
 
 `private` hides members from clients. they cannot name or use them.
 
-limitation: private members still appear in the header. 
-clients cannot use them, but can see them. 
+limitation: private members still appear in the header.
+clients cannot use them, but can see them.
 changes trigger recompilation.
 
 
@@ -70,7 +70,7 @@ changes trigger recompilation.
 namespace {
     enum class TokenType { STRING, LBRACE, RBRACE, END };
     struct Token { TokenType type; std::string value; };
-    
+
     Token peek(const std::vector<Token>& tokens, size_t pos) { ... }
 }
 ```
@@ -144,14 +144,14 @@ choose based on:
 
 the boundary is not syntactic but semantic.
 
-interface: what the module promises. stable contract. 
+interface: what the module promises. stable contract.
 clients depend on this.
 
-implementation: how the promise is fulfilled. can change. 
+implementation: how the promise is fulfilled. can change.
 clients must not depend on this.
 
 a private member in a header is syntactically hidden (cannot use) but
-not physically hidden (can see, triggers recompilation). 
+not physically hidden (can see, triggers recompilation).
 PIMPL achieves both.
 
 
@@ -159,6 +159,13 @@ PIMPL achieves both.
 
 
 ## other languages
+
+Agda: similar to Haskell. modules with explicit exports. since Agda is
+dependently typed and total, "hiding" also protects invariants — clients
+cannot construct invalid states if constructors are hidden.
+
+
+
 
 Haskell: module system with explicit export lists. unexported names
 are invisible to importers. no header/source split — the module itself
@@ -172,6 +179,8 @@ tokenise :: String -> [Token]  -- hidden
 parse :: String -> Config    -- visible
 ```
 
+
+
 Rust: privacy is per-item, default private. `pub` opts into visibility.
 module boundaries enforce hiding. no header files — the source is the
 interface, compiler extracts what's public.
@@ -180,22 +189,17 @@ interface, compiler extracts what's public.
 mod parser {
     struct Token { ... }           // private to module
     fn tokenise(s: &str) -> Vec<Token> { ... }  // private
-    
+
     pub fn parse(path: &str) -> Config { ... }  // public
 }
 ```
 
-Agda: similar to Haskell. modules with explicit exports. since Agda is
-dependently typed and total, "hiding" also protects invariants — clients
-cannot construct invalid states if constructors are hidden.
 
 
 ---
 
 
 ## the deeper point
-
-information hiding is not about secrecy, but about freedom.
 
 hidden implementation = freedom to change without coordination.
 exposed implementation = every change requires client agreement.

@@ -3,7 +3,7 @@
 #include "HttpRequest.hpp"
 
 #include <cstddef>
-#include <cstdint>
+#include <cstdint>  // provides fixed-width integer types
 #include <string>
 
 // forward declarations — definitions in HttpRequestFrontend_internal.hpp

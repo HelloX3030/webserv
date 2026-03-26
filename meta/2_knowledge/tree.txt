@@ -145,13 +145,16 @@ meta/2_knowledge$ tree
 ├── network-protocols
 │   ├── http
 │   │   ├── 0_ontology.md
-│   │   ├── 1_msg-structure.md
+│   │   ├── 1_msg-structure
+│   │   │   ├── 0_overview.md
+│   │   │   └── body.md
 │   │   ├── 2_methods
 │   │   │   ├── 0_overview.md
 │   │   │   ├── DELETE.md
 │   │   │   ├── GET.md
 │   │   │   └── POST.md
-│   │   ├── 3_headers.md
+│   │   ├── 3_headers
+│   │   │   └── 0_overview.md
 │   │   ├── 4_status-codes.md
 │   │   ├── 5_connection.md
 │   │   ├── 6_versions.md
