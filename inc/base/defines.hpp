@@ -45,6 +45,7 @@ constexpr const char *READ = "Read";
 constexpr const char *WRITE = "Write";
 constexpr const char *CLOSE = "Close";
 constexpr const char *UNKNOWN = "Unknown";
+constexpr const char *HOST = "Host";
 
 // Log Titles
 constexpr const char *DISPLAY = "Display";
@@ -53,11 +54,13 @@ constexpr const char *CONFIG_FRONTEND = "ConfigFrontend";
 constexpr const char *SERVER = "Server";
 constexpr const char *LISTENER = "Listener";
 constexpr const char *CONNECTION = "Connection";
+constexpr const char *HANDLE_REQUEST = "HandleRequest";
 constexpr const char *HTTP_PARSER = "HttpParser";
 constexpr const char *EPOLL_HANDLER = "EPollHandler";
 constexpr const char *HTTP_METHOD_GET = "HttpGET";
 constexpr const char *HTTP_METHOD_POST = "HttpPOST";
 constexpr const char *HTTP_METHOD_DELETE = "HttpDELETE";
+constexpr const char *HTTP_METHOD_CGI = "HttpCGI";
 
 // Log Msg
 constexpr const char *PARSE_SERVER_CONFIG = "Parse Server Config";

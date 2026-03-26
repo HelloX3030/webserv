@@ -1,3 +1,4 @@
+
 #include "base/defines.hpp"
 #include "base/logging.hpp"
 #include "base/utils.hpp"
@@ -7,115 +8,13 @@
 namespace WebServ
 {
 
-HttpResponseBuilder http_post(const ServerConfig &config, const std::string &path, const std::string &content)
+HttpResponseBuilder http_post(const std::filesystem::path &resolved_path, const std::string &content)
 {
 #ifdef DEBUG
-    logging::log(HTTP_METHOD_POST, "Path=\"" + path + "\" content=\"" + content + "\"");
+    logging::log(HTTP_METHOD_POST, "resolved_path=\"" + resolved_path.string() + "\" content=\"" + content + "\"");
 #endif
 
-    // find matching location (longest prefix match)
-    const Location *location = NULL;
-    std::string location_prefix;
-
-    for (std::map<std::string, Location>::const_iterator it = config.locations.begin();
-         it != config.locations.end(); ++it)
-    {
-        if (path.find(it->first) == 0)
-        {
-            if (it->first.size() > location_prefix.size())
-            {
-                location = &it->second;
-                location_prefix = it->first;
-            }
-        }
-    }
-
-    if (!location)
-    {
-#ifdef DEBUG
-        logging::log(HTTP_METHOD_POST, "No matching location -> 404");
-#endif
-        return HttpResponseBuilder(404);
-    }
-
-#ifdef DEBUG
-    logging::log(HTTP_METHOD_POST, "Matched location prefix=\"" + location_prefix + "\" root=\"" + location->root + "\"");
-#endif
-
-    // check allowed methods
-    if (location->allowed_methods.count(HttpMethod::POST) == 0)
-    {
-#ifdef DEBUG
-        logging::log(HTTP_METHOD_POST, "POST not allowed in location -> 405");
-#endif
-        return HttpResponseBuilder(405);
-    }
-
-    // check location body size override
-    if (location->client_max_body_size.has_value())
-    {
-#ifdef DEBUG
-        logging::log(HTTP_METHOD_POST, "Location body size limit=" + std::to_string(location->client_max_body_size.value()));
-#endif
-
-        if (content.size() > location->client_max_body_size.value())
-        {
-#ifdef DEBUG
-            logging::log(HTTP_METHOD_POST, "Body too large -> 413");
-#endif
-            return HttpResponseBuilder(413);
-        }
-    }
-
-    // determine base directory
-    std::string base;
-
-    if (location->upload_enable && !location->upload_store.empty())
-    {
-        base = location->upload_store;
-#ifdef DEBUG
-        logging::log(HTTP_METHOD_POST, "Using upload_store base=\"" + base + "\"");
-#endif
-    }
-    else
-    {
-        base = location->root;
-#ifdef DEBUG
-        logging::log(HTTP_METHOD_POST, "Using root base=\"" + base + "\"");
-#endif
-    }
-
-    // remove location prefix
-    std::string relative = path.substr(location_prefix.size());
-    if (!relative.empty() && relative[0] == '/')
-        relative = relative.substr(1);
-
-#ifdef DEBUG
-    logging::log(HTTP_METHOD_POST, "Relative path=\"" + relative + "\"");
-#endif
-
-    std::string file_path = base + "/" + relative;
-
-#ifdef DEBUG
-    logging::log(HTTP_METHOD_POST, "Constructed file_path=\"" + file_path + "\"");
-#endif
-
-    // traversal protection
-    auto safe = utils::resolve_path(base, relative);
-
-    if (!safe)
-    {
-#ifdef DEBUG
-        logging::log(HTTP_METHOD_POST, "resolve_path rejected traversal -> 403");
-#endif
-        return HttpResponseBuilder(403);
-    }
-
-#ifdef DEBUG
-    logging::log(HTTP_METHOD_POST, "Resolved safe path=\"" + safe->string() + "\"");
-#endif
-
-    auto parent = safe->parent_path();
+    auto parent = resolved_path.parent_path();
 
 #ifdef DEBUG
     logging::log(HTTP_METHOD_POST, "Parent path=\"" + parent.string() + "\"");
@@ -129,7 +28,7 @@ HttpResponseBuilder http_post(const ServerConfig &config, const std::string &pat
         return HttpResponseBuilder(409);
     }
 
-    if (std::filesystem::is_directory(*safe))
+    if (std::filesystem::is_directory(resolved_path))
     {
 #ifdef DEBUG
         logging::log(HTTP_METHOD_POST, "Target path is a directory -> 403");
@@ -137,14 +36,13 @@ HttpResponseBuilder http_post(const ServerConfig &config, const std::string &pat
         return HttpResponseBuilder(403);
     }
 
-    bool existed = std::filesystem::exists(*safe);
+    bool existed = std::filesystem::exists(resolved_path);
 
 #ifdef DEBUG
     logging::log(HTTP_METHOD_POST, std::string("File existed=") + (existed ? "true" : "false"));
 #endif
 
-    // write file
-    std::ofstream file(safe->c_str(), std::ios::binary);
+    std::ofstream file(resolved_path.c_str(), std::ios::binary);
 
     if (!file.is_open())
     {

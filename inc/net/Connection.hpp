@@ -46,7 +46,7 @@ class Connection final : public EpollHandler
     std::string to_string() const override;
 
     // Functions
-    [[nodiscard]] const ServerConfig &get_default_server() const;
+    [[nodiscard]] const ServerConfig &get_default_server_config() const;
     [[nodiscard]] const ServerConfig &get_server_config(const std::string &host) const;
     void set_keep_alive();
 };

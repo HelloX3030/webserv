@@ -40,82 +40,15 @@ static HttpResponseBuilder serve_file(const std::filesystem::path &file_path)
     return res;
 }
 
-[[nodiscard]] HttpResponseBuilder http_get(const ServerConfig &config, const std::string &path)
+[[nodiscard]] HttpResponseBuilder
+http_get(const std::filesystem::path &resolved_path,
+         const std::vector<std::string> &index_files)
 {
 #ifdef DEBUG
-    logging::log(HTTP_METHOD_GET, "Path=\"" + path + "\"");
+    logging::log(HTTP_METHOD_GET, "resolved_path=\"" + resolved_path.string() + "\"");
 #endif
 
-    // find matching location (longest prefix match)
-    const Location *location = NULL;
-    std::string location_prefix;
-
-    for (std::map<std::string, Location>::const_iterator it = config.locations.begin();
-         it != config.locations.end(); ++it)
-    {
-        if (path.find(it->first) == 0)
-        {
-            if (it->first.size() > location_prefix.size())
-            {
-                location = &it->second;
-                location_prefix = it->first;
-            }
-        }
-    }
-
-    if (!location)
-    {
-#ifdef DEBUG
-        logging::log(HTTP_METHOD_GET, "No matching location -> 404");
-#endif
-        return HttpResponseBuilder(404);
-    }
-
-#ifdef DEBUG
-    logging::log(HTTP_METHOD_GET, "Matched location prefix=\"" + location_prefix + "\" root=\"" + location->root + "\"");
-#endif
-
-    // check allowed methods
-    if (location->allowed_methods.count(HttpMethod::GET) == 0)
-    {
-#ifdef DEBUG
-        logging::log(HTTP_METHOD_GET, "GET not allowed in location -> 405");
-#endif
-        return HttpResponseBuilder(405);
-    }
-
-    // determine base directory
-    std::string base = location->root;
-
-#ifdef DEBUG
-    logging::log(HTTP_METHOD_GET, "Using root base=\"" + base + "\"");
-#endif
-
-    // remove location prefix
-    std::string relative = path.substr(location_prefix.size());
-    if (!relative.empty() && relative[0] == '/')
-        relative = relative.substr(1);
-
-#ifdef DEBUG
-    logging::log(HTTP_METHOD_GET, "Relative path=\"" + relative + "\"");
-#endif
-
-    // traversal protection
-    auto safe = utils::resolve_path(base, relative);
-
-    if (!safe)
-    {
-#ifdef DEBUG
-        logging::log(HTTP_METHOD_GET, "resolve_path rejected traversal -> 403");
-#endif
-        return HttpResponseBuilder(403);
-    }
-
-#ifdef DEBUG
-    logging::log(HTTP_METHOD_GET, "Resolved safe path=\"" + safe->string() + "\"");
-#endif
-
-    if (!std::filesystem::exists(*safe))
+    if (!std::filesystem::exists(resolved_path))
     {
 #ifdef DEBUG
         logging::log(HTTP_METHOD_GET, "File does not exist -> 404");
@@ -124,19 +57,20 @@ static HttpResponseBuilder serve_file(const std::filesystem::path &file_path)
     }
 
     // directory handling
-    if (std::filesystem::is_directory(*safe))
+    if (std::filesystem::is_directory(resolved_path))
     {
 #ifdef DEBUG
         logging::log(HTTP_METHOD_GET, "Target is directory");
 #endif
 
         // try index files
-        for (std::vector<std::string>::const_iterator it = location->index_files.begin();
-             it != location->index_files.end(); ++it)
+        for (std::vector<std::string>::const_iterator it = index_files.begin();
+             it != index_files.end(); ++it)
         {
-            std::filesystem::path index_path = *safe / *it;
+            std::filesystem::path index_path = resolved_path / *it;
 
-            if (std::filesystem::exists(index_path))
+            if (std::filesystem::exists(index_path) &&
+                !std::filesystem::is_directory(index_path))
             {
 #ifdef DEBUG
                 logging::log(HTTP_METHOD_GET, "Serving index file \"" + index_path.string() + "\"");
@@ -151,8 +85,11 @@ static HttpResponseBuilder serve_file(const std::filesystem::path &file_path)
         return HttpResponseBuilder(403);
     }
 
-    // serve file
-    return serve_file(*safe);
+#ifdef DEBUG
+    logging::log(HTTP_METHOD_GET, "Serving file");
+#endif
+
+    return serve_file(resolved_path);
 }
 
 } // namespace WebServ
