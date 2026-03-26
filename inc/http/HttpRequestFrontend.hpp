@@ -62,30 +62,35 @@ struct HttpRequestFrontend
 
 private: // --- INTERNAL: implementation detail
 
-    // -- configuration (injected, constant) --
+    // configuration (injected, constant)
     size_t max_body_size_;
-    // -- core state machine --
+
+    // core state machine
     ParsePhase phase_;
     uint16_t   error_code_;
-    // -- input --
+
+    // input
     std::string buffer_;
-    // -- output (built incrementally) --
+
+    // output (built incrementally)
     HttpRequest request_;
-    // -- request-line / headers tracking --
+
+    // request-line / headers tracking
     size_t header_bytes_;
-    // -- body tracking (Content-Length path) --
+
+    // body tracking (Content-Length path)
     size_t body_remaining_;
-    // -- body tracking (chunked path) --
+
+    // body tracking (chunked path)
     bool       body_chunked_;
     ChunkPhase chunk_phase_;
     size_t     chunk_remaining_;
 
-
+    
     // -- phase parsers --
     PhaseResult parse_request_line();
     PhaseResult parse_header_line();
     PhaseResult consume_body();
-
 
     // -- helpers --
     bool             find_crlf(size_t& pos) const;
