@@ -7,9 +7,10 @@ that transforms incrementally-arriving bytes
 into a structured HTTP request.
 
 
-bytes arrive over a socket in arbitrary chunks. the complete request
-is not available at once. between `read()` calls, something must
-remember parse progress. this is irreducible state.
+bytes arrive over a socket in arbitrary chunks.
+the complete request is not available at once.
+between `read()` calls, something must remember parse progress.
+this is irreducible state.
 
 
 comparison with ConfigFrontend in type-theoretic notation:
