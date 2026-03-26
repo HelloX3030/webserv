@@ -3,11 +3,11 @@
 
 ## essence
 
-`explicit` prevents the compiler from using a constructor for implicit
-type conversions.
+`explicit` prevents the compiler from using a constructor
+for implicit type conversions.
 
 without `explicit`: the compiler may silently call your constructor
-to convert one type to another.
+to convert 1 type to another.
 
 with `explicit`: the programmer must write the constructor call explicitly.
 
@@ -17,29 +17,32 @@ with `explicit`: the programmer must write the constructor call explicitly.
 
 ## the problem explicit solves
 
-C++ performs implicit conversions. given:
+C++ performs implicit conversions.
 
-```cpp
-struct Seconds
-{
-    Seconds(int n) : value(n) {}
-    int value;
-};
+given:
 
-void wait(Seconds duration);
-```
+    ```cpp
+    struct Seconds
+    {
+        Seconds(int n) : value(n) {}
+        int value;
+    };
+
+    void wait(Seconds duration);
+    ```
 
 you can write:
 
-```cpp
-wait(5);  // compiles: implicit conversion int → Seconds
-```
+    ```cpp
+    wait(5);  // compiles: implicit conversion int → Seconds
+    ```
+
 
 the compiler sees: `wait` expects `Seconds`, you gave `int`.
 it finds `Seconds(int)` and calls it silently.
 `wait(5)` becomes `wait(Seconds(5))`.
 
-this is sometimes convenient, sometimes/often(?) dangerous.
+this is sometimes convenient, but can be dangerous.
 
 
 ---
@@ -47,28 +50,29 @@ this is sometimes convenient, sometimes/often(?) dangerous.
 
 ## when implicit conversion is dangerous
 
-```cpp
-struct Filepath
-{
-    Filepath(const char* path) : path_(path) {}
-    std::string path_;
-};
+    ```cpp
+    struct Filepath
+    {
+        Filepath(const char* path) : path_(path) {}
+        std::string path_;
+    };
 
-void delete_file(Filepath f);
-```
+    void delete_file(Filepath f);
+    ```
 
 now this compiles:
 
-```cpp
-delete_file("important_data.txt");  // implicit conversion
-```
+    ```cpp
+    delete_file("important_data.txt");  // implicit conversion
+    ```
+
 
 perhaps intended. but also:
 
-```cpp
-std::string name = get_user_input();
-delete_file(name.c_str());  // compiles silently
-```
+    ```cpp
+    std::string name = get_user_input();
+    delete_file(name.c_str());  // compiles silently
+    ```
 
 the programmer may not realise they're constructing a Filepath.
 the implicit conversion hides intent.
@@ -76,12 +80,12 @@ the implicit conversion hides intent.
 
 worse — overload resolution becomes unpredictable:
 
-```cpp
-void process(Filepath f);
-void process(std::string s);
+    ```cpp
+    void process(Filepath f);
+    void process(std::string s);
 
-process("hello");  // which one? depends on conversion ranking
-```
+    process("hello");  // which one? depends on conversion ranking
+    ```
 
 implicit conversions create action at a distance.
 the call site doesn't show what's happening.
@@ -92,23 +96,23 @@ the call site doesn't show what's happening.
 
 ## explicit: the solution
 
-```cpp
-struct Seconds
-{
-    explicit Seconds(int n) : value(n) {}
-    int value;
-};
+    ```cpp
+    struct Seconds
+    {
+        explicit Seconds(int n) : value(n) {}
+        int value;
+    };
 
-void wait(Seconds duration);
-```
+    void wait(Seconds duration);
+    ```
 
 now:
 
-```cpp
-wait(5);              // ERROR: no implicit conversion
-wait(Seconds(5));     // OK: explicit construction
-wait(Seconds{5});     // OK: explicit construction (brace syntax)
-```
+    ```cpp
+    wait(5);              // ERROR: no implicit conversion
+    wait(Seconds(5));     // OK: explicit construction
+    wait(Seconds{5});     // OK: explicit construction (brace syntax)
+    ```
 
 the programmer must write what they mean.
 the call site reveals intent.
@@ -147,26 +151,27 @@ there's no syntax for it. so `explicit` is redundant there.
 exception: default arguments. if a 2-argument constructor has defaults
 such that it can be called with 1 argument, `explicit` matters:
 
-```cpp
-struct Foo
-{
-    Foo(int x, int y = 0);  // can be called as Foo(5)
-};
+    ```cpp
+    struct Foo
+    {
+        Foo(int x, int y = 0);  // can be called as Foo(5)
+    };
 
-void take(Foo f);
-take(5);  // compiles: implicit conversion via Foo(5, 0)
-```
+    void take(Foo f);
+    take(5);  // compiles: implicit conversion via Foo(5, 0)
+    ```
+
 
 add `explicit`:
 
-```cpp
-struct Foo
-{
-    explicit Foo(int x, int y = 0);
-};
+    ```cpp
+    struct Foo
+    {
+        explicit Foo(int x, int y = 0);
+    };
 
-take(5);  // ERROR
-```
+    take(5);  // ERROR
+    ```
 
 
 ---

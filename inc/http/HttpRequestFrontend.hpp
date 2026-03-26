@@ -3,7 +3,7 @@
 #include "HttpRequest.hpp"
 
 #include <cstddef>
-#include <cstdint>  // provides fixed-width integer types
+#include <cstdint>
 #include <string>
 
 // forward declarations — definitions in HttpRequestFrontend_internal.hpp
@@ -12,25 +12,29 @@ enum class ChunkPhase : int;
 
 // --- PUBLIC INTERFACE for Connection ---
 
-// result status returned to Connection after each advance() call
-enum class ParseStatus
-{
-    Incomplete, // need more bytes
-    Complete,   // request fully parsed
-    Failed      // parse error, error_code set
-};
+enum class ParseStatus : int;  // forward declaration — size known
 
-// result bundle returned by advance()
+// result product type / aggregrate (C++) returned by advance()
 struct ParseResult
 {
-    ParseStatus status;
-    HttpRequest request;    // valid iff Complete
-    uint16_t    error_code; // valid iff Failed (400, 413, 501, 505)
+    ParseStatus status;     // determines control flow. switch(result.status) branches to: continue polling, dispatch, or error handling.
+    HttpRequest request;    // payload. valid iff status == Complete. Connection passes this to routing/handling logic.
+    uint16_t    error_code; // HTTP status code for error response. valid iff status == Failed. Connection uses this to construct the error response.
 };
 
-// --- INTERNAL — implementation detail, do not depend on ---
+/* result status returned to caller (Connection) after each advance() call.
+reflects caller's decision space:
+what distinct action categories exist after calling advance()? */
+enum class ParseStatus : int
+{
+    Incomplete, // no result yet, need more bytes. action: wait for more bytes, call advance() again.
+    Complete,   // request fully parsed, valid result produced. action: dispatch request to handler.
+    Failed      // unrecoverable parse error. action: respond with error, close or reset. frontend internal: error_code set
+};
+// mutually exclusive & jointly exhaustive
 
-// parse position
+// --- INTERNAL (implementation detail): do not depend on ---
+
 enum class ParsePhase
 {
     REQUEST_LINE,
