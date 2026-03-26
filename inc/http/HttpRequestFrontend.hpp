@@ -61,23 +61,31 @@ struct HttpRequestFrontend
     void        reset();
 
 private: // --- INTERNAL: implementation detail
-    // -- state --
-    std::string buffer_;            // accumulated unparsed bytes
-    ParsePhase  phase_;             // current phase/parse position
-    // advances monotonically (except `reset()`)
-    HttpRequest request_;           // built incrementally
-    size_t      body_remaining_;    // bytes still expected
-    size_t      header_bytes_;      // cumulative bytes consumed in header section
-    uint16_t    error_code_;        // set on ERROR transition
-    size_t      max_body_size_;     // from config, for 413 detection
-    bool        body_chunked_;      // Transfer-Encoding: chunked present
-    size_t      chunk_remaining_;   // bytes left in current chunk (DATA sub-phase)
-    ChunkPhase  chunk_phase_;       // sub-state within chunked BODY
+
+    // -- configuration (injected, constant) --
+    size_t max_body_size_;
+    // -- core state machine --
+    ParsePhase phase_;
+    uint16_t   error_code_;
+    // -- input --
+    std::string buffer_;
+    // -- output (built incrementally) --
+    HttpRequest request_;
+    // -- request-line / headers tracking --
+    size_t header_bytes_;
+    // -- body tracking (Content-Length path) --
+    size_t body_remaining_;
+    // -- body tracking (chunked path) --
+    bool       body_chunked_;
+    ChunkPhase chunk_phase_;
+    size_t     chunk_remaining_;
+
 
     // -- phase parsers --
     PhaseResult parse_request_line();
     PhaseResult parse_header_line();
     PhaseResult consume_body();
+
 
     // -- helpers --
     bool             find_crlf(size_t& pos) const;
