@@ -1,3 +1,8 @@
+organisation within cpp/
+Exceptions span control flow, object model (stack unwinding, destructors), and type system (exception specifications)
+
+
+
 # exceptions
 
 a mechanism for non-local transfer of control from a failure site
