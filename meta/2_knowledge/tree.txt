@@ -113,17 +113,29 @@ meta/2_knowledge$ tree
 │       └── uri.md
 ├── lang
 │   ├── cpp
+│   │   ├── 0_type-system
+│   │   │   └── note
+│   │   ├── 1_object-model
+│   │   │   └── note
+│   │   ├── 2_declarations
+│   │   │   ├── explicit-specifier.md
+│   │   │   └── _meta
+│   │   ├── 3_expressions
+│   │   │   └── note
+│   │   ├── 4_compilation-model
+│   │   │   └── note
+│   │   ├── 5_std-lib
+│   │   │   ├── map.md
+│   │   │   └── push_back.md
 │   │   ├── auto.md
 │   │   ├── exceptions.md
-│   │   ├── explicit-specifier.md
-│   │   ├── header-files.md
-│   │   ├── information-hiding.md
+│   │   ├── headers
+│   │   │   ├── 0_compilation-model.md
+│   │   │   ├── 1_c-standard-headers.md
+│   │   │   └── 2_information-hiding.md
 │   │   ├── lambdas.md
 │   │   ├── nodiscard
 │   │   ├── state-and-concurrency.md
-│   │   ├── std-lib
-│   │   │   ├── map.md
-│   │   │   └── push_back.md
 │   │   ├── storage-duration.md
 │   │   └── <<+stream-insertion-operator
 │   │       ├── ctx in Config + Log.txt
