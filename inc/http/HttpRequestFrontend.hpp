@@ -49,7 +49,7 @@ struct HttpRequestFrontend
 
     // --- PUBLIC INTERFACE for Connection ---
     // construction
-    explicit HttpRequestFrontend(size_t max_body_size);
+    explicit HttpRequestFrontend(size_t max_body_size); // sole constructor parameter (inject external dependency: configuration, not state)
 
     /* append bytes to internal buffer, advance parse state.
     return as soon as status is determinable. */
