@@ -16,7 +16,10 @@ prefer `<cXXX>` forms. use `std::size_t`, not bare `size_t`.
 ---
 
 
-## `<cstddef>`
+## examples from WebServ:
+
+
+### `<cstddef>`
 
 `std::size_t` — unsigned integer for sizes, counts, indices.
 return type of `sizeof`. used throughout the standard library.
@@ -26,10 +29,8 @@ return type of `sizeof`. used throughout the standard library.
 `std::byte` — (C++17) raw memory access.
 
 
----
 
-
-## `<cstdint>`
+### `<cstdint>`
 
 fixed-width integers: `std::int32_t`, `std::uint8_t`, etc.
 
@@ -42,12 +43,10 @@ use `int` for general arithmetic.
 
 ## transitive inclusion is fragile
 
-`<string>` may include `<cstddef>` in one implementation, not another.
+`<string>` may include `<cstddef>` in 1 implementation, not another.
 
 include every header for every symbol used directly.
 the include list is a dependency declaration.
-
-see `header-files.md`.
 
 
 ---
