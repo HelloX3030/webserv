@@ -17,7 +17,6 @@ src/http/HttpRequestFrontend/doc/
 domains & concepts to return to for deeper HTTP knowledge:
 
 ### protocol mechanics
-- chunked transfer encoding (Transfer-Encoding: chunked)
 - content negotiation (Accept, Accept-Language, Accept-Encoding)
 - conditional requests (If-Match, If-None-Match, If-Modified-Since, ETag)
 - range requests (Range, Content-Range, 206 Partial Content)

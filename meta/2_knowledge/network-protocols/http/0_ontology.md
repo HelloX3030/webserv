@@ -38,7 +38,8 @@ over an internetwork.
 each request-response exchange is semantically independent.
 the server retains no memory of prior requests.
 
-this is not accident but design constraint. consequences:
+this is a design constraint.
+consequences:
 
 **horizontal scalability** — any server instance can handle any request.
 no session affinity required. load balancing is trivial.
@@ -67,13 +68,15 @@ HTTP operates on resources.
 
 a resource is any addressable entity: a document, an image, a service,
 an abstract concept, a computation. resources are identified by URIs.
+
 ```
 URI  →  resource  →  representation
 ```
 
-the URI identifies the resource.
-the resource is the abstract entity.
-the representation is a concrete rendering (HTML, JSON, image bytes).
+    the URI identifies the resource.
+    the resource is the abstract entity.
+    the representation is a concrete rendering (HTML, JSON, image bytes).
+
 
 methods are operations on resources:
 - GET: retrieve a representation

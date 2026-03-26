@@ -6,12 +6,13 @@ a stateful parser
 that transforms incrementally-arriving bytes
 into a structured HTTP request.
 
+
 bytes arrive over a socket in arbitrary chunks. the complete request
 is not available at once. between `read()` calls, something must
 remember parse progress. this is irreducible state.
 
 
-in type-theoretic notation:
+comparison with ConfigFrontend in type-theoretic notation:
 ```
 ConfigFrontend:         parse   :   String          →    Config ∪ Error  (pure)
 HttpRequestFrontend:    advance :   Self × Bytes    →    Self × Result   (stateful)
@@ -27,7 +28,7 @@ This is partiality over the semantic output (HttpRequest), even though the funct
 a struct holding state and exposing methods is honest to this nature.
 
 
-the difference reflects a fundamental distinction:
+the difference reflects the distinction:
 total functions over complete input vs partial functions over streaming input.*
 
     * total vs partial functions:
@@ -35,7 +36,6 @@ total functions over complete input vs partial functions over streaming input.*
     A total function is defined for all inputs in its domain — it always terminates with a value.
     A partial function may be undefined for some inputs —
     it may diverge, or require more input to produce output.
-
     a central distinction in type theory.
     e.g. in Agda: total functions are the default. Every function must terminate.
     Partial functions require explicit handling: coinduction, partiality monad, or fuel.
