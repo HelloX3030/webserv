@@ -35,17 +35,18 @@ enum class ParseStatus : int
 
 // --- INTERNAL (implementation detail): do not depend on ---
 
-enum class ParsePhase
-{
-    REQUEST_LINE,
-    HEADERS,
-    BODY,
-    COMPLETE,
-    ERROR
-};
-
 struct HttpRequestFrontend
 {
+    // --- nested types first ---
+    enum class ParsePhase : int
+    {
+        REQUEST_LINE,
+        HEADERS,
+        BODY,
+        COMPLETE,
+        ERROR
+    };
+
     // --- PUBLIC INTERFACE for Connection ---
     // construction
     explicit HttpRequestFrontend(size_t max_body_size);
