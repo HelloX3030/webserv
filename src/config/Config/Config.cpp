@@ -4,6 +4,23 @@
 #include <sstream>
 #include <string>
 
+bool is_http_method(const std::string &str)
+{
+    return str == "GET" ||
+           str == "POST" ||
+           str == "DELETE";
+}
+
+HttpMethod http_methode_from_string(const std::string &str)
+{
+    if (str == "GET")
+        return HttpMethod::GET;
+    else if (str == "POST")
+        return HttpMethod::POST;
+    else
+        return HttpMethod::DELETE;
+}
+
 /*
 display serialisation for Config data types.
 

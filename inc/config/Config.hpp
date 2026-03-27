@@ -35,6 +35,8 @@ enum class HttpMethod
     POST,
     DELETE
 };
+bool is_http_method(const std::string &str);
+HttpMethod http_methode_from_string(const std::string &str);
 
 /* derived from the host_port grammar production.
 host is optional — bare port (`listen 8080;`) is valid.
@@ -100,17 +102,17 @@ time & confirmed in validator.
 */
 struct Location
 {
-    std::string                 root;
-    std::vector<std::string>    index_files;
-    std::set<HttpMethod>        allowed_methods; // default: {GET, POST, DELETE}
-    bool                        autoindex;       // default: false
-    std::string                 cgi_extension;
-    std::string                 cgi_path;
-    std::optional<size_t>       client_max_body_size; // default: std::nullopt (inherit)
-    bool                        upload_enable;
-    std::string                 upload_store;
-    std::optional<uint16_t>     return_code;
-    std::string                 return_path;
+    std::string root;
+    std::vector<std::string> index_files;
+    std::set<HttpMethod> allowed_methods; // default: {GET, POST, DELETE}
+    bool autoindex;                       // default: false
+    std::string cgi_extension;
+    std::string cgi_path;
+    std::optional<size_t> client_max_body_size; // default: std::nullopt (inherit)
+    bool upload_enable;
+    std::string upload_store;
+    std::optional<uint16_t> return_code;
+    std::string return_path;
 };
 
 /*

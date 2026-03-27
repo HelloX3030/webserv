@@ -1,7 +1,7 @@
 #include "http/HttpRequest.hpp"
-
 #include <algorithm>
 #include <cctype>
+#include <sstream>
 #include <stdexcept>
 
 /* content-length header value as a signed integer.
@@ -20,7 +20,7 @@ long HttpRequest::contentLength() const
     try
     {
         size_t pos;
-        long   n = std::stol(it->second, &pos);
+        long n = std::stol(it->second, &pos);
         /* stol consumes as many characters as form a valid integer,
         stopping at the first non-digit. pos receives the index of
         that stopping point. if pos < size(), unconsumed characters
@@ -31,7 +31,7 @@ long HttpRequest::contentLength() const
             return -1;
         return n;
     }
-    catch (const std::exception&)
+    catch (const std::exception &)
     {
         return -1;
     }
@@ -59,11 +59,38 @@ bool HttpRequest::keepAlive() const
     {
         std::string val = it->second;
         std::transform(val.begin(), val.end(), val.begin(),
-                       [](unsigned char c) { return std::tolower(c); });
+                       [](unsigned char c)
+                       { return std::tolower(c); });
         if (val == "close")
             return false;
         if (val == "keep-alive")
             return true;
     }
     return persistent;
+}
+
+std::string HttpRequest::to_string() const
+{
+    std::ostringstream ss;
+
+    // request line
+    ss << method << " "
+       << uri << " "
+       << http_version << "\r\n";
+
+    // headers
+    for (std::map<std::string, std::string>::const_iterator it = headers.begin();
+         it != headers.end();
+         ++it)
+    {
+        ss << it->first << ": " << it->second << "\r\n";
+    }
+
+    // empty line
+    ss << "\r\n";
+
+    // body
+    ss << body;
+
+    return ss.str();
 }

@@ -66,12 +66,7 @@ void Connection::handle_client_buffer(const char *buffer, ssize_t n)
         if (result.status == ParseStatus::Complete)
         {
             keep_alive = result.request.keepAlive();
-            HttpResponseBuilder response =
-                WebServ::http_handle_request(*this,
-                                             HttpMethod::GET,
-                                             "abc",
-                                             {},
-                                             "Moin Moin");
+            HttpResponseBuilder response = WebServ::http_handle_request(*this, result.request);
 
             responses.push_back(response);
 

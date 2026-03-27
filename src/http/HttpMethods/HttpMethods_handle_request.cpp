@@ -1,18 +1,25 @@
 #include "base/defines.hpp"
+#include "base/format.hpp"
 #include "base/logging.hpp"
 #include "base/utils.hpp"
 #include "config/Config.hpp"
 #include "http/HttpMethods.hpp"
+#include "http/HttpRequest.hpp"
 #include "net/Connection.hpp"
 
 namespace WebServ
 {
 
-HttpResponseBuilder http_handle_request(const Connection &connection, HttpMethod method, std::string target, std::map<std::string, std::string> headers, std::string body)
+[[nodiscard]] HttpResponseBuilder http_handle_request(const Connection &connection, const HttpRequest &request)
 {
 #ifdef DEBUG
-    logging::log(HANDLE_REQUEST, "Method=" + std::to_string(static_cast<int>(method)) + " target=\"" + target + "\" body_size=" + std::to_string(body.size()));
+    logging::log(HANDLE_REQUEST, "");
+    std::cout << format::header("http_handle_request") << std::endl;
+    std::cout << request.to_string();
+    std::cout << format::header("http_handle_request") << std::endl;
 #endif
+
+    HttpMethod method = http_methode_from_string(request.method);
 
     // select server config
     const ServerConfig *config = &connection.get_default_server_config();
@@ -21,8 +28,8 @@ HttpResponseBuilder http_handle_request(const Connection &connection, HttpMethod
     logging::log(HANDLE_REQUEST, "Using default server config");
 #endif
 
-    auto it = headers.find(HOST);
-    if (it != headers.end())
+    auto it = request.headers.find(HOST);
+    if (it != request.headers.end())
     {
         std::string host = it->second;
 
@@ -49,12 +56,12 @@ HttpResponseBuilder http_handle_request(const Connection &connection, HttpMethod
 
     // parse target → path
     std::string path;
-    size_t qpos = target.find('?');
+    size_t qpos = request.uri.find('?');
 
     if (qpos == std::string::npos)
-        path = target;
+        path = request.uri;
     else
-        path = target.substr(0, qpos);
+        path = request.uri.substr(0, qpos);
 
 #ifdef DEBUG
     logging::log(HANDLE_REQUEST, "Parsed path=\"" + path + "\"");
@@ -91,10 +98,10 @@ HttpResponseBuilder http_handle_request(const Connection &connection, HttpMethod
     if (method == HttpMethod::POST && match.location->client_max_body_size.has_value())
     {
 #ifdef DEBUG
-        logging::log(HANDLE_REQUEST, "Body size=" + std::to_string(body.size()) + " limit=" + std::to_string(match.location->client_max_body_size.value()));
+        logging::log(HANDLE_REQUEST, "Body size=" + std::to_string(request.body.size()) + " limit=" + std::to_string(match.location->client_max_body_size.value()));
 #endif
 
-        if (body.size() > match.location->client_max_body_size.value())
+        if (request.body.size() > match.location->client_max_body_size.value())
         {
 #ifdef DEBUG
             logging::log(HANDLE_REQUEST, "Body too large -> 413");
@@ -157,7 +164,7 @@ HttpResponseBuilder http_handle_request(const Connection &connection, HttpMethod
 #ifdef DEBUG
         logging::log(HANDLE_REQUEST, "Dispatching to CGI");
 #endif
-        return http_cgi(*safe, match.location->cgi_path, method, path, headers, body);
+        return http_cgi(*safe, match.location->cgi_path, method, path, request.headers, request.body);
     }
 
     // dispatch by method
@@ -173,7 +180,7 @@ HttpResponseBuilder http_handle_request(const Connection &connection, HttpMethod
 #ifdef DEBUG
         logging::log(HANDLE_REQUEST, "Calling http_post");
 #endif
-        return http_post(*safe, body);
+        return http_post(*safe, request.body);
 
     case HttpMethod::DELETE:
 #ifdef DEBUG
