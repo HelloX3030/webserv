@@ -153,8 +153,8 @@ void Connection::handle_event(uint32_t events)
         // load response if ready
         if (write_buffer.empty() && !responses.empty())
         {
-            for (std::size_t i = 0; i < responses.size(); i++)
-                write_buffer.append(responses[i].to_string());
+            for (const HttpResponseBuilder &response : responses)
+                write_buffer.append(response.to_string());
 
             responses.clear();
             update_epoll_events();
@@ -211,8 +211,8 @@ void Connection::handle_event(uint32_t events)
             // load next queued responses (pipeline safe)
             else if (!responses.empty())
             {
-                for (std::size_t i = 0; i < responses.size(); i++)
-                    write_buffer.append(responses[i].to_string());
+                for (const HttpResponseBuilder &response : responses)
+                    write_buffer.append(response.to_string());
 
                 responses.clear();
             }
