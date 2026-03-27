@@ -52,7 +52,6 @@ class Connection final : public EpollHandler
     // Functions
     [[nodiscard]] const ServerConfig &get_default_server_config() const;
     [[nodiscard]] const ServerConfig &get_server_config(const std::string &host) const;
-    void set_keep_alive();
 };
 std::ostream &operator<<(std::ostream &os, const Connection &connection);
 

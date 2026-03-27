@@ -65,9 +65,7 @@ void Connection::handle_client_buffer(const char *buffer, ssize_t n)
 
         if (result.status == ParseStatus::Complete)
         {
-            // IMPORTANT: reset per-request keep-alive
-            keep_alive = false;
-
+            keep_alive = result.request.keepAlive();
             HttpResponseBuilder response =
                 WebServ::http_handle_request(*this,
                                              HttpMethod::GET,
@@ -96,15 +94,15 @@ void Connection::handle_client_buffer(const char *buffer, ssize_t n)
 
 void Connection::handle_event(uint32_t events)
 {
-    // ---- Hard error ----
-    if (events & EPOLLERR)
+    // Error or Peer hang up
+    if (events & (EPOLLERR | EPOLLHUP))
     {
         state = ConnectionState::CLOSE;
         return;
     }
 
-    // peer performed shutdown(SHUT_WR)
-    if (events & (EPOLLRDHUP | EPOLLHUP))
+    // peer performed closed write
+    if (events & EPOLLRDHUP)
     {
         peer_closed = true;
     }
@@ -253,11 +251,6 @@ const ServerConfig &Connection::get_default_server_config() const
 const ServerConfig &Connection::get_server_config(const std::string &host) const
 {
     return listener.get_server_config(host);
-}
-
-void Connection::set_keep_alive()
-{
-    keep_alive = true;
 }
 
 namespace WebServ
