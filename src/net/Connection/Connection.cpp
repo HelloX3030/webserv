@@ -112,7 +112,7 @@ void Connection::handle_event(uint32_t events)
     // =========================
     // READ
     // =========================
-    if (events & EPOLLIN)
+    if ((events & EPOLLIN) && state != ConnectionState::FAILED)
     {
         while (true)
         {
@@ -218,10 +218,10 @@ void Connection::handle_event(uint32_t events)
             else
             {
                 // decide connection lifetime
-                if (!keep_alive || peer_closed)
-                {
+                if (!keep_alive)
                     state = ConnectionState::CLOSE;
-                }
+                else if (peer_closed && write_buffer.empty())
+                    state = ConnectionState::CLOSE;
             }
         }
     }
