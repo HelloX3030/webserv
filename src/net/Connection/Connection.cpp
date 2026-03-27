@@ -97,7 +97,7 @@ void Connection::handle_client_buffer(const char *buffer, ssize_t n)
 void Connection::handle_event(uint32_t events)
 {
     // ---- Hard error ----
-    if (events & EPOLLERR)
+    if (events & (EPOLLERR | EPOLLHUP))
     {
         state = ConnectionState::CLOSE;
         return;
@@ -123,7 +123,7 @@ void Connection::handle_event(uint32_t events)
             {
 #ifdef DEBUG
                 std::cout << format::header("Connection::handle_event::EPOLLIN buffer_start") << std::endl;
-                std::cout << buffer;
+                std::cout.write(buffer, n);
                 std::cout << format::header("Connection::handle_event::EPOLLIN buffer_end") << std::endl;
 #endif
 
@@ -164,7 +164,7 @@ void Connection::handle_event(uint32_t events)
     // =========================
     // WRITE
     // =========================
-    if (events & EPOLLOUT)
+    if ((events & EPOLLOUT) && !write_buffer.empty())
     {
         while (write_offset < write_buffer.size())
         {
