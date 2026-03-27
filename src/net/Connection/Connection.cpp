@@ -114,10 +114,9 @@ void Connection::handle_event(uint32_t events)
     // =========================
     if ((events & EPOLLIN) && state != ConnectionState::FAILED)
     {
+        char buffer[WebServ::CONNECTION_READ_BUFFER_SIZE];
         while (true)
         {
-            char buffer[WebServ::CONNECTION_READ_BUFFER_SIZE];
-
             ssize_t n = ::read(fd.get(), buffer, sizeof(buffer));
 
             if (n > 0)
@@ -155,7 +154,7 @@ void Connection::handle_event(uint32_t events)
         if (write_buffer.empty() && !responses.empty())
         {
             for (std::size_t i = 0; i < responses.size(); i++)
-                write_buffer += responses[i].to_string();
+                write_buffer.append(responses[i].to_string());
 
             responses.clear();
             update_epoll_events();
@@ -211,16 +210,14 @@ void Connection::handle_event(uint32_t events)
             else if (!responses.empty())
             {
                 for (std::size_t i = 0; i < responses.size(); i++)
-                    write_buffer += responses[i].to_string();
+                    write_buffer.append(responses[i].to_string());
 
                 responses.clear();
             }
             else
             {
                 // decide connection lifetime
-                if (!keep_alive)
-                    state = ConnectionState::CLOSE;
-                else if (peer_closed && write_buffer.empty())
+                if (!keep_alive || peer_closed)
                     state = ConnectionState::CLOSE;
             }
         }
