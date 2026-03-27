@@ -7,7 +7,7 @@
 class HttpResponseBuilder
 {
   private:
-    int status;
+    int status = 200;
     std::string body;
     std::map<std::string, std::string> headers;
 
@@ -15,7 +15,7 @@ class HttpResponseBuilder
     static std::string get_mime_type(const std::filesystem::path &path);
 
   public:
-    HttpResponseBuilder();
+    HttpResponseBuilder() = default;
     HttpResponseBuilder(const HttpResponseBuilder &other) = default;
     HttpResponseBuilder &operator=(const HttpResponseBuilder &other) = default;
     ~HttpResponseBuilder() = default;

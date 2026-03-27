@@ -65,10 +65,6 @@ std::string HttpResponseBuilder::get_mime_type(const std::filesystem::path &path
     return "application/octet-stream";
 }
 
-HttpResponseBuilder::HttpResponseBuilder() : status(200)
-{
-}
-
 HttpResponseBuilder::HttpResponseBuilder(int status) : status(status)
 {
 }

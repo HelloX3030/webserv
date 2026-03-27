@@ -23,7 +23,7 @@ class Connection final : public EpollHandler
   private:
     Fd fd;
     ConnectionState     state;
-    HttpParser http_parser;
+    HttpParser          http_parser;
     std::size_t         write_offset;
     std::string         write_buffer;
     Listener            &listener;
@@ -33,7 +33,7 @@ class Connection final : public EpollHandler
     Connection() = delete;
     Connection(const Connection &other) = delete;
     Connection &operator=(const Connection &other) = delete;
-    ~Connection();
+    ~Connection() = default;
 
     // Special Constructors
     Connection(Listener &listener, int fd);

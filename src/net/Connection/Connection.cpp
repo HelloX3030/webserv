@@ -6,10 +6,6 @@
 #include "net/Listener.hpp"
 #include <sys/epoll.h>
 
-Connection::~Connection()
-{
-}
-
 Connection::Connection(Listener &listener, int fd)
     : fd(fd), state(ConnectionState::READ), write_offset(0), listener(listener), keep_alive(false)
 {
