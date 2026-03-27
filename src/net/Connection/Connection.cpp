@@ -97,14 +97,14 @@ void Connection::handle_client_buffer(const char *buffer, ssize_t n)
 void Connection::handle_event(uint32_t events)
 {
     // ---- Hard error ----
-    if (events & (EPOLLERR | EPOLLHUP))
+    if (events & EPOLLERR)
     {
         state = ConnectionState::CLOSE;
         return;
     }
 
     // peer performed shutdown(SHUT_WR)
-    if (events & EPOLLRDHUP)
+    if (events & (EPOLLRDHUP | EPOLLHUP))
     {
         peer_closed = true;
     }
@@ -170,7 +170,9 @@ void Connection::handle_event(uint32_t events)
         {
 #ifdef DEBUG
             std::cout << format::header("Connection::handle_event::EPOLLOUT buffer_start") << std::endl;
-            std::cout << write_buffer.data() + write_offset;
+            std::cout.write(
+                write_buffer.data() + write_offset,
+                write_buffer.size() - write_offset);
             std::cout << format::header("Connection::handle_event::EPOLLOUT buffer_end") << std::endl;
 #endif
 
