@@ -4,28 +4,6 @@
 #include "net/Connection.hpp"
 #include <utility>
 
-HttpParser::HttpParser()
-{
-}
-
-HttpParser::HttpParser(const HttpParser &other)
-{
-    *this = other;
-}
-
-HttpParser &HttpParser::operator=(const HttpParser &other)
-{
-    if (this != &other)
-    {
-        buffer = other.buffer;
-    }
-    return *this;
-}
-
-HttpParser::~HttpParser()
-{
-}
-
 void HttpParser::add_buffer(const Connection &connection, const char *buffer, ssize_t n)
 {
     this->buffer.append(buffer, n);

@@ -7,16 +7,17 @@ max_body_size from server configuration — constant for connection lifetime.
 all other fields initialised to their pre-parse state.
 see state machine doc invariants 1–8. */
 HttpRequestFrontend::HttpRequestFrontend(size_t max_body_size)
-    : buffer_()
-    , phase_(ParsePhase::REQUEST_LINE)
-    , request_()
-    , body_remaining_(0)
-    , header_bytes_(0)
-    , error_code_(0)
-    , max_body_size_(max_body_size)
-    , body_chunked_(false)
-    , chunk_remaining_(0)
-    , chunk_phase_(ChunkPhase::SIZE)
+    : 
+    max_body_size_(max_body_size),
+    phase_(ParsePhase::REQUEST_LINE),
+    error_code_(0),
+    buffer_()   ,
+    request_(),
+    header_bytes_(0),
+    body_remaining_(0),
+    body_chunked_(false),
+    chunk_phase_(ChunkPhase::SIZE),
+    chunk_remaining_(0)
 {
 }
 

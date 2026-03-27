@@ -13,10 +13,10 @@ class HttpParser
     std::string response;
 
   public:
-    HttpParser();
-    HttpParser(const HttpParser &other);
-    HttpParser &operator=(const HttpParser &other);
-    ~HttpParser();
+    HttpParser() = default;
+    HttpParser(const HttpParser &other) = default;
+    HttpParser &operator=(const HttpParser &other) = default;
+    ~HttpParser() = default;
 
     // Functions
     void add_buffer(const Connection &connection, const char *buffer, ssize_t n);
