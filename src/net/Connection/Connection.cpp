@@ -67,25 +67,6 @@ void Connection::handle_event(uint32_t events)
                     state = ConnectionState::CLOSE;
                     break;
                 }
-
-                // TODO: remove, here only for testing
-                // Test Upload
-                HttpResponseBuilder result = WebServ::http_handle_request(*this, HttpMethod::POST, "/upload/test.txt", {{"Host", "localhost"}}, "Moin Moin");
-                std::cout << format::header("Connection::http_handle_request response_buffer_start") << std::endl;
-                std::cout << result.to_string();
-                std::cout << format::header("Connection::http_handle_request response_buffer_end") << std::endl;
-
-                // Test python CGI
-                result = WebServ::http_handle_request(*this, HttpMethod::POST, "/cgi-bin/test-python.py", {{"Host", "localhost"}, {"Content-Type", "text/plain"}}, "Hello from POST");
-                std::cout << format::header("Connection::http_handle_request response_buffer_start") << std::endl;
-                std::cout << result.to_string();
-                std::cout << format::header("Connection::http_handle_request response_buffer_end") << std::endl;
-
-                // Test bash CGI
-                // result = WebServ::http_handle_request(*this, HttpMethod::POST, "/cgi-bin/test-bash.sh", {{"Host", "localhost"}, {"Content-Type", "text/plain"}}, "Hello from POST");
-                // std::cout << format::header("Connection::http_handle_request response_buffer_start") << std::endl;
-                // std::cout << result.to_string();
-                // std::cout << format::header("Connection::http_handle_request response_buffer_end") << std::endl;
             }
             else if (n == 0)
             {
