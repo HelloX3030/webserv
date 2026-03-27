@@ -203,8 +203,12 @@ void Connection::handle_event(uint32_t events)
             write_buffer.clear();
             write_offset = 0;
 
+            // FAILED must close after write
+            if (state == ConnectionState::FAILED)
+                state = ConnectionState::CLOSE;
+
             // load next queued responses (pipeline safe)
-            if (!responses.empty())
+            else if (!responses.empty())
             {
                 for (std::size_t i = 0; i < responses.size(); i++)
                     write_buffer += responses[i].to_string();
@@ -220,9 +224,9 @@ void Connection::handle_event(uint32_t events)
                 }
             }
         }
-
-        update_epoll_events();
     }
+
+    update_epoll_events();
 }
 
 bool Connection::should_close() const
