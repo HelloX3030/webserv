@@ -24,7 +24,13 @@ std::string to_string(ConnectionState state)
 }
 
 Connection::Connection(Listener &listener, int fd)
-    : fd(fd), state(ConnectionState::READ), http_request_frontend(listener.get_default_server().client_max_body_size), write_offset(0), listener(listener), keep_alive(false)
+    : fd(fd),
+      state(ConnectionState::READ),
+      http_request_frontend(listener.get_default_server().client_max_body_size),
+      write_offset(0),
+      listener(listener),
+      keep_alive(false),
+      peer_closed(false)
 {
 }
 
@@ -43,14 +49,17 @@ uint32_t Connection::get_events() const
         return 0;
 
     uint32_t events = EPOLLIN;
-    if (!write_buffer.empty())
+
+    if (!write_buffer.empty() || !responses.empty())
         events |= EPOLLOUT;
+
     return events;
 }
 
 void Connection::handle_client_buffer(const char *buffer, ssize_t n)
 {
     ParseResult result = http_request_frontend.advance(buffer, static_cast<size_t>(n));
+
     while (true)
     {
         if (result.status == ParseStatus::Incomplete)
@@ -58,8 +67,15 @@ void Connection::handle_client_buffer(const char *buffer, ssize_t n)
 
         if (result.status == ParseStatus::Complete)
         {
-            // TODO
-            HttpResponseBuilder response = WebServ::http_handle_request(*this, HttpMethod::GET, "abc", {}, "Moin Moin");
+            // IMPORTANT: reset per-request keep-alive
+            keep_alive = false;
+
+            HttpResponseBuilder response =
+                WebServ::http_handle_request(*this,
+                                             HttpMethod::GET,
+                                             "abc",
+                                             {},
+                                             "Moin Moin");
 
             responses.push_back(response);
 
@@ -70,6 +86,8 @@ void Connection::handle_client_buffer(const char *buffer, ssize_t n)
         }
 
         // Failed
+        keep_alive = false;
+
         HttpResponseBuilder response(result.error_code);
         responses.push_back(response);
 
@@ -80,11 +98,17 @@ void Connection::handle_client_buffer(const char *buffer, ssize_t n)
 
 void Connection::handle_event(uint32_t events)
 {
-    // ---- Error handling ----
-    if (events & (EPOLLERR | EPOLLHUP | EPOLLRDHUP))
+    // ---- Hard errors ----
+    if (events & (EPOLLERR | EPOLLHUP))
     {
         state = ConnectionState::CLOSE;
         return;
+    }
+
+    // peer performed shutdown(SHUT_WR)
+    if (events & EPOLLRDHUP)
+    {
+        peer_closed = true;
     }
 
     // =========================
@@ -107,24 +131,24 @@ void Connection::handle_event(uint32_t events)
 #endif
 
                 handle_client_buffer(buffer, n);
+
                 if (state == ConnectionState::FAILED)
                     break;
             }
             else if (n == 0)
             {
-                // peer closed connection
-                state = ConnectionState::CLOSE;
-                return;
+                peer_closed = true;
+                break;
             }
             else
             {
                 if (errno == EINTR)
-                    continue; // retry
+                    continue;
 
                 if (errno == EAGAIN || errno == EWOULDBLOCK)
-                    break; // no more data
+                    break;
 
-                state = ConnectionState::CLOSE; // read error
+                state = ConnectionState::CLOSE;
                 return;
             }
         }
@@ -133,9 +157,8 @@ void Connection::handle_event(uint32_t events)
         if (write_buffer.empty() && !responses.empty())
         {
             for (std::size_t i = 0; i < responses.size(); i++)
-            {
                 write_buffer += responses[i].to_string();
-            }
+
             responses.clear();
             update_epoll_events();
         }
@@ -148,28 +171,30 @@ void Connection::handle_event(uint32_t events)
     {
         while (write_offset < write_buffer.size())
         {
-
-// write remaining buffer
 #ifdef DEBUG
             std::cout << format::header("Connection::handle_event::EPOLLOUT buffer_start") << std::endl;
             std::cout << write_buffer.data() + write_offset;
             std::cout << format::header("Connection::handle_event::EPOLLOUT buffer_end") << std::endl;
 #endif
-            ssize_t n = ::write(fd.get(), write_buffer.data() + write_offset, write_buffer.size() - write_offset);
+
+            ssize_t n = ::write(
+                fd.get(),
+                write_buffer.data() + write_offset,
+                write_buffer.size() - write_offset);
 
             if (n > 0)
             {
-                write_offset += n; // advance offset
+                write_offset += n;
             }
             else
             {
                 if (errno == EINTR)
-                    continue; // retry
+                    continue;
 
                 if (errno == EAGAIN || errno == EWOULDBLOCK)
-                    break; // socket full
+                    break;
 
-                state = ConnectionState::CLOSE; // write error
+                state = ConnectionState::CLOSE;
                 return;
             }
         }
@@ -180,18 +205,21 @@ void Connection::handle_event(uint32_t events)
             write_buffer.clear();
             write_offset = 0;
 
-            // add more responses when ready
+            // load next queued responses (pipeline safe)
             if (!responses.empty())
             {
                 for (std::size_t i = 0; i < responses.size(); i++)
-                {
                     write_buffer += responses[i].to_string();
-                }
+
                 responses.clear();
             }
-            else if (!keep_alive)
+            else
             {
-                state = ConnectionState::CLOSE;
+                // decide connection lifetime
+                if (!keep_alive || peer_closed)
+                {
+                    state = ConnectionState::CLOSE;
+                }
             }
         }
 
@@ -206,7 +234,9 @@ bool Connection::should_close() const
 
 std::string Connection::to_string() const
 {
-    return "Connection(fd=" + std::to_string(get_fd()) + ", state=" + ::to_string(state) + ", listener=" + listener.to_string() + ")";
+    return "Connection(fd=" + std::to_string(get_fd()) +
+           ", state=" + ::to_string(state) +
+           ", listener=" + listener.to_string() + ")";
 }
 
 std::ostream &operator<<(std::ostream &os, const Connection &connection)

@@ -30,6 +30,7 @@ class Connection final : public EpollHandler
     std::string write_buffer;
     Listener &listener;
     bool keep_alive;
+    bool peer_closed;
 
     void handle_client_buffer(const char *buffer, ssize_t n);
 
