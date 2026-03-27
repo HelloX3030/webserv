@@ -6,8 +6,25 @@
 #include "net/Listener.hpp"
 #include <sys/epoll.h>
 
+std::string to_string(ConnectionState state)
+{
+    switch (state)
+    {
+    case ConnectionState::READ:
+        return READ;
+    case ConnectionState::WRITE:
+        return WRITE;
+    case ConnectionState::FAILED:
+        return FAILED;
+    case ConnectionState::CLOSE:
+        return CLOSE;
+    default:
+        return UNKNOWN;
+    }
+}
+
 Connection::Connection(Listener &listener, int fd)
-    : fd(fd), state(ConnectionState::READ), write_offset(0), listener(listener), keep_alive(false)
+    : fd(fd), state(ConnectionState::READ), http_request_frontend(listener.get_default_server().client_max_body_size), write_offset(0), listener(listener), keep_alive(false)
 {
 }
 
@@ -19,14 +36,15 @@ int Connection::get_fd() const
 
 uint32_t Connection::get_events() const
 {
+    if (state == ConnectionState::FAILED)
+        return EPOLLOUT;
+
     if (state == ConnectionState::CLOSE)
         return 0;
 
     uint32_t events = EPOLLIN;
-
     if (!write_buffer.empty())
         events |= EPOLLOUT;
-
     return events;
 }
 
@@ -57,11 +75,28 @@ void Connection::handle_event(uint32_t events)
                 std::cout << buffer;
                 std::cout << format::header("Connection::handle_event::EPOLLIN buffer_end") << std::endl;
 #endif
-                http_parser.add_buffer(*this, buffer, n);
-                if (http_parser.parse_error())
+                ParseResult result = http_request_frontend.advance(buffer, static_cast<size_t>(n));
+                switch (result.status)
                 {
-                    state = ConnectionState::CLOSE;
+                case (ParseStatus::Complete):
+                {
+                    // TODO: update call
+                    HttpResponseBuilder response = WebServ::http_handle_request(*this, HttpMethod::GET, "abc", {}, "Moin Moin");
+                    responses.push_back(response);
                     break;
+                }
+
+                case (ParseStatus::Failed):
+                {
+                    HttpResponseBuilder responses = HttpResponseBuilder(result.error_code);
+                    state = ConnectionState::FAILED;
+                    break;
+                }
+
+                // Incomplete
+                default:
+                {
+                }
                 }
             }
             else if (n == 0)
@@ -84,9 +119,13 @@ void Connection::handle_event(uint32_t events)
         }
 
         // load response if ready
-        if (write_buffer.empty() && http_parser.response_ready())
+        if (write_buffer.empty() && !responses.empty())
         {
-            write_buffer = http_parser.take_response();
+            for (std::size_t i = 0; i < responses.size(); i++)
+            {
+                write_buffer += responses[i].to_string();
+            }
+            responses.clear();
             update_epoll_events();
         }
     }
@@ -129,10 +168,14 @@ void Connection::handle_event(uint32_t events)
             write_buffer.clear();
             write_offset = 0;
 
-            // next response if queued
-            if (http_parser.response_ready())
+            // add more responses when ready
+            if (!responses.empty())
             {
-                write_buffer = http_parser.take_response();
+                for (std::size_t i = 0; i < responses.size(); i++)
+                {
+                    write_buffer += responses[i].to_string();
+                }
+                responses.clear();
             }
             else if (!keep_alive)
             {
@@ -151,27 +194,12 @@ bool Connection::should_close() const
 
 std::string Connection::to_string() const
 {
-    return "Connection(fd=" + std::to_string(get_fd()) + ", state=" + ::to_string(state) + ", read_buffer_size=" + std::to_string(http_parser.get_buffer_size()) + ", write_buffer_size=" + std::to_string(write_buffer.size()) + ", listener=" + listener.to_string() + ")";
+    return "Connection(fd=" + std::to_string(get_fd()) + ", state=" + ::to_string(state) + ", listener=" + listener.to_string() + ")";
 }
 
 std::ostream &operator<<(std::ostream &os, const Connection &connection)
 {
     return os << connection.to_string();
-}
-
-std::string to_string(ConnectionState state)
-{
-    switch (state)
-    {
-    case ConnectionState::READ:
-        return READ;
-    case ConnectionState::WRITE:
-        return WRITE;
-    case ConnectionState::CLOSE:
-        return CLOSE;
-    default:
-        return UNKNOWN;
-    }
 }
 
 const ServerConfig &Connection::get_default_server_config() const

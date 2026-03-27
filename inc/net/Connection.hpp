@@ -2,8 +2,8 @@
 
 #include "base/Fd.hpp"
 #include "config/Config.hpp"
-#include "http/HttpRequestFrontend.hpp" // added — types available, not used yet
-#include "http/HttpParser.hpp"  // to be replaced with HttpRequestFrontend once it's implemented
+#include "http/HttpRequestFrontend.hpp"
+#include "http/HttpResponseBuilder.hpp"
 #include "net/EPollHandler.hpp"
 
 // Forward Declarations
@@ -14,6 +14,7 @@ enum class ConnectionState
 {
     READ,
     WRITE,
+    FAILED,
     CLOSE
 };
 std::string to_string(ConnectionState state);
@@ -22,12 +23,13 @@ class Connection final : public EpollHandler
 {
   private:
     Fd fd;
-    ConnectionState     state;
-    HttpParser          http_parser;
-    std::size_t         write_offset;
-    std::string         write_buffer;
-    Listener            &listener;
-    bool                keep_alive;
+    ConnectionState state;
+    HttpRequestFrontend http_request_frontend;
+    std::vector<HttpResponseBuilder> responses;
+    std::size_t write_offset;
+    std::string write_buffer;
+    Listener &listener;
+    bool keep_alive;
 
   public:
     Connection() = delete;

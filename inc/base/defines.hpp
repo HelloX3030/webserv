@@ -43,6 +43,7 @@ constexpr const char *STOP = "Stop";
 constexpr const char *SHUTDOWN = "Shutdown";
 constexpr const char *READ = "Read";
 constexpr const char *WRITE = "Write";
+constexpr const char *FAILED = "Failed";
 constexpr const char *CLOSE = "Close";
 constexpr const char *UNKNOWN = "Unknown";
 constexpr const char *HOST = "Host";
