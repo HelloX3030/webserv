@@ -10,10 +10,8 @@ std::string to_string(ConnectionState state)
 {
     switch (state)
     {
-    case ConnectionState::READ:
-        return READ;
-    case ConnectionState::WRITE:
-        return WRITE;
+    case ConnectionState::ACTIVE:
+        return ACTIVE;
     case ConnectionState::FAILED:
         return FAILED;
     case ConnectionState::CLOSE:
@@ -25,7 +23,7 @@ std::string to_string(ConnectionState state)
 
 Connection::Connection(Listener &listener, int fd)
     : fd(fd),
-      state(ConnectionState::READ),
+      state(ConnectionState::ACTIVE),
       http_request_frontend(listener.get_default_server().client_max_body_size),
       write_offset(0),
       listener(listener),

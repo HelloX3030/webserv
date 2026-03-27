@@ -12,8 +12,7 @@ class Listener;
 // State
 enum class ConnectionState
 {
-    READ,
-    WRITE,
+    ACTIVE,
     FAILED,
     CLOSE
 };
