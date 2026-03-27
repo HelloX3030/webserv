@@ -48,6 +48,36 @@ uint32_t Connection::get_events() const
     return events;
 }
 
+void Connection::handle_client_buffer(const char *buffer, ssize_t n)
+{
+    ParseResult result = http_request_frontend.advance(buffer, static_cast<size_t>(n));
+    while (true)
+    {
+        if (result.status == ParseStatus::Incomplete)
+            break;
+
+        if (result.status == ParseStatus::Complete)
+        {
+            // TODO
+            HttpResponseBuilder response = WebServ::http_handle_request(*this, HttpMethod::GET, "abc", {}, "Moin Moin");
+
+            responses.push_back(response);
+
+            http_request_frontend.reset();
+
+            result = http_request_frontend.advance(nullptr, 0);
+            continue;
+        }
+
+        // Failed
+        HttpResponseBuilder response(result.error_code);
+        responses.push_back(response);
+
+        state = ConnectionState::FAILED;
+        break;
+    }
+}
+
 void Connection::handle_event(uint32_t events)
 {
     // ---- Error handling ----
@@ -75,29 +105,10 @@ void Connection::handle_event(uint32_t events)
                 std::cout << buffer;
                 std::cout << format::header("Connection::handle_event::EPOLLIN buffer_end") << std::endl;
 #endif
-                ParseResult result = http_request_frontend.advance(buffer, static_cast<size_t>(n));
-                switch (result.status)
-                {
-                case (ParseStatus::Complete):
-                {
-                    // TODO: update call
-                    HttpResponseBuilder response = WebServ::http_handle_request(*this, HttpMethod::GET, "abc", {}, "Moin Moin");
-                    responses.push_back(response);
-                    break;
-                }
 
-                case (ParseStatus::Failed):
-                {
-                    HttpResponseBuilder responses = HttpResponseBuilder(result.error_code);
-                    state = ConnectionState::FAILED;
+                handle_client_buffer(buffer, n);
+                if (state == ConnectionState::FAILED)
                     break;
-                }
-
-                // Incomplete
-                default:
-                {
-                }
-                }
             }
             else if (n == 0)
             {
@@ -137,6 +148,7 @@ void Connection::handle_event(uint32_t events)
     {
         while (write_offset < write_buffer.size())
         {
+
 // write remaining buffer
 #ifdef DEBUG
             std::cout << format::header("Connection::handle_event::EPOLLOUT buffer_start") << std::endl;

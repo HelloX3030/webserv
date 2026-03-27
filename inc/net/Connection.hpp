@@ -31,6 +31,8 @@ class Connection final : public EpollHandler
     Listener &listener;
     bool keep_alive;
 
+    void handle_client_buffer(const char *buffer, ssize_t n);
+
   public:
     Connection() = delete;
     Connection(const Connection &other) = delete;
