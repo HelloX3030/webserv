@@ -96,8 +96,8 @@ void Connection::handle_client_buffer(const char *buffer, ssize_t n)
 
 void Connection::handle_event(uint32_t events)
 {
-    // ---- Hard errors ----
-    if (events & (EPOLLERR | EPOLLHUP))
+    // ---- Hard error ----
+    if (events & EPOLLERR)
     {
         state = ConnectionState::CLOSE;
         return;
