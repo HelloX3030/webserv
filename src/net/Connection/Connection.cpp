@@ -41,7 +41,7 @@ int Connection::get_fd() const
 uint32_t Connection::get_events() const
 {
     if (state == ConnectionState::FAILED)
-        return EPOLLOUT;
+        return EPOLLIN | EPOLLOUT;
 
     if (state == ConnectionState::CLOSE)
         return 0;
@@ -252,8 +252,7 @@ const ServerConfig &Connection::get_default_server_config() const
 
 const ServerConfig &Connection::get_server_config(const std::string &host) const
 {
-    const ServerConfig &config = listener.get_server_config(host);
-    return config;
+    return listener.get_server_config(host);
 }
 
 void Connection::set_keep_alive()
