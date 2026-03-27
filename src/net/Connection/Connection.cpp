@@ -41,12 +41,15 @@ int Connection::get_fd() const
 uint32_t Connection::get_events() const
 {
     if (state == ConnectionState::FAILED)
-        return EPOLLIN | EPOLLOUT;
+        return EPOLLOUT;
 
     if (state == ConnectionState::CLOSE)
         return 0;
 
-    uint32_t events = EPOLLIN;
+    uint32_t events = 0;
+
+    if (!peer_closed)
+        events |= EPOLLIN;
 
     if (!write_buffer.empty() || !responses.empty())
         events |= EPOLLOUT;
