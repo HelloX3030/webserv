@@ -2,11 +2,58 @@
 #include "base/defines.hpp"
 #include "base/format.hpp"
 #include "base/logging.hpp"
+#include "base/utils.hpp"
 #include "http/HttpMethods.hpp"
 #include "net/Listener.hpp"
 #include <algorithm>
 #include <cctype>
+#include <fstream>
+#include <sstream>
 #include <sys/epoll.h>
+
+namespace
+{
+
+void apply_error_page_if_configured(const ServerConfig &config, HttpResponseBuilder &response)
+{
+    uint16_t status_code = response.get_status_code();
+
+    if (status_code < 400 || status_code > 599)
+        return;
+
+    std::map<uint16_t, std::string>::const_iterator ep = config.error_pages.find(status_code);
+    if (ep == config.error_pages.end())
+        return;
+
+    const std::string &error_uri = ep->second;
+
+    utils::LocationMatch error_match = utils::match_location(config, error_uri);
+    if (!error_match.location)
+        return;
+
+    std::string relative = error_uri.substr(error_match.prefix.size());
+    if (!relative.empty() && relative[0] == '/')
+        relative = relative.substr(1);
+
+    std::optional<std::filesystem::path> safe = utils::resolve_path(error_match.location->root, relative);
+    if (!safe)
+        return;
+
+    if (!std::filesystem::exists(*safe) || std::filesystem::is_directory(*safe))
+        return;
+
+    std::ifstream file(safe->c_str(), std::ios::binary);
+    if (!file.is_open())
+        return;
+
+    std::stringstream buffer;
+    buffer << file.rdbuf();
+
+    response.set_body(buffer.str());
+    response.set_content_type(*safe);
+}
+
+} // namespace
 
 std::string to_string(ConnectionState state)
 {
@@ -104,6 +151,7 @@ void Connection::handle_client_buffer(const char *buffer, ssize_t n)
         keep_alive = false;
 
         HttpResponseBuilder response(result.error_code);
+        apply_error_page_if_configured(get_default_server_config(), response);
         response.set_header("Connection", "close");
         responses.push_back(response);
 

@@ -30,6 +30,7 @@ class HttpResponseBuilder
     // Functions
     void set_status(HttpStatus status);
     void set_status(int status);
+    uint16_t get_status_code() const;
     void set_body(const std::string &body);
     void set_header(const std::string &key, const std::string &value);
 

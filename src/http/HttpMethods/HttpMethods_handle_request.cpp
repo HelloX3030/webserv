@@ -6,6 +6,52 @@
 #include "http/HttpMethods.hpp"
 #include "http/HttpRequest.hpp"
 #include "net/Connection.hpp"
+#include <fstream>
+#include <sstream>
+
+namespace
+{
+
+void apply_error_page_if_configured(const ServerConfig &config, HttpResponseBuilder &response)
+{
+    uint16_t status_code = response.get_status_code();
+
+    if (status_code < 400 || status_code > 599)
+        return;
+
+    std::map<uint16_t, std::string>::const_iterator ep = config.error_pages.find(status_code);
+    if (ep == config.error_pages.end())
+        return;
+
+    const std::string &error_uri = ep->second;
+
+    utils::LocationMatch error_match = utils::match_location(config, error_uri);
+    if (!error_match.location)
+        return;
+
+    std::string relative = error_uri.substr(error_match.prefix.size());
+    if (!relative.empty() && relative[0] == '/')
+        relative = relative.substr(1);
+
+    std::optional<std::filesystem::path> safe = utils::resolve_path(error_match.location->root, relative);
+    if (!safe)
+        return;
+
+    if (!std::filesystem::exists(*safe) || std::filesystem::is_directory(*safe))
+        return;
+
+    std::ifstream file(safe->c_str(), std::ios::binary);
+    if (!file.is_open())
+        return;
+
+    std::stringstream buffer;
+    buffer << file.rdbuf();
+
+    response.set_body(buffer.str());
+    response.set_content_type(*safe);
+}
+
+} // namespace
 
 namespace WebServ
 {
@@ -69,12 +115,18 @@ namespace WebServ
 
     utils::LocationMatch match = utils::match_location(*config, path);
 
+    auto finalize_response = [&](HttpResponseBuilder response) -> HttpResponseBuilder
+    {
+        apply_error_page_if_configured(*config, response);
+        return response;
+    };
+
     if (!match.location)
     {
 #ifdef DEBUG
         logging::log(HANDLE_REQUEST, "No matching location -> 404");
 #endif
-        return HttpResponseBuilder(HttpStatus::NotFound);
+        return finalize_response(HttpResponseBuilder(HttpStatus::NotFound));
     }
 
 #ifdef DEBUG
@@ -92,7 +144,7 @@ namespace WebServ
 
         HttpResponseBuilder response(*match.location->return_code);
         response.set_header("Location", match.location->return_path);
-        return response;
+        return finalize_response(response);
     }
 
     // check allowed methods
@@ -101,7 +153,7 @@ namespace WebServ
 #ifdef DEBUG
         logging::log(HANDLE_REQUEST, "Method not allowed -> 405");
 #endif
-        return HttpResponseBuilder(HttpStatus::MethodNotAllowed);
+        return finalize_response(HttpResponseBuilder(HttpStatus::MethodNotAllowed));
     }
 
 #ifdef DEBUG
@@ -120,7 +172,7 @@ namespace WebServ
 #ifdef DEBUG
             logging::log(HANDLE_REQUEST, "Body too large -> 413");
 #endif
-            return HttpResponseBuilder(HttpStatus::PayloadTooLarge);
+            return finalize_response(HttpResponseBuilder(HttpStatus::PayloadTooLarge));
         }
     }
 
@@ -160,7 +212,7 @@ namespace WebServ
 #ifdef DEBUG
         logging::log(HANDLE_REQUEST, "resolve_path rejected traversal -> 403");
 #endif
-        return HttpResponseBuilder(HttpStatus::Forbidden);
+        return finalize_response(HttpResponseBuilder(HttpStatus::Forbidden));
     }
 
 #ifdef DEBUG
@@ -178,7 +230,7 @@ namespace WebServ
 #ifdef DEBUG
         logging::log(HANDLE_REQUEST, "Dispatching to CGI");
 #endif
-        return http_cgi(*safe, match.location->cgi_path, method, path, request.headers, request.body);
+        return finalize_response(http_cgi(*safe, match.location->cgi_path, method, path, request.headers, request.body));
     }
 
     // dispatch by method
@@ -188,25 +240,25 @@ namespace WebServ
 #ifdef DEBUG
         logging::log(HANDLE_REQUEST, "Calling http_get");
 #endif
-        return http_get(*safe, match.location->index_files);
+        return finalize_response(http_get(*safe, match.location->index_files));
 
     case HttpMethod::POST:
 #ifdef DEBUG
         logging::log(HANDLE_REQUEST, "Calling http_post");
 #endif
-        return http_post(*safe, request.body);
+        return finalize_response(http_post(*safe, request.body));
 
     case HttpMethod::DELETE:
 #ifdef DEBUG
         logging::log(HANDLE_REQUEST, "Calling http_delete");
 #endif
-        return http_delete(*safe);
+        return finalize_response(http_delete(*safe));
 
     default:
 #ifdef DEBUG
         logging::log(HANDLE_REQUEST, "Unsupported method -> 405");
 #endif
-        return HttpResponseBuilder(HttpStatus::MethodNotAllowed);
+        return finalize_response(HttpResponseBuilder(HttpStatus::MethodNotAllowed));
     }
 }
 

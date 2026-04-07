@@ -63,6 +63,11 @@ void HttpResponseBuilder::set_status(int s)
     status = checked_status_from_int(s);
 }
 
+uint16_t HttpResponseBuilder::get_status_code() const
+{
+    return to_code(status);
+}
+
 void HttpResponseBuilder::set_body(const std::string &b)
 {
     body = b;
