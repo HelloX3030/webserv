@@ -23,6 +23,7 @@ curl -X POST --data "hello from post" http://127.0.0.1:8080/cgi-bin/echo.py</pre
     <h2>Browser tests</h2>
     <a href="/cgi-bin/hello.py?name=browser">/cgi-bin/hello.py?name=browser</a><br />
     <a href="/cgi-bin/echo.py">/cgi-bin/echo.py</a><br />
+    <a href="/cgi-bin/test-python.py?demo=1">/cgi-bin/test-python.py?demo=1</a><br />
 
     <h2>What to look for</h2>
     <ul>
@@ -30,6 +31,7 @@ curl -X POST --data "hello from post" http://127.0.0.1:8080/cgi-bin/echo.py</pre
       <li><code>QUERY_STRING</code> is filled for the GET example.</li>
       <li><code>CONTENT_LENGTH</code> is filled for the POST example.</li>
       <li>The body from POST is printed back by the CGI script.</li>
+      <li><code>test-python.py</code> prints a fuller environment dump for debugging.</li>
     </ul>
   </body>
 </html>
