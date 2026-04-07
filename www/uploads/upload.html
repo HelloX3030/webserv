@@ -8,19 +8,66 @@
       body { font-family: system-ui, sans-serif; margin: 2rem; line-height: 1.4; }
       form { margin: 1rem 0; padding: 1rem; border: 1px solid #ddd; border-radius: 8px; max-width: 520px; }
       code { background: #f1f3f5; padding: 0.1rem 0.3rem; border-radius: 4px; }
+      #status { margin-top: 1rem; }
     </style>
   </head>
   <body>
     <h1>uploads.conf demo</h1>
     <p>This page is served from <code>./www/uploads/upload.html</code>.</p>
 
-    <form method="POST" action="/upload/" enctype="multipart/form-data">
+    <p>
+      This demo sends the selected file as raw bytes to
+      <code>/upload/&lt;filename&gt;</code>.
+    </p>
+
+    <form id="upload-form">
       <label for="file">Choose a file:</label>
       <input id="file" type="file" name="file" required />
       <button type="submit">Upload</button>
     </form>
 
+    <div id="status" aria-live="polite"></div>
+
     <p>After upload, test retrieval with:</p>
     <p><code>GET /upload/&lt;filename&gt;</code></p>
+
+    <script>
+      (function () {
+        const form = document.getElementById("upload-form");
+        const fileInput = document.getElementById("file");
+        const status = document.getElementById("status");
+
+        form.addEventListener("submit", async function (event) {
+          event.preventDefault();
+
+          const file = fileInput.files && fileInput.files[0];
+          if (!file) {
+            status.textContent = "Please select a file first.";
+            return;
+          }
+
+          const target = "/upload/" + encodeURIComponent(file.name);
+          status.textContent = "Uploading to " + target + " ...";
+
+          try {
+            const response = await fetch(target, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/octet-stream"
+              },
+              body: file
+            });
+
+            status.innerHTML =
+              "Upload finished: HTTP " +
+              response.status +
+              " — " +
+              '<a href="' + target + '">open uploaded file</a>';
+          } catch (err) {
+            status.textContent = "Upload failed: " + String(err);
+          }
+        });
+      })();
+    </script>
   </body>
 </html>
