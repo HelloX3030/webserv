@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>webserv full demo</title>
+    <style>
+      :root {
+        --bg: #0b1020;
+        --panel: #141b34;
+        --text: #e9edf7;
+        --muted: #a8b3cf;
+        --accent: #6da8ff;
+        --accent2: #76e4c3;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+        background: radial-gradient(1200px 600px at 20% -10%, #1b2550, var(--bg));
+        color: var(--text);
+      }
+      .wrap { max-width: 1100px; margin: 0 auto; padding: 2rem 1rem 3rem; }
+      h1 { margin: 0 0 0.4rem; font-size: 2rem; }
+      .lead { color: var(--muted); margin-bottom: 1.5rem; }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 1rem;
+      }
+      .card {
+        background: linear-gradient(160deg, #192248, var(--panel));
+        border: 1px solid #27315b;
+        border-radius: 14px;
+        padding: 1rem;
+      }
+      .card h2 { margin: 0 0 0.5rem; font-size: 1.1rem; }
+      .card p { color: var(--muted); min-height: 3.2em; }
+      a.btn {
+        display: inline-block;
+        text-decoration: none;
+        color: #fff;
+        background: linear-gradient(90deg, var(--accent), var(--accent2));
+        padding: 0.5rem 0.75rem;
+        border-radius: 8px;
+        font-weight: 600;
+      }
+      code { background: #0e1430; padding: 0.1rem 0.3rem; border-radius: 6px; }
+      footer { margin-top: 2rem; color: var(--muted); font-size: 0.9rem; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <h1>webserv full feature demo</h1>
+      <p class="lead">One config, many features: redirect, uploads, cookies, CGI (bash/python), custom errors, and virtual hosts.</p>
+
+      <div class="grid">
+        <section class="card">
+          <h2>Blog post</h2>
+          <p>Styled article page for static serving and routing.</p>
+          <a class="btn" href="/blog/">Open /blog/</a>
+        </section>
+
+        <section class="card">
+          <h2>Redirect</h2>
+          <p>Location return demo: <code>/old</code> should go to <code>/blog/</code>.</p>
+          <a class="btn" href="/old">Try /old</a>
+        </section>
+
+        <section class="card">
+          <h2>Uploads</h2>
+          <p>Upload raw bytes and read/delete them via webserv routes.</p>
+          <a class="btn" href="/uploads/">Open /uploads/</a>
+        </section>
+
+        <section class="card">
+          <h2>Cookies</h2>
+          <p>CGI sends <code>Set-Cookie</code> and reads <code>HTTP_COOKIE</code>.</p>
+          <a class="btn" href="/cookies/">Open /cookies/</a>
+        </section>
+
+        <section class="card">
+          <h2>Python CGI</h2>
+          <p>Inspect environment and request body through Python CGI.</p>
+          <a class="btn" href="/cgi-python/env.py">Open /cgi-python/env.py</a>
+        </section>
+
+        <section class="card">
+          <h2>Bash CGI</h2>
+          <p>Inspect environment and body through Bash CGI.</p>
+          <a class="btn" href="/cgi-bash/env.sh">Open /cgi-bash/env.sh</a>
+        </section>
+      </div>
+
+      <footer>
+        Virtual host test: <code>Host: beta.localhost</code> routes to a different site.
+      </footer>
+    </div>
+  </body>
+</html>

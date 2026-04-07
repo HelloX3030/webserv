@@ -1,0 +1,12 @@
+<!doctype html>
+<html lang="en"><head><meta charset="UTF-8" /><title>Cookies demo</title></head>
+<body style="font-family:system-ui,sans-serif;margin:2rem;line-height:1.45;">
+<h1>Cookies demo</h1>
+<ol>
+  <li><a href="/cookies-bin/set-cookies.py">Set cookies</a></li>
+  <li><a href="/cookies-bin/show-cookies.py">Show cookies</a></li>
+</ol>
+<p>curl:</p>
+<pre>curl -i -c /tmp/full-cookies.txt http://127.0.0.1:8080/cookies-bin/set-cookies.py
+curl -i -b /tmp/full-cookies.txt http://127.0.0.1:8080/cookies-bin/show-cookies.py</pre>
+</body></html>

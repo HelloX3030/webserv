@@ -25,3 +25,7 @@ webserv_leaks
 www/uploads/files/*
 # keep dir struct in repo
 !www/uploads/files/README.md
+
+# runtime-generated files (full demo)
+www/full/uploads/files/*
+!www/full/uploads/files/README.md
