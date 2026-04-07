@@ -1,5 +1,6 @@
 #include "config/ConfigFrontend.hpp"
 
+#include <filesystem>
 #include <fstream>
 #include <iterator>
 #include <stdexcept>

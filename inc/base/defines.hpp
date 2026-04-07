@@ -65,7 +65,7 @@ constexpr const char *HTTP_METHOD_CGI = "HttpCGI";
 constexpr const char *PARSE_SERVER_CONFIG = "Parse Server Config";
 
 // defaults
-constexpr const char *DEFAULT_CONFIG_PATH = "config/default.conf";
+constexpr const char *DEFAULT_CONFIG_PATH = "config/valid/default.conf";
 
 // Branch Prediction
 #if defined(__GNUC__) || defined(__clang__)

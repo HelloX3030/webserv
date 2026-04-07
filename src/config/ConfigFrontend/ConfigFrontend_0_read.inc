@@ -10,13 +10,28 @@ precondition: unix line endings (\n). \r\n not handled — documented,
 not checked. */
 std::string Frontend::read(const std::string& filepath)
 {
+    std::error_code ec;
+    if (!std::filesystem::exists(filepath, ec))
+        throw std::runtime_error(
+            "[config] cannot open file: '" + filepath + "'\n"
+            "  reason: No such file or directory");
+
+    if (std::filesystem::is_directory(filepath, ec))
+        throw std::runtime_error(
+            "[config] invalid config path: '" + filepath + "'\n"
+            "  reason: path is a directory, expected a regular file");
+
     std::ifstream file(filepath);
     if (!file.is_open())
         throw std::runtime_error(
             "[config] cannot open file: '" + filepath + "'\n"
             "  verify path exists and is readable");
+
+    file.exceptions(std::ifstream::badbit);
+
     std::string source(std::istreambuf_iterator<char>(file),
                        std::istreambuf_iterator<char>{});
+
     bool in_comment = false;
     for (char& c : source)
     {
