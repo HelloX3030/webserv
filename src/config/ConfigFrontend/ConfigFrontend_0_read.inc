@@ -13,19 +13,16 @@ std::string Frontend::read(const std::string& filepath)
     std::error_code ec;
     if (!std::filesystem::exists(filepath, ec))
         throw std::runtime_error(
-            "[config] cannot open file: '" + filepath + "'\n"
-            "  reason: No such file or directory");
+            "config error: cannot open file '" + filepath + "' (No such file or directory)");
 
     if (std::filesystem::is_directory(filepath, ec))
         throw std::runtime_error(
-            "[config] invalid config path: '" + filepath + "'\n"
-            "  reason: path is a directory, expected a regular file");
+            "config error: invalid config path '" + filepath + "' (is a directory, expected a file)");
 
     std::ifstream file(filepath);
     if (!file.is_open())
         throw std::runtime_error(
-            "[config] cannot open file: '" + filepath + "'\n"
-            "  verify path exists and is readable");
+            "config error: cannot open file '" + filepath + "' (check path and read permissions)");
 
     file.exceptions(std::ifstream::badbit);
 
