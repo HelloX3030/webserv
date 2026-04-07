@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>cookies.conf demo</title>
+    <style>
+      body { font-family: system-ui, sans-serif; margin: 2rem; line-height: 1.45; }
+      code, pre { background: #f6f8fa; border-radius: 8px; }
+      code { padding: 0.1rem 0.3rem; }
+      pre { padding: 0.75rem; overflow: auto; }
+    </style>
+  </head>
+  <body>
+    <h1>cookies.conf demo</h1>
+    <p>This example uses CGI to set cookies and read them back.</p>
+
+    <h2>Browser flow</h2>
+    <ol>
+      <li><a href="/cgi-bin/set-cookies.py">Step 1: set cookies</a></li>
+      <li><a href="/cgi-bin/show-cookies.py">Step 2: show cookies sent by browser</a></li>
+    </ol>
+
+    <h2>curl flow</h2>
+    <pre>curl -i -c /tmp/webserv-cookies.txt http://127.0.0.1:8080/cgi-bin/set-cookies.py
+curl -i -b /tmp/webserv-cookies.txt http://127.0.0.1:8080/cgi-bin/show-cookies.py</pre>
+  </body>
+</html>

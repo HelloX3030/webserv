@@ -78,6 +78,84 @@ CgiEnv build_cgi_env(
     return result;
 }
 
+void apply_cgi_output_to_response(const std::string &output, HttpResponseBuilder &response)
+{
+    std::string::size_type header_end = output.find("\r\n\r\n");
+    std::size_t delimiter_len = 4;
+
+    if (header_end == std::string::npos)
+    {
+        header_end = output.find("\n\n");
+        delimiter_len = 2;
+    }
+
+    // No CGI header block found: treat all output as body.
+    if (header_end == std::string::npos)
+    {
+        response.set_body(output);
+        return;
+    }
+
+    std::string header_block = output.substr(0, header_end);
+    std::string body = output.substr(header_end + delimiter_len);
+
+    std::size_t start = 0;
+    while (start <= header_block.size())
+    {
+        std::size_t end = header_block.find('\n', start);
+        std::string line;
+
+        if (end == std::string::npos)
+            line = header_block.substr(start);
+        else
+            line = header_block.substr(start, end - start);
+
+        if (!line.empty() && line[line.size() - 1] == '\r')
+            line.erase(line.size() - 1);
+
+        if (!line.empty())
+        {
+            std::size_t colon = line.find(':');
+            if (colon != std::string::npos && colon > 0)
+            {
+                std::string key = line.substr(0, colon);
+                std::string value = line.substr(colon + 1);
+
+                while (!value.empty() && (value[0] == ' ' || value[0] == '\t'))
+                    value.erase(0, 1);
+
+                std::string lower_key = key;
+                for (std::size_t i = 0; i < lower_key.size(); ++i)
+                    lower_key[i] = static_cast<char>(std::tolower(static_cast<unsigned char>(lower_key[i])));
+
+                if (lower_key == "status")
+                {
+                    std::size_t pos = 0;
+                    while (pos < value.size() && std::isdigit(static_cast<unsigned char>(value[pos])))
+                        ++pos;
+
+                    if (pos > 0)
+                    {
+                        int status_code = std::atoi(value.substr(0, pos).c_str());
+                        response.set_status(status_code);
+                    }
+                }
+                else
+                {
+                    response.set_header(key, value);
+                }
+            }
+        }
+
+        if (end == std::string::npos)
+            break;
+
+        start = end + 1;
+    }
+
+    response.set_body(body);
+}
+
 } // anonymous namespace
 
 HttpResponseBuilder http_cgi(
@@ -202,7 +280,7 @@ HttpResponseBuilder http_cgi(
     }
 
     HttpResponseBuilder result(HttpStatus::OK);
-    result.set_body(output);
+    apply_cgi_output_to_response(output, result);
 
     return result;
 }
