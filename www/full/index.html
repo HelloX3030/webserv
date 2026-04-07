@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en" class="theme-light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Full Blog</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/light.css" />
+    <link rel="stylesheet" href="/css/dark.css" />
+    <script src="/js/theme.js"></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="brand">
+        <a href="/">Full Blog</a>
+        <p>Minimal blog demo for webserv</p>
+      </div>
+      <nav class="site-nav">
+        <a href="/">Home</a>
+        <a href="/create.html">Create Post</a>
+        <a href="/posts.html">All Posts</a>
+        <a href="/delete.html">Delete Post</a>
+      </nav>
+      <label class="theme-switcher">
+        <span>Theme</span>
+        <select id="theme-picker" aria-label="Theme picker">
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+        </select>
+      </label>
+    </header>
+
+    <main class="shell">
+      <section class="hero card">
+        <h1>Full Blog</h1>
+        <p>
+          A tiny filesystem-backed blog that exercises static files, Python CGI,
+          cookies, GET, POST, and DELETE on the custom webserv server.
+        </p>
+        <div class="actions">
+          <a class="button" href="/create.html">Write a post</a>
+          <a class="button secondary" href="/cgi-bin/list_posts.py">View live posts</a>
+        </div>
+      </section>
+
+      <section class="grid">
+        <article class="card">
+          <h2>What it does</h2>
+          <ul>
+            <li>Create posts with a CGI form</li>
+            <li>List and view posts from the filesystem</li>
+            <li>Delete posts without permissions</li>
+            <li>Persist the theme in a cookie</li>
+          </ul>
+        </article>
+
+        <article class="card">
+          <h2>Quick links</h2>
+          <ul>
+            <li><a href="/cgi-bin/list_posts.py">Dynamic post list</a></li>
+            <li><a href="/data/posts/">Raw post storage</a></li>
+            <li><a href="/cgi-bin/create_post.py">CGI create endpoint</a></li>
+            <li><a href="/cgi-bin/delete_post.py">CGI delete endpoint</a></li>
+          </ul>
+        </article>
+      </section>
+    </main>
+  </body>
+</html>

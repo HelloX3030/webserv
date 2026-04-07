@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en" class="theme-light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>All Posts</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/light.css" />
+    <link rel="stylesheet" href="/css/dark.css" />
+    <script src="/js/theme.js"></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="brand">
+        <a href="/">Full Blog</a>
+        <p>Browse and open published posts</p>
+      </div>
+      <nav class="site-nav">
+        <a href="/">Home</a>
+        <a href="/create.html">Create Post</a>
+        <a href="/posts.html">All Posts</a>
+        <a href="/delete.html">Delete Post</a>
+      </nav>
+      <label class="theme-switcher">
+        <span>Theme</span>
+        <select id="theme-picker" aria-label="Theme picker">
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+        </select>
+      </label>
+    </header>
+
+    <main class="shell narrow">
+      <section class="card">
+        <h1>All posts</h1>
+        <p>
+          The live post list is rendered by CGI. Open the filesystem listing or
+          the dynamic list below.
+        </p>
+        <div class="actions">
+          <a class="button" href="/cgi-bin/list_posts.py">Open live list</a>
+          <a class="button secondary" href="/data/posts/">Open raw directory</a>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
