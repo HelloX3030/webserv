@@ -28,7 +28,7 @@ namespace WebServ
     logging::log(HANDLE_REQUEST, "Using default server config");
 #endif
 
-    auto it = request.headers.find(HOST);
+    auto it = request.headers.find("host");
     if (it != request.headers.end())
     {
         std::string host = it->second;

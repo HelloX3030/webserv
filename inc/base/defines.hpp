@@ -45,7 +45,6 @@ constexpr const char *ACTIVE = "Active";
 constexpr const char *FAILED = "Failed";
 constexpr const char *CLOSE = "Close";
 constexpr const char *UNKNOWN = "Unknown";
-constexpr const char *HOST = "Host";
 
 // Log Titles
 constexpr const char *DISPLAY = "Display";

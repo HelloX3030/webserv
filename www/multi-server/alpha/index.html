@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>alpha.localhost</title>
+    <style>
+      body { font-family: system-ui, sans-serif; margin: 2rem; line-height: 1.45; }
+      pre { background: #f6f8fa; padding: 0.75rem; border-radius: 8px; overflow: auto; }
+      code { background: #f1f3f5; padding: 0.1rem 0.3rem; border-radius: 4px; }
+      .ok { color: #0a7a2f; }
+    </style>
+  </head>
+  <body>
+    <h1 class="ok">multi-server.conf: alpha</h1>
+    <p>Host route matched: <strong>alpha.localhost</strong>.</p>
+
+    <h2>How to test without editing /etc/hosts</h2>
+    <p>Use curl with an explicit Host header:</p>
+    <pre>curl -H "Host: alpha.localhost" http://127.0.0.1:8080/
+curl -H "Host: beta.localhost"  http://127.0.0.1:8080/</pre>
+
+    <h2>How to test in a browser</h2>
+    <p>Browsers use the hostname from the URL as Host header. Add local mappings:</p>
+    <pre>127.0.0.1 alpha.localhost
+127.0.0.1 beta.localhost</pre>
+    <p>Then open:</p>
+    <pre>http://alpha.localhost:8080/
+http://beta.localhost:8080/</pre>
+
+    <p>
+      Note: editing <code>/etc/hosts</code> needs elevated privileges on Linux.
+      Curl tests do not.
+    </p>
+  </body>
+</html>
