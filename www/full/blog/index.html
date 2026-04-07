@@ -4,43 +4,56 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>webserv blog post</title>
-    <style>
-      body { margin: 0; font-family: Georgia, 'Times New Roman', serif; background: #f8f9fc; color: #1f2430; }
-      .hero { background: #111827; color: #f3f4f6; padding: 3rem 1rem; }
-      .hero h1 { max-width: 900px; margin: 0 auto; font-size: 2.2rem; }
-      .hero p { max-width: 900px; margin: 0.6rem auto 0; color: #d1d5db; }
-      main { max-width: 900px; margin: 0 auto; padding: 1.5rem 1rem 2rem; }
-      article { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 1.2rem; }
-      h2 { margin-top: 1.2rem; }
-      code { background: #f3f4f6; padding: 0.1rem 0.35rem; border-radius: 6px; }
-      .links a { margin-right: 0.6rem; }
-    </style>
+    <link rel="stylesheet" href="/assets/theme.css" />
   </head>
   <body>
-    <header class="hero">
-      <h1>Building a tiny yet feature-rich web server</h1>
-      <p>One config can orchestrate static pages, redirects, uploads, CGI, cookies, error pages, and virtual hosts.</p>
-    </header>
-    <main>
-      <article>
-        <p><strong>Published:</strong> 2026-04-07</p>
-        <h2>Why this post exists</h2>
-        <p>This page is part of <code>config/valid/full.conf</code>, designed to prove all major project features work in one runnable setup.</p>
+    <main class="shell">
+      <section class="hero hero-card">
+        <div class="badge">blog post · live demo</div>
+        <h1 class="title">Building a tiny yet feature-rich web server</h1>
+        <p class="subtitle">This article is the proof: every section links to a working route in <code>full.conf</code>.</p>
+      </section>
 
-        <h2>Features you can verify right now</h2>
-        <ul>
-          <li>Redirect: <code>/old</code> → <code>/blog/</code></li>
-          <li>Uploads: <code>/uploads/</code> + <code>/upload/&lt;filename&gt;</code></li>
-          <li>Cookies via CGI: <code>/cookies/</code></li>
-          <li>Python CGI: <code>/cgi-python/env.py</code></li>
-          <li>Bash CGI: <code>/cgi-bash/env.sh</code></li>
-          <li>Custom error pages: trigger 404 on a missing path</li>
-        </ul>
+      <article class="panel" style="margin-top:16px;">
+        <div class="kicker">Published 2026-04-07</div>
+        <p class="quote">A good server demo should feel like a small product, not a checklist.</p>
 
-        <p class="links">
-          <a href="/">Back to landing</a>
-          <a href="/does-not-exist">Trigger 404</a>
-        </p>
+        <div class="split">
+          <div>
+            <h2>What to click</h2>
+            <div class="cards">
+              <div class="card"><h3>Redirect</h3><p><code>/old</code> becomes <code>/blog/</code>.</p><a class="btn" href="/old">Open /old</a></div>
+              <div class="card"><h3>404 page</h3><p>Missing path returns the custom error page.</p><a class="btn secondary" href="/does-not-exist">Trigger 404</a></div>
+              <div class="card"><h3>Python CGI</h3><p>Shows method, query string, and body.</p><a class="btn secondary" href="/cgi-python/env.py?demo=1">Open Python CGI</a></div>
+              <div class="card"><h3>Bash CGI</h3><p>Same idea, different interpreter.</p><a class="btn secondary" href="/cgi-bash/env.sh?demo=1">Open Bash CGI</a></div>
+            </div>
+          </div>
+
+          <div>
+            <h2>Feature proof</h2>
+            <ul class="list">
+              <li>Redirect is not explained — click it.</li>
+              <li>Cookies are set and then read back.</li>
+              <li>Uploads store bytes and return them on GET.</li>
+              <li>Virtual host routing is visible through a different landing page.</li>
+            </ul>
+
+            <hr class="sep" />
+
+            <div class="row">
+              <a class="btn" href="/cookies/">Cookie demo</a>
+              <a class="btn secondary" href="/uploads/">Upload demo</a>
+            </div>
+          </div>
+        </div>
+
+        <hr class="sep" />
+
+        <div class="row">
+          <a class="btn" href="/">Back to landing</a>
+          <a class="btn secondary" href="/cgi-python/env.py">Python env</a>
+          <a class="btn secondary" href="/cgi-bash/env.sh">Bash env</a>
+        </div>
       </article>
     </main>
   </body>
