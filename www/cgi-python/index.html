@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>cgi-python.conf demo</title>
+    <style>
+      body { font-family: system-ui, sans-serif; margin: 2rem; line-height: 1.45; }
+      code, pre { background: #f6f8fa; border-radius: 8px; }
+      code { padding: 0.1rem 0.3rem; }
+      pre { padding: 0.75rem; overflow: auto; }
+      a { display: inline-block; margin: 0.2rem 0; }
+    </style>
+  </head>
+  <body>
+    <h1>cgi-python.conf demo</h1>
+    <p>This page is static. The CGI scripts live under <code>/cgi-bin/</code>.</p>
+
+    <h2>Quick curl tests</h2>
+    <pre>curl "http://127.0.0.1:8080/cgi-bin/hello.py?name=Lukas"
+curl -X POST --data "hello from post" http://127.0.0.1:8080/cgi-bin/echo.py</pre>
+
+    <h2>Browser tests</h2>
+    <a href="/cgi-bin/hello.py?name=browser">/cgi-bin/hello.py?name=browser</a><br />
+    <a href="/cgi-bin/echo.py">/cgi-bin/echo.py</a><br />
+
+    <h2>What to look for</h2>
+    <ul>
+      <li><code>REQUEST_METHOD</code> changes between GET and POST.</li>
+      <li><code>QUERY_STRING</code> is filled for the GET example.</li>
+      <li><code>CONTENT_LENGTH</code> is filled for the POST example.</li>
+      <li>The body from POST is printed back by the CGI script.</li>
+    </ul>
+  </body>
+</html>
