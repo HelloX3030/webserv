@@ -22,13 +22,13 @@ static HttpResponseBuilder serve_file(const std::filesystem::path &file_path)
 #ifdef DEBUG
         logging::log(HTTP_METHOD_GET, "Failed to open file -> 500");
 #endif
-        return HttpResponseBuilder(500);
+        return HttpResponseBuilder(HttpStatus::InternalServerError);
     }
 
     std::stringstream buffer;
     buffer << file.rdbuf();
 
-    HttpResponseBuilder res(200);
+    HttpResponseBuilder res(HttpStatus::OK);
     res.set_body(buffer.str());
 
     res.set_content_type(file_path);
@@ -53,7 +53,7 @@ http_get(const std::filesystem::path &resolved_path,
 #ifdef DEBUG
         logging::log(HTTP_METHOD_GET, "File does not exist -> 404");
 #endif
-        return HttpResponseBuilder(404);
+        return HttpResponseBuilder(HttpStatus::NotFound);
     }
 
     // directory handling
@@ -82,7 +82,7 @@ http_get(const std::filesystem::path &resolved_path,
 #ifdef DEBUG
         logging::log(HTTP_METHOD_GET, "Directory without index -> 403");
 #endif
-        return HttpResponseBuilder(403);
+        return HttpResponseBuilder(HttpStatus::Forbidden);
     }
 
 #ifdef DEBUG

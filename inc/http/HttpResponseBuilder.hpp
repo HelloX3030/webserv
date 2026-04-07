@@ -1,5 +1,6 @@
 #pragma once
 
+#include "http/HttpStatus.hpp"
 #include <filesystem>
 #include <string>
 #include <utility>
@@ -8,13 +9,12 @@
 class HttpResponseBuilder
 {
   private:
-    int status = 200;
+    HttpStatus status = HttpStatus::OK;
     std::string body;
     std::vector<std::pair<std::string, std::string>> headers;
 
     bool has_header(const std::string &key) const;
 
-    static std::string status_text(int status);
     static std::string get_mime_type(const std::filesystem::path &path);
 
   public:
@@ -24,9 +24,11 @@ class HttpResponseBuilder
     ~HttpResponseBuilder() = default;
 
     // Special Constructor
+    explicit HttpResponseBuilder(HttpStatus status);
     explicit HttpResponseBuilder(int status);
 
     // Functions
+    void set_status(HttpStatus status);
     void set_status(int status);
     void set_body(const std::string &body);
     void set_header(const std::string &key, const std::string &value);

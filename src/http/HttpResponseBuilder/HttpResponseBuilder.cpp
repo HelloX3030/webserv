@@ -4,46 +4,24 @@
 #include <map>
 #include <sstream>
 
-std::string HttpResponseBuilder::status_text(int status)
+namespace
 {
-    switch (status)
+HttpStatus checked_status_from_int(int code)
+{
+    if (code >= 0)
     {
-    case 200:
-        return "OK";
-    case 201:
-        return "Created";
-    case 204:
-        return "No Content";
-    case 301:
-        return "Moved Permanently";
-    case 302:
-        return "Found";
-    case 303:
-        return "See Other";
-    case 400:
-        return "Bad Request";
-    case 403:
-        return "Forbidden";
-    case 404:
-        return "Not Found";
-    case 405:
-        return "Method Not Allowed";
-    case 409:
-        return "Conflict";
-    case 413:
-        return "Payload Too Large";
-    case 500:
-        return "Internal Server Error";
-    case 501:
-        return "Not Implemented";
-    default:
-#ifdef DEBUG
-        throw SetupError("Http Response code no status text found: " + std::to_string(status));
-#else
-        return "Unknown";
-#endif
+        std::optional<HttpStatus> parsed = http_status_from_code(static_cast<uint16_t>(code));
+        if (parsed.has_value())
+            return *parsed;
     }
+
+#ifdef DEBUG
+    throw SetupError("Http Response code no status text found: " + std::to_string(code));
+#else
+    return HttpStatus::InternalServerError;
+#endif
 }
+} // namespace
 
 std::string HttpResponseBuilder::get_mime_type(const std::filesystem::path &path)
 {
@@ -66,13 +44,23 @@ std::string HttpResponseBuilder::get_mime_type(const std::filesystem::path &path
     return "application/octet-stream";
 }
 
-HttpResponseBuilder::HttpResponseBuilder(int status) : status(status)
+HttpResponseBuilder::HttpResponseBuilder(HttpStatus status) : status(status)
 {
+}
+
+HttpResponseBuilder::HttpResponseBuilder(int status)
+    : status(checked_status_from_int(status))
+{
+}
+
+void HttpResponseBuilder::set_status(HttpStatus s)
+{
+    status = s;
 }
 
 void HttpResponseBuilder::set_status(int s)
 {
-    status = s;
+    status = checked_status_from_int(s);
 }
 
 void HttpResponseBuilder::set_body(const std::string &b)
@@ -107,7 +95,7 @@ std::string HttpResponseBuilder::to_string() const
 {
     std::ostringstream response;
 
-    response << WebServ::HTTP_VERSION << " " << status << " " << status_text(status) << "\r\n";
+    response << WebServ::HTTP_VERSION << " " << to_code(status) << " " << ::to_string(status) << "\r\n";
 
     // Headers
     for (std::vector<std::pair<std::string, std::string>>::const_iterator it = headers.begin();

@@ -25,7 +25,7 @@ HttpResponseBuilder http_post(const std::filesystem::path &resolved_path, const 
 #ifdef DEBUG
         logging::log(HTTP_METHOD_POST, "Parent directory does not exist -> 409");
 #endif
-        return HttpResponseBuilder(409);
+        return HttpResponseBuilder(HttpStatus::Conflict);
     }
 
     if (std::filesystem::is_directory(resolved_path))
@@ -33,7 +33,7 @@ HttpResponseBuilder http_post(const std::filesystem::path &resolved_path, const 
 #ifdef DEBUG
         logging::log(HTTP_METHOD_POST, "Target path is a directory -> 403");
 #endif
-        return HttpResponseBuilder(403);
+        return HttpResponseBuilder(HttpStatus::Forbidden);
     }
 
     bool existed = std::filesystem::exists(resolved_path);
@@ -49,7 +49,7 @@ HttpResponseBuilder http_post(const std::filesystem::path &resolved_path, const 
 #ifdef DEBUG
         logging::log(HTTP_METHOD_POST, "Failed to open file for writing -> 500");
 #endif
-        return HttpResponseBuilder(500);
+        return HttpResponseBuilder(HttpStatus::InternalServerError);
     }
 
 #ifdef DEBUG
@@ -63,7 +63,7 @@ HttpResponseBuilder http_post(const std::filesystem::path &resolved_path, const 
     logging::log(HTTP_METHOD_POST, existed ? "Returning 200 OK (overwrite)" : "Returning 201 Created");
 #endif
 
-    return HttpResponseBuilder(existed ? 200 : 201);
+    return HttpResponseBuilder(existed ? HttpStatus::OK : HttpStatus::Created);
 }
 
 } // namespace WebServ

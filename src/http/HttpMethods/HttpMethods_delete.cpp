@@ -17,7 +17,7 @@ HttpResponseBuilder http_delete(const std::filesystem::path &resolved_path)
 #ifdef DEBUG
         logging::log(HTTP_METHOD_DELETE, "Target does not exist -> 404");
 #endif
-        return HttpResponseBuilder(404);
+        return HttpResponseBuilder(HttpStatus::NotFound);
     }
 
     if (std::filesystem::is_directory(resolved_path))
@@ -25,7 +25,7 @@ HttpResponseBuilder http_delete(const std::filesystem::path &resolved_path)
 #ifdef DEBUG
         logging::log(HTTP_METHOD_DELETE, "Target is directory -> 403");
 #endif
-        return HttpResponseBuilder(403);
+        return HttpResponseBuilder(HttpStatus::Forbidden);
     }
 
 #ifdef DEBUG
@@ -39,7 +39,7 @@ HttpResponseBuilder http_delete(const std::filesystem::path &resolved_path)
 #ifdef DEBUG
             logging::log(HTTP_METHOD_DELETE, "remove() returned false -> 500");
 #endif
-            return HttpResponseBuilder(500);
+            return HttpResponseBuilder(HttpStatus::InternalServerError);
         }
     }
     catch (...)
@@ -47,14 +47,14 @@ HttpResponseBuilder http_delete(const std::filesystem::path &resolved_path)
 #ifdef DEBUG
         logging::log(HTTP_METHOD_DELETE, "Filesystem deletion failed -> 500");
 #endif
-        return HttpResponseBuilder(500);
+        return HttpResponseBuilder(HttpStatus::InternalServerError);
     }
 
 #ifdef DEBUG
     logging::log(HTTP_METHOD_DELETE, "File deleted -> 200");
 #endif
 
-    return HttpResponseBuilder(200);
+    return HttpResponseBuilder(HttpStatus::OK);
 }
 
 } // namespace WebServ

@@ -74,7 +74,7 @@ namespace WebServ
 #ifdef DEBUG
         logging::log(HANDLE_REQUEST, "No matching location -> 404");
 #endif
-        return HttpResponseBuilder(404);
+        return HttpResponseBuilder(HttpStatus::NotFound);
     }
 
 #ifdef DEBUG
@@ -101,7 +101,7 @@ namespace WebServ
 #ifdef DEBUG
         logging::log(HANDLE_REQUEST, "Method not allowed -> 405");
 #endif
-        return HttpResponseBuilder(405);
+        return HttpResponseBuilder(HttpStatus::MethodNotAllowed);
     }
 
 #ifdef DEBUG
@@ -120,7 +120,7 @@ namespace WebServ
 #ifdef DEBUG
             logging::log(HANDLE_REQUEST, "Body too large -> 413");
 #endif
-            return HttpResponseBuilder(413);
+            return HttpResponseBuilder(HttpStatus::PayloadTooLarge);
         }
     }
 
@@ -160,7 +160,7 @@ namespace WebServ
 #ifdef DEBUG
         logging::log(HANDLE_REQUEST, "resolve_path rejected traversal -> 403");
 #endif
-        return HttpResponseBuilder(403);
+        return HttpResponseBuilder(HttpStatus::Forbidden);
     }
 
 #ifdef DEBUG
@@ -206,7 +206,7 @@ namespace WebServ
 #ifdef DEBUG
         logging::log(HANDLE_REQUEST, "Unsupported method -> 405");
 #endif
-        return HttpResponseBuilder(405);
+        return HttpResponseBuilder(HttpStatus::MethodNotAllowed);
     }
 }
 

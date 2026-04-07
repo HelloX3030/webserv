@@ -125,7 +125,7 @@ HttpResponseBuilder http_cgi(
 #ifdef DEBUG
         logging::log(HTTP_METHOD_CGI, "Script does not exist -> 404");
 #endif
-        return HttpResponseBuilder(404);
+        return HttpResponseBuilder(HttpStatus::NotFound);
     }
 
     CgiEnv env = build_cgi_env(script_path, method, target, headers, body);
@@ -134,12 +134,12 @@ HttpResponseBuilder http_cgi(
     int out_pipe[2];
 
     if (pipe(in_pipe) < 0 || pipe(out_pipe) < 0)
-        return HttpResponseBuilder(500);
+        return HttpResponseBuilder(HttpStatus::InternalServerError);
 
     pid_t pid = fork();
 
     if (pid < 0)
-        return HttpResponseBuilder(500);
+        return HttpResponseBuilder(HttpStatus::InternalServerError);
 
     if (pid == 0)
     {
@@ -189,7 +189,7 @@ HttpResponseBuilder http_cgi(
 #ifdef DEBUG
         logging::log(HTTP_METHOD_CGI, "CGI execution failed -> 500");
 #endif
-        return HttpResponseBuilder(500);
+        return HttpResponseBuilder(HttpStatus::InternalServerError);
     }
 
     // ---- empty output is invalid CGI ----
@@ -198,10 +198,10 @@ HttpResponseBuilder http_cgi(
 #ifdef DEBUG
         logging::log(HTTP_METHOD_CGI, "Empty CGI output -> 500");
 #endif
-        return HttpResponseBuilder(500);
+        return HttpResponseBuilder(HttpStatus::InternalServerError);
     }
 
-    HttpResponseBuilder result(200);
+    HttpResponseBuilder result(HttpStatus::OK);
     result.set_body(output);
 
     return result;
