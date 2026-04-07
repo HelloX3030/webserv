@@ -1,6 +1,7 @@
 #include "http/HttpResponseBuilder.hpp"
 #include "base/defines.hpp"
 #include "base/errors.hpp"
+#include <map>
 #include <sstream>
 
 std::string HttpResponseBuilder::status_text(int status)
@@ -81,12 +82,25 @@ void HttpResponseBuilder::set_body(const std::string &b)
 
 void HttpResponseBuilder::set_header(const std::string &key, const std::string &value)
 {
-    headers[key] = value;
+    headers.push_back(std::make_pair(key, value));
 }
 
 void HttpResponseBuilder::set_content_type(const std::filesystem::path &path)
 {
-    headers["Content-Type"] = get_mime_type(path);
+    set_header("Content-Type", get_mime_type(path));
+}
+
+bool HttpResponseBuilder::has_header(const std::string &key) const
+{
+    for (std::vector<std::pair<std::string, std::string>>::const_iterator it = headers.begin();
+         it != headers.end();
+         ++it)
+    {
+        if (it->first == key)
+            return true;
+    }
+
+    return false;
 }
 
 std::string HttpResponseBuilder::to_string() const
@@ -96,16 +110,16 @@ std::string HttpResponseBuilder::to_string() const
     response << WebServ::HTTP_VERSION << " " << status << " " << status_text(status) << "\r\n";
 
     // Headers
-    for (std::map<std::string, std::string>::const_iterator it = headers.begin();
+    for (std::vector<std::pair<std::string, std::string>>::const_iterator it = headers.begin();
          it != headers.end(); ++it)
     {
         response << it->first << ": " << it->second << "\r\n";
     }
 
-    if (headers.find("Content-Length") == headers.end())
+    if (!has_header("Content-Length"))
         response << "Content-Length: " << body.size() << "\r\n";
 
-    if (headers.find("Connection") == headers.end())
+    if (!has_header("Connection"))
         response << "Connection: close\r\n";
 
     response << "\r\n";

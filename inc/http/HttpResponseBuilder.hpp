@@ -1,15 +1,18 @@
 #pragma once
 
 #include <filesystem>
-#include <map>
 #include <string>
+#include <utility>
+#include <vector>
 
 class HttpResponseBuilder
 {
   private:
     int status = 200;
     std::string body;
-    std::map<std::string, std::string> headers;
+    std::vector<std::pair<std::string, std::string>> headers;
+
+    bool has_header(const std::string &key) const;
 
     static std::string status_text(int status);
     static std::string get_mime_type(const std::filesystem::path &path);
