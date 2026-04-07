@@ -4,6 +4,8 @@
 #include "base/logging.hpp"
 #include "http/HttpMethods.hpp"
 #include "net/Listener.hpp"
+#include <algorithm>
+#include <cctype>
 #include <sys/epoll.h>
 
 std::string to_string(ConnectionState state)
@@ -68,7 +70,17 @@ void Connection::handle_client_buffer(const char *buffer, ssize_t n)
 
         if (result.status == ParseStatus::Complete)
         {
-            const bool request_keep_alive = result.request.keepAlive();
+            bool request_keep_alive = false;
+            std::map<std::string, std::string>::const_iterator it = result.request.headers.find("connection");
+            if (it != result.request.headers.end())
+            {
+                std::string value = it->second;
+                std::transform(value.begin(), value.end(), value.begin(),
+                               [](unsigned char c)
+                               { return std::tolower(c); });
+                request_keep_alive = (value == "keep-alive");
+            }
+
             HttpResponseBuilder response = WebServ::http_handle_request(*this, result.request);
             response.set_header("Connection", request_keep_alive ? "keep-alive" : "close");
 
