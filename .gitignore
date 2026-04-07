@@ -22,6 +22,6 @@ webserv_debug
 webserv_leaks
 
 # runtime-generated files
-www/uploads/*
+www/uploads/files/*
 # keep dir struct in repo
-!www/uploads/README.md
+!www/uploads/files/README.md
