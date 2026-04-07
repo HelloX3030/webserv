@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>cgi-bash.conf demo</title>
+    <style>
+      body { font-family: system-ui, sans-serif; margin: 2rem; line-height: 1.45; }
+      code { background: #f1f3f5; padding: 0.1rem 0.3rem; border-radius: 4px; }
+      pre { background: #f6f8fa; padding: 0.75rem; border-radius: 8px; overflow: auto; }
+    </style>
+  </head>
+  <body>
+    <h1>cgi-bash.conf demo</h1>
+    <p>This page is static. The CGI endpoint is under <code>/cgi-bin/</code>.</p>
+
+    <p>GET example:</p>
+    <pre>curl "http://127.0.0.1:8080/cgi-bin/hello.sh?name=Lukas"</pre>
+
+    <p>POST example:</p>
+    <pre>curl -X POST --data "hello from post" http://127.0.0.1:8080/cgi-bin/echo.sh</pre>
+
+    <p>Quick browser checks (all .sh scripts):</p>
+    <ul>
+      <li><a href="/cgi-bin/hello.sh?name=browser">/cgi-bin/hello.sh?name=browser</a></li>
+      <li><a href="/cgi-bin/echo.sh">/cgi-bin/echo.sh</a> (GET)</li>
+      <li><a href="/cgi-bin/test-bash.sh?demo=1">/cgi-bin/test-bash.sh?demo=1</a></li>
+    </ul>
+  </body>
+</html>
