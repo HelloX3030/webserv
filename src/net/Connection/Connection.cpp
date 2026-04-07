@@ -41,7 +41,7 @@ int Connection::get_fd() const
 uint32_t Connection::get_events() const
 {
     if (state == ConnectionState::FAILED)
-        return EPOLLOUT;
+        return (!write_buffer.empty() || !responses.empty()) ? EPOLLOUT : 0;
 
     if (state == ConnectionState::CLOSE)
         return 0;
@@ -68,10 +68,19 @@ void Connection::handle_client_buffer(const char *buffer, ssize_t n)
 
         if (result.status == ParseStatus::Complete)
         {
-            keep_alive = result.request.keepAlive();
+            const bool request_keep_alive = result.request.keepAlive();
             HttpResponseBuilder response = WebServ::http_handle_request(*this, result.request);
+            response.set_header("Connection", request_keep_alive ? "keep-alive" : "close");
 
             responses.push_back(response);
+
+            keep_alive = request_keep_alive;
+
+            // Once a request asks to close, stop consuming further pipelined input.
+            // Remaining buffered bytes are ignored because the connection will close
+            // after queued responses are written.
+            if (!request_keep_alive)
+                break;
 
             http_request_frontend.reset();
 
@@ -83,6 +92,7 @@ void Connection::handle_client_buffer(const char *buffer, ssize_t n)
         keep_alive = false;
 
         HttpResponseBuilder response(result.error_code);
+        response.set_header("Connection", "close");
         responses.push_back(response);
 
         state = ConnectionState::FAILED;
