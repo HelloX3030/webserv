@@ -81,6 +81,20 @@ namespace WebServ
     logging::log(HANDLE_REQUEST, "Selected location prefix=\"" + match.prefix + "\" root=\"" + match.location->root + "\"");
 #endif
 
+    // location redirect (return code + location)
+    if (match.location->return_code.has_value())
+    {
+#ifdef DEBUG
+        logging::log(HANDLE_REQUEST,
+                     "Applying redirect -> " + std::to_string(*match.location->return_code) +
+                         " location=\"" + match.location->return_path + "\"");
+#endif
+
+        HttpResponseBuilder response(*match.location->return_code);
+        response.set_header("Location", match.location->return_path);
+        return response;
+    }
+
     // check allowed methods
     if (match.location->allowed_methods.count(method) == 0)
     {
