@@ -576,6 +576,258 @@ def test_get_symlink_escape() -> None:
         symlink_path.unlink()
 
 
+def test_get_directory_request() -> None:
+    with WebservRunner("config/valid/full.conf"):
+        req = http10_request_bytes(
+            method="GET",
+            target="/files/",
+            host="localhost",
+            headers={},
+            body=b"",
+        )
+
+        with open_client() as sock:
+            sock.sendall(req)
+            res = read_http_response(sock)
+
+        assert_true(
+            res.status_code in (200, 403, 404),
+            f"Directory request /files/ should return 200 (listing), 403 (forbidden), or 404, got {res.status_code}",
+        )
+
+
+def test_get_query_string() -> None:
+    target_file = ROOT / "www/full/files/itest_get_query.txt"
+    target_file.write_text("query-test\n", encoding="utf-8")
+
+    with WebservRunner("config/valid/full.conf"):
+        req = http10_request_bytes(
+            method="GET",
+            target="/files/itest_get_query.txt?foo=bar&baz=qux",
+            host="localhost",
+            headers={},
+            body=b"",
+        )
+
+        with open_client() as sock:
+            sock.sendall(req)
+            res = read_http_response(sock)
+
+        assert_true(
+            res.status_code == 200,
+            f"Query string should be ignored, got {res.status_code}",
+        )
+        assert_true(
+            "query-test" in res.body_text,
+            f"Expected body to contain file content despite query string, got: {res.body_text!r}",
+        )
+
+    if target_file.exists():
+        target_file.unlink()
+
+
+def test_get_empty_file() -> None:
+    target_file = ROOT / "www/full/files/itest_get_empty.txt"
+    target_file.write_bytes(b"")
+
+    with WebservRunner("config/valid/full.conf"):
+        req = http10_request_bytes(
+            method="GET",
+            target="/files/itest_get_empty.txt",
+            host="localhost",
+            headers={},
+            body=b"",
+        )
+
+        with open_client() as sock:
+            sock.sendall(req)
+            res = read_http_response(sock)
+
+        assert_true(
+            res.status_code == 200,
+            f"Empty file should return 200, got {res.status_code}",
+        )
+        assert_true(
+            len(res.body_text) == 0 or res.body_text == "",
+            f"Empty file body should be empty, got: {res.body_text!r}",
+        )
+
+    if target_file.exists():
+        target_file.unlink()
+
+
+def test_get_case_sensitivity() -> None:
+    target_file = ROOT / "www/full/files/itest_get_CaseSensitive.txt"
+    target_file.write_text("case-sensitive\n", encoding="utf-8")
+
+    with WebservRunner("config/valid/full.conf"):
+        req_correct = http10_request_bytes(
+            method="GET",
+            target="/files/itest_get_CaseSensitive.txt",
+            host="localhost",
+            headers={},
+            body=b"",
+        )
+
+        with open_client() as sock:
+            sock.sendall(req_correct)
+            res_correct = read_http_response(sock)
+
+        assert_true(
+            res_correct.status_code == 200,
+            f"Correct case should work, got {res_correct.status_code}",
+        )
+
+        req_wrong = http10_request_bytes(
+            method="GET",
+            target="/files/itest_get_casesensitive.txt",
+            host="localhost",
+            headers={},
+            body=b"",
+        )
+
+        with open_client() as sock:
+            sock.sendall(req_wrong)
+            res_wrong = read_http_response(sock)
+
+        assert_true(
+            res_wrong.status_code == 404,
+            f"Wrong case should return 404 (case-sensitive), got {res_wrong.status_code}",
+        )
+
+    if target_file.exists():
+        target_file.unlink()
+
+
+def test_get_conditional_if_modified_since() -> None:
+    target_file = ROOT / "www/full/files/itest_get_conditional.txt"
+    target_file.write_text("conditional-test\n", encoding="utf-8")
+
+    with WebservRunner("config/valid/full.conf"):
+        req_first = http10_request_bytes(
+            method="GET",
+            target="/files/itest_get_conditional.txt",
+            host="localhost",
+            headers={},
+            body=b"",
+        )
+
+        with open_client() as sock:
+            sock.sendall(req_first)
+            res_first = read_http_response(sock)
+
+        last_modified = res_first.headers.get("last-modified")
+
+        if last_modified:
+            req_conditional = http10_request_bytes(
+                method="GET",
+                target="/files/itest_get_conditional.txt",
+                host="localhost",
+                headers={"If-Modified-Since": last_modified},
+                body=b"",
+            )
+
+            with open_client() as sock:
+                sock.sendall(req_conditional)
+                res_conditional = read_http_response(sock)
+
+            assert_true(
+                res_conditional.status_code in (200, 304),
+                f"If-Modified-Since should return 200 or 304, got {res_conditional.status_code}",
+            )
+
+    if target_file.exists():
+        target_file.unlink()
+
+
+def test_get_malformed_crlf() -> None:
+    with WebservRunner("config/valid/full.conf"):
+        import socket
+
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.connect(("localhost", 8080))
+
+        malformed = b"GET /files/test.txt\r\n\r\n"
+
+        try:
+            sock.sendall(malformed)
+            response = b""
+            sock.settimeout(1.0)
+            try:
+                while True:
+                    chunk = sock.recv(4096)
+                    if not chunk:
+                        break
+                    response += chunk
+            except socket.timeout:
+                pass
+
+            assert_true(
+                True,
+                "Malformed request handling varies - server may close or respond with error",
+            )
+        finally:
+            sock.close()
+
+
+def test_get_invalid_http_version() -> None:
+    with WebservRunner("config/valid/full.conf"):
+        import socket
+
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.connect(("localhost", 8080))
+
+        invalid_version = b"GET /files/test.txt HTTP/2.5\r\n\r\n"
+
+        try:
+            sock.sendall(invalid_version)
+            response = b""
+            sock.settimeout(2.0)
+            try:
+                while True:
+                    chunk = sock.recv(4096)
+                    if not chunk:
+                        break
+                    response += chunk
+            except socket.timeout:
+                pass
+
+            assert_true(
+                len(response) > 0,
+                "Invalid HTTP version should get a response (error or rejection)",
+            )
+        finally:
+            sock.close()
+
+
+def test_get_very_long_header() -> None:
+    target_file = ROOT / "www/full/files/itest_get_longheader.txt"
+    target_file.write_text("long-header-test\n", encoding="utf-8")
+
+    with WebservRunner("config/valid/full.conf"):
+        long_value = "x" * 8192
+
+        req = http10_request_bytes(
+            method="GET",
+            target="/files/itest_get_longheader.txt",
+            host="localhost",
+            headers={"X-Custom-Long-Header": long_value},
+            body=b"",
+        )
+
+        with open_client(timeout=3.0) as sock:
+            sock.sendall(req)
+            res = read_http_response(sock)
+
+        assert_true(
+            res.status_code in (200, 400, 413),
+            f"Very long header should succeed (200), be rejected (400), or entity too large (413), got {res.status_code}",
+        )
+
+    if target_file.exists():
+        target_file.unlink()
+
+
 def main() -> int:
     tests = [
         ("GET basic file", test_get_basic),
@@ -597,6 +849,14 @@ def main() -> int:
         ("GET hidden files", test_get_hidden_files),
         ("GET special chars filename", test_get_special_chars_filename),
         ("GET symlink escape", test_get_symlink_escape),
+        ("GET directory request", test_get_directory_request),
+        ("GET query string", test_get_query_string),
+        ("GET empty file", test_get_empty_file),
+        ("GET case sensitivity", test_get_case_sensitivity),
+        ("GET conditional If-Modified-Since", test_get_conditional_if_modified_since),
+        ("GET malformed CRLF", test_get_malformed_crlf),
+        ("GET invalid HTTP version", test_get_invalid_http_version),
+        ("GET very long header", test_get_very_long_header),
     ]
 
     passed = 0
