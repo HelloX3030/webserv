@@ -36,6 +36,42 @@ const REQUEST_PRESETS = {
 		path: "/files/demo.txt",
 		headers: "",
 		body: ""
+	},
+	"get-hello-txt": {
+		method: "GET",
+		path: "/files/hello.txt",
+		headers: "Accept: text/plain",
+		body: ""
+	},
+	"get-sample-json": {
+		method: "GET",
+		path: "/files/sample.json",
+		headers: "Accept: application/json",
+		body: ""
+	},
+	"get-cgi-python-hello": {
+		method: "GET",
+		path: "/cgi-python/hello.py?name=tester",
+		headers: "Accept: text/plain",
+		body: ""
+	},
+	"post-cgi-python-echo": {
+		method: "POST",
+		path: "/cgi-python/echo.py",
+		headers: "Content-Type: text/plain",
+		body: "Hello from HTTP tester (python CGI)"
+	},
+	"get-cgi-bash-hello": {
+		method: "GET",
+		path: "/cgi-bash/hello.sh?name=tester",
+		headers: "Accept: text/plain",
+		body: ""
+	},
+	"post-cgi-bash-echo": {
+		method: "POST",
+		path: "/cgi-bash/echo.sh",
+		headers: "Content-Type: text/plain",
+		body: "Hello from HTTP tester (bash CGI)"
 	}
 };
 
@@ -66,14 +102,14 @@ const THEMES = {
 	}
 };
 
-let activeThemeName = "terminal";
+let activeThemeName = "dark";
 
 function getSafeThemeName(themeName) {
 	if (THEMES[themeName]) {
 		return themeName;
 	}
 
-	return "terminal";
+	return "dark";
 }
 
 function setThemeCookie(themeName) {
@@ -205,7 +241,7 @@ themeSelect.addEventListener("change", () => {
 });
 
 const cookieTheme = getThemeCookie();
-const initialTheme = getSafeThemeName(cookieTheme || "terminal");
+const initialTheme = getSafeThemeName(cookieTheme || "dark");
 themeSelect.value = initialTheme;
 applyTheme(initialTheme);
 

@@ -1,0 +1,5 @@
+{
+  "project": "webserv",
+  "endpoint": "/files/sample.json",
+  "ok": true
+}
