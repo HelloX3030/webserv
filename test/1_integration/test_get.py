@@ -234,6 +234,48 @@ def test_get_http11_default_keep_alive_multiple_requests() -> None:
                 target_file.unlink()
 
 
+def test_get_http11_connection_close_token_list() -> None:
+    target_file = ROOT / "www/full/files/itest_get_h11_close_token.txt"
+    target_file.write_text("close-token\n", encoding="utf-8")
+
+    try:
+        with WebservRunner("config/valid/full.conf"):
+            with open_client(timeout=3.0) as sock:
+                req1 = (
+                    b"GET /files/itest_get_h11_close_token.txt HTTP/1.1\r\n"
+                    b"Host: localhost\r\n"
+                    b"Connection: close, foo\r\n"
+                    b"\r\n"
+                )
+                sock.sendall(req1)
+                res1 = read_http_response(sock)
+
+                assert_true(res1.status_code == 200, f"HTTP/1.1 token-list request expected 200, got {res1.status_code}")
+                assert_true(
+                    res1.headers.get("connection", "").lower() == "close",
+                    f"Connection token-list containing close must close, got {res1.headers.get('connection')}",
+                )
+
+                req2 = (
+                    b"GET /files/itest_get_h11_close_token.txt HTTP/1.1\r\n"
+                    b"Host: localhost\r\n"
+                    b"\r\n"
+                )
+
+                try:
+                    sock.sendall(req2)
+                    data2 = sock.recv(4096)
+                    assert_true(
+                        len(data2) == 0,
+                        f"Socket should be closed after Connection: close token-list, got {len(data2)} extra bytes",
+                    )
+                except (BrokenPipeError, ConnectionResetError):
+                    assert_true(True, "Connection closed as expected")
+    finally:
+        if target_file.exists():
+            target_file.unlink()
+
+
 def test_get_binary_file() -> None:
     target_file = ROOT / "www/full/files/itest_get_binary.bin"
     binary_content = bytes(range(256)) * 100
@@ -927,6 +969,7 @@ def main() -> int:
         ("GET multiple sequential requests", test_get_multiple_sequential),
         ("GET keep-alive multiple requests", test_get_keep_alive_multiple_requests),
         ("GET HTTP/1.1 default keep-alive", test_get_http11_default_keep_alive_multiple_requests),
+        ("GET HTTP/1.1 Connection token-list close", test_get_http11_connection_close_token_list),
         ("GET binary file", test_get_binary_file),
         ("GET with custom headers", test_get_custom_headers),
         ("GET JSON Content-Type", test_get_content_type_json),

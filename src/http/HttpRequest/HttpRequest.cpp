@@ -4,6 +4,21 @@
 #include <sstream>
 #include <stdexcept>
 
+namespace
+{
+
+std::string trim_ows_copy(const std::string &s)
+{
+    std::string::size_type start = s.find_first_not_of(" \t");
+    if (start == std::string::npos)
+        return "";
+
+    std::string::size_type end = s.find_last_not_of(" \t");
+    return s.substr(start, end - start + 1);
+}
+
+} // namespace
+
 /* content-length header value as a signed integer.
 headers are normalised to lowercase at parse time,
 so the key is "content-length".
@@ -61,9 +76,24 @@ bool HttpRequest::keepAlive() const
         std::transform(val.begin(), val.end(), val.begin(),
                        [](unsigned char c)
                        { return std::tolower(c); });
-        if (val == "close")
+
+        bool saw_close = false;
+        bool saw_keep_alive = false;
+
+        std::stringstream ss(val);
+        std::string token;
+        while (std::getline(ss, token, ','))
+        {
+            token = trim_ows_copy(token);
+            if (token == "close")
+                saw_close = true;
+            else if (token == "keep-alive")
+                saw_keep_alive = true;
+        }
+
+        if (saw_close)
             return false;
-        if (val == "keep-alive")
+        if (saw_keep_alive)
             return true;
     }
     return persistent;
