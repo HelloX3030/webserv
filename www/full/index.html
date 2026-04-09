@@ -4,21 +4,153 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Webserv HTTP Tester</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            line-height: 1.4;
+        }
+
+        main {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+
+        h1, h2, h3 {
+            margin: 0 0 12px 0;
+        }
+
+        section {
+            border: 1px solid currentColor;
+            padding: 12px;
+            margin-bottom: 12px;
+        }
+
+        .row {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        #url-input {
+            width: 520px;
+            max-width: 100%;
+        }
+
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        textarea {
+            width: 100%;
+            resize: vertical;
+        }
+
+        .response-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        pre {
+            margin: 0;
+            min-height: 120px;
+            padding: 8px;
+            border: 1px solid currentColor;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        @media (max-width: 800px) {
+            .two-col,
+            .response-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
-    <select id="method-select">
-        <option value="GET">GET</option>
-        <option value="POST">POST</option>
-        <option value="DELETE">DELETE</option>
-        <option value="PUT">PUT</option>
-    </select>
-    <input id="url-input" type="text" placeholder="URL">
-    <textarea id="headers-input" rows="6" cols="50" placeholder="Content-Type: application/json&#10;X-Test: hello"></textarea>
-    <textarea id="body-input" rows="8" cols="50" placeholder="Request body"></textarea>
-    <button id="send-btn">Send</button>
-    <div id="response-status"></div>
-    <pre id="response-headers"></pre>
-    <pre id="response-body"></pre>
+    <main>
+        <h1>Webserv HTTP Tester</h1>
+
+        <section>
+            <h2>Request</h2>
+
+            <div class="row">
+                <div class="field">
+                    <label for="theme-select">Theme</label>
+                    <select id="theme-select">
+                        <option value="terminal">Terminal</option>
+                        <option value="light">Light</option>
+                        <option value="dark">Dark</option>
+                        <option value="semantic">Semantic</option>
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label for="method-select">Method</label>
+                    <select id="method-select">
+                        <option value="GET">GET</option>
+                        <option value="POST">POST</option>
+                        <option value="DELETE">DELETE</option>
+                        <option value="PUT">PUT</option>
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label for="url-input">URL</label>
+                    <input id="url-input" type="text" placeholder="http://127.0.0.1:8080/">
+                </div>
+            </div>
+
+            <div class="two-col">
+                <div class="field">
+                    <label for="headers-input">Headers</label>
+                    <textarea id="headers-input" rows="8" placeholder="Content-Type: application/json&#10;X-Test: hello"></textarea>
+                </div>
+
+                <div class="field">
+                    <label for="body-input">Body</label>
+                    <textarea id="body-input" rows="8" placeholder="Request body"></textarea>
+                </div>
+            </div>
+
+            <button id="send-btn">Send</button>
+        </section>
+
+        <section>
+            <h2>Response</h2>
+            <p>Status: <span id="response-status"></span></p>
+
+            <div class="response-grid">
+                <div>
+                    <h3>Headers</h3>
+                    <pre id="response-headers"></pre>
+                </div>
+                <div>
+                    <h3>Body</h3>
+                    <pre id="response-body"></pre>
+                </div>
+            </div>
+        </section>
+    </main>
+
     <script src="./script.js"></script>
 </body>
 </html>

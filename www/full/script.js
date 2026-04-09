@@ -6,7 +6,150 @@ const bodyInput = document.getElementById("body-input");
 const responseStatus = document.getElementById("response-status");
 const responseHeaders = document.getElementById("response-headers");
 const responseBody = document.getElementById("response-body");
+const themeSelect = document.getElementById("theme-select");
 const REQUEST_TIMEOUT_MS = 10000;
+const THEME_COOKIE_NAME = "theme";
+
+const THEMES = {
+	terminal: {
+		background: "#000000",
+		text: "#00ff00",
+		accent: "#00ff00"
+	},
+	light: {
+		background: "#ffffff",
+		text: "#111111",
+		accent: "#2563eb"
+	},
+	dark: {
+		background: "#111111",
+		text: "#f5f5f5",
+		accent: "#60a5fa"
+	},
+	semantic: {
+		background: "#0f172a",
+		text: "#e2e8f0",
+		accent: "#38bdf8",
+		status2xx: "#22c55e",
+		status3xx: "#f59e0b",
+		status4xx: "#f97316",
+		status5xx: "#ef4444"
+	}
+};
+
+let activeThemeName = "terminal";
+
+function getSafeThemeName(themeName) {
+	if (THEMES[themeName]) {
+		return themeName;
+	}
+
+	return "terminal";
+}
+
+function setThemeCookie(themeName) {
+	document.cookie = THEME_COOKIE_NAME + "=" + encodeURIComponent(themeName) + "; path=/";
+}
+
+function getThemeCookie() {
+	const cookieParts = document.cookie.split(";");
+	for (let i = 0; i < cookieParts.length; i += 1) {
+		const part = cookieParts[i].trim();
+		if (part.indexOf(THEME_COOKIE_NAME + "=") === 0) {
+			return decodeURIComponent(part.slice(THEME_COOKIE_NAME.length + 1));
+		}
+	}
+
+	return "";
+}
+
+function clearStatusClasses() {
+	responseStatus.classList.remove("status-2xx", "status-3xx", "status-4xx", "status-5xx");
+}
+
+function updateStatusClass(statusCode) {
+	clearStatusClasses();
+
+	if (statusCode >= 200 && statusCode < 300) {
+		responseStatus.classList.add("status-2xx");
+		return;
+	}
+
+	if (statusCode >= 300 && statusCode < 400) {
+		responseStatus.classList.add("status-3xx");
+		return;
+	}
+
+	if (statusCode >= 400 && statusCode < 500) {
+		responseStatus.classList.add("status-4xx");
+		return;
+	}
+
+	if (statusCode >= 500 && statusCode < 600) {
+		responseStatus.classList.add("status-5xx");
+	}
+}
+
+function applySemanticStatusColor() {
+	responseStatus.style.color = "";
+
+	if (activeThemeName !== "semantic") {
+		return;
+	}
+
+	const semanticTheme = THEMES.semantic;
+
+	if (responseStatus.classList.contains("status-2xx")) {
+		responseStatus.style.color = semanticTheme.status2xx;
+		return;
+	}
+
+	if (responseStatus.classList.contains("status-3xx")) {
+		responseStatus.style.color = semanticTheme.status3xx;
+		return;
+	}
+
+	if (responseStatus.classList.contains("status-4xx")) {
+		responseStatus.style.color = semanticTheme.status4xx;
+		return;
+	}
+
+	if (responseStatus.classList.contains("status-5xx")) {
+		responseStatus.style.color = semanticTheme.status5xx;
+	}
+}
+
+function applyTheme(themeName) {
+	const safeThemeName = getSafeThemeName(themeName);
+	const theme = THEMES[safeThemeName];
+	activeThemeName = safeThemeName;
+
+	document.body.style.backgroundColor = theme.background;
+	document.body.style.color = theme.text;
+
+	const controls = [themeSelect, methodSelect, urlInput, headersInput, bodyInput, sendButton];
+	for (let i = 0; i < controls.length; i += 1) {
+		controls[i].style.backgroundColor = theme.background;
+		controls[i].style.color = theme.text;
+		controls[i].style.borderColor = theme.accent;
+	}
+
+	responseHeaders.style.border = "1px solid " + theme.accent;
+	responseBody.style.border = "1px solid " + theme.accent;
+
+	applySemanticStatusColor();
+}
+
+themeSelect.addEventListener("change", () => {
+	const selectedTheme = getSafeThemeName(themeSelect.value);
+	applyTheme(selectedTheme);
+	setThemeCookie(selectedTheme);
+});
+
+const cookieTheme = getThemeCookie();
+const initialTheme = getSafeThemeName(cookieTheme || "terminal");
+themeSelect.value = initialTheme;
+applyTheme(initialTheme);
 
 sendButton.addEventListener("click", async () => {
 	const method = methodSelect.value;
@@ -17,6 +160,8 @@ sendButton.addEventListener("click", async () => {
 	responseStatus.textContent = "";
 	responseHeaders.textContent = "";
 	responseBody.textContent = "";
+	clearStatusClasses();
+	applySemanticStatusColor();
 	let timeoutId;
 
 	try {
@@ -63,6 +208,8 @@ sendButton.addEventListener("click", async () => {
 		clearTimeout(timeoutId);
 
 		responseStatus.textContent = response.status + " " + response.statusText;
+		updateStatusClass(response.status);
+		applySemanticStatusColor();
 
 		let rawResponseHeaders = "";
 		response.headers.forEach((value, key) => {
@@ -80,10 +227,14 @@ sendButton.addEventListener("click", async () => {
 		if (error.name === "AbortError") {
 			responseStatus.textContent = "Timeout";
 			responseBody.textContent = "Request timed out after " + REQUEST_TIMEOUT_MS + " ms";
+			clearStatusClasses();
+			applySemanticStatusColor();
 			return;
 		}
 
 		responseStatus.textContent = "Error";
 		responseBody.textContent = error.message;
+		clearStatusClasses();
+		applySemanticStatusColor();
 	}
 });
