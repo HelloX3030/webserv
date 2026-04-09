@@ -75,7 +75,8 @@ DEP_FILES := $(REL_OBJS:.o=.d) $(DBG_OBJS:.o=.d) $(LKS_OBJS:.o=.d)
 			test-post \
 			test-delete \
 			test-cgi-keep-alive \
-			test-virtual-hosting
+			test-virtual-hosting \
+			test-invalid-http
 
 # --- variant configuration ---
 # target-specific variables propagate to the entire subgraph
@@ -203,7 +204,8 @@ test-integration: $(NAME) \
 	test-post \
 	test-delete \
 	test-cgi-keep-alive \
-	test-virtual-hosting
+	test-virtual-hosting \
+	test-invalid-http
 
 test-get: $(NAME)
 	@python3 test/1_integration/test_get.py
@@ -219,3 +221,6 @@ test-cgi-keep-alive: $(NAME)
 
 test-virtual-hosting: $(NAME)
 	@python3 test/1_integration/test_virtual_hosting.py
+
+test-invalid-http: $(NAME)
+	@python3 test/1_integration/test_invalid_http.py
