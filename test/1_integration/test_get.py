@@ -175,6 +175,65 @@ def test_get_keep_alive_multiple_requests() -> None:
             target_file.unlink()
 
 
+def test_get_http11_default_keep_alive_multiple_requests() -> None:
+    files = {
+        "itest_get_h11_ka_1.txt": b"http11-keepalive1\n",
+        "itest_get_h11_ka_2.txt": b"http11-keepalive2\n",
+    }
+
+    target_files = {
+        name: ROOT / f"www/full/files/{name}"
+        for name in files.keys()
+    }
+
+    for name, content in files.items():
+        target_files[name].write_bytes(content)
+
+    try:
+        with WebservRunner("config/valid/full.conf"):
+            with open_client(timeout=3.0) as sock:
+                req1 = (
+                    b"GET /files/itest_get_h11_ka_1.txt HTTP/1.1\r\n"
+                    b"Host: localhost\r\n"
+                    b"\r\n"
+                )
+                sock.sendall(req1)
+                res1 = read_http_response(sock)
+
+                assert_true(res1.status_code == 200, f"HTTP/1.1 first request expected 200, got {res1.status_code}")
+                assert_true(
+                    res1.headers.get("connection", "").lower() == "keep-alive",
+                    f"HTTP/1.1 default persistence should be keep-alive, got {res1.headers.get('connection')}",
+                )
+                assert_true(
+                    res1.body == files["itest_get_h11_ka_1.txt"],
+                    f"First HTTP/1.1 keep-alive body mismatch: {res1.body!r}",
+                )
+
+                req2 = (
+                    b"GET /files/itest_get_h11_ka_2.txt HTTP/1.1\r\n"
+                    b"Host: localhost\r\n"
+                    b"Connection: close\r\n"
+                    b"\r\n"
+                )
+                sock.sendall(req2)
+                res2 = read_http_response(sock)
+
+                assert_true(res2.status_code == 200, f"HTTP/1.1 second request expected 200, got {res2.status_code}")
+                assert_true(
+                    res2.headers.get("connection", "").lower() == "close",
+                    f"Second request asked for close, got {res2.headers.get('connection')}",
+                )
+                assert_true(
+                    res2.body == files["itest_get_h11_ka_2.txt"],
+                    f"Second HTTP/1.1 keep-alive body mismatch: {res2.body!r}",
+                )
+    finally:
+        for target_file in target_files.values():
+            if target_file.exists():
+                target_file.unlink()
+
+
 def test_get_binary_file() -> None:
     target_file = ROOT / "www/full/files/itest_get_binary.bin"
     binary_content = bytes(range(256)) * 100
@@ -867,6 +926,7 @@ def main() -> int:
         ("GET 404 not found", test_get_404_not_found),
         ("GET multiple sequential requests", test_get_multiple_sequential),
         ("GET keep-alive multiple requests", test_get_keep_alive_multiple_requests),
+        ("GET HTTP/1.1 default keep-alive", test_get_http11_default_keep_alive_multiple_requests),
         ("GET binary file", test_get_binary_file),
         ("GET with custom headers", test_get_custom_headers),
         ("GET JSON Content-Type", test_get_content_type_json),
