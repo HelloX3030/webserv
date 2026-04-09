@@ -549,6 +549,34 @@ def test_post_very_long_header() -> None:
         target_file.unlink()
 
 
+def test_post_chunked_transfer_encoding_case_insensitive() -> None:
+    with WebservRunner("config/valid/full.conf"):
+        chunked_body = b"4\r\nTEST\r\n0\r\n\r\n"
+
+        req = (
+            b"POST /cgi-python/echo.py?name=chunked-case HTTP/1.0\r\n"
+            b"Host: localhost\r\n"
+            b"Transfer-Encoding: Chunked\r\n"
+            b"Content-Type: text/plain\r\n"
+            b"\r\n"
+            + chunked_body
+        )
+
+        with open_client() as sock:
+            sock.sendall(req)
+            res = read_http_response(sock)
+
+        assert_true(res.status_code == 200, f"Chunked POST expected 200, got {res.status_code}")
+        assert_true(
+            "content_length = 4" in res.body_text.lower(),
+            f"Expected CGI to receive a 4-byte chunked body, got: {res.body_text!r}",
+        )
+        assert_true(
+            "test" in res.body_text.lower(),
+            f"Expected CGI to echo chunked payload, got: {res.body_text!r}",
+        )
+
+
 def test_post_special_chars_filename() -> None:
     safe_filename = "itest_post_special______.txt"
     target_file = ROOT / f"www/full/files/{safe_filename}"
@@ -600,6 +628,7 @@ def main() -> int:
         ("POST to directory", test_post_directory_request),
         ("POST invalid HTTP version", test_post_invalid_http_version),
         ("POST very long header", test_post_very_long_header),
+        ("POST chunked Transfer-Encoding case-insensitive", test_post_chunked_transfer_encoding_case_insensitive),
         ("POST special chars filename", test_post_special_chars_filename),
     ]
 

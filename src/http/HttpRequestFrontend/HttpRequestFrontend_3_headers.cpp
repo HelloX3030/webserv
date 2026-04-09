@@ -63,9 +63,15 @@ PhaseResult HttpRequestFrontend::parse_header_line()
             return PhaseResult::Failed;
         }
 
-        auto te      = request_.headers.find("transfer-encoding");
-        bool chunked = (te != request_.headers.end()
-                        && te->second == "chunked");
+        auto te = request_.headers.find("transfer-encoding");
+        bool chunked = false;
+        if (te != request_.headers.end())
+        {
+            std::string encoding = te->second;
+            std::transform(encoding.begin(), encoding.end(), encoding.begin(),
+                           [](unsigned char c) { return std::tolower(c); });
+            chunked = (encoding == "chunked");
+        }
 
         if (chunked)
         {
