@@ -3,14 +3,21 @@
 from common import WebservRunner, assert_true, http10_request_bytes, open_client, read_http_response, run_test
 
 
-def fetch_index_for_host(host_header: str) -> str:
+def fetch_index_for_host(host_header: str | None, target: str = "/") -> str:
+    headers = {}
+    if host_header is not None:
+        headers = {"Connection": "close"}
+
     req = http10_request_bytes(
         method="GET",
-        target="/",
-        host=host_header,
-        headers={},
+        target=target,
+        host=host_header if host_header is not None else "localhost",
+        headers=headers,
         body=b"",
     )
+
+    if host_header is None:
+        req = req.replace(b"Host: localhost\r\n", b"")
 
     with open_client() as sock:
         sock.sendall(req)
@@ -20,17 +27,77 @@ def fetch_index_for_host(host_header: str) -> str:
     return res.body_text.lower()
 
 
-def test_virtual_hosting() -> None:
+def test_virtual_hosting_alpha_beta() -> None:
     with WebservRunner("config/valid/multi-server.conf"):
         alpha_body = fetch_index_for_host("alpha.localhost")
         beta_body = fetch_index_for_host("beta.localhost")
 
-        assert_true("alpha.localhost" in alpha_body, "alpha host did not route to alpha content")
-        assert_true("beta.localhost" in beta_body, "beta host did not route to beta content")
+        assert_true("multi-server.conf: alpha" in alpha_body, "alpha host did not route to alpha content")
+        assert_true("multi-server.conf: beta" in beta_body, "beta host did not route to beta content")
+
+
+def test_virtual_hosting_default_fallback() -> None:
+    with WebservRunner("config/valid/multi-server.conf"):
+        fallback_body = fetch_index_for_host("unknown.localhost")
+
+        assert_true(
+            "multi-server.conf: alpha" in fallback_body,
+            "Unknown host should fall back to the first server block (alpha)",
+        )
+
+
+def test_virtual_hosting_host_with_port() -> None:
+    with WebservRunner("config/valid/multi-server.conf"):
+        alpha_body = fetch_index_for_host("alpha.localhost:8080")
+        beta_body = fetch_index_for_host("beta.localhost:8080")
+
+        assert_true("multi-server.conf: alpha" in alpha_body, "Host: alpha.localhost:8080 did not route to alpha")
+        assert_true("multi-server.conf: beta" in beta_body, "Host: beta.localhost:8080 did not route to beta")
+
+
+def test_virtual_hosting_missing_host_header() -> None:
+    with WebservRunner("config/valid/multi-server.conf"):
+        body = fetch_index_for_host(None)
+
+        assert_true(
+            "multi-server.conf: alpha" in body,
+            "Missing Host header should use the default first server block (alpha)",
+        )
+
+
+def test_virtual_hosting_isolated_roots() -> None:
+    with WebservRunner("config/valid/multi-server.conf"):
+        alpha_body = fetch_index_for_host("alpha.localhost", target="/index.html")
+        beta_body = fetch_index_for_host("beta.localhost", target="/index.html")
+
+        assert_true("alpha.localhost" in alpha_body, "alpha root not isolated")
+        assert_true("beta.localhost" in beta_body, "beta root not isolated")
 
 
 def main() -> int:
-    return run_test("Virtual hosting routes by Host header", test_virtual_hosting)
+    tests = [
+        ("Virtual hosting routes alpha/beta", test_virtual_hosting_alpha_beta),
+        ("Virtual hosting fallback host", test_virtual_hosting_default_fallback),
+        ("Virtual hosting host:port normalization", test_virtual_hosting_host_with_port),
+        ("Virtual hosting missing Host header", test_virtual_hosting_missing_host_header),
+        ("Virtual hosting isolated roots", test_virtual_hosting_isolated_roots),
+    ]
+
+    passed = 0
+    failed = 0
+
+    for name, test_fn in tests:
+        if run_test(name, test_fn) == 0:
+            passed += 1
+        else:
+            failed += 1
+
+    if failed > 0:
+        print(f"\n{failed} test(s) failed, {passed} passed")
+        return 1
+
+    print(f"\nAll {passed} virtual hosting tests passed")
+    return 0
 
 
 if __name__ == "__main__":
