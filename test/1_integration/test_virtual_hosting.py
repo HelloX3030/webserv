@@ -65,6 +65,26 @@ def test_virtual_hosting_missing_host_header() -> None:
         )
 
 
+def test_virtual_hosting_duplicate_host_header_rejected() -> None:
+    with WebservRunner("config/valid/multi-server.conf"):
+        req = (
+            b"GET / HTTP/1.1\r\n"
+            b"Host: alpha.localhost\r\n"
+            b"Host: beta.localhost\r\n"
+            b"Connection: close\r\n"
+            b"\r\n"
+        )
+
+        with open_client() as sock:
+            sock.sendall(req)
+            res = read_http_response(sock)
+
+        assert_true(
+            res.status_code == 400,
+            f"Duplicate Host headers must be rejected with 400, got {res.status_code}",
+        )
+
+
 def test_virtual_hosting_isolated_roots() -> None:
     with WebservRunner("config/valid/multi-server.conf"):
         alpha_body = fetch_index_for_host("alpha.localhost", target="/index.html")
@@ -80,6 +100,7 @@ def main() -> int:
         ("Virtual hosting fallback host", test_virtual_hosting_default_fallback),
         ("Virtual hosting host:port normalization", test_virtual_hosting_host_with_port),
         ("Virtual hosting missing Host header", test_virtual_hosting_missing_host_header),
+        ("Virtual hosting duplicate Host rejected", test_virtual_hosting_duplicate_host_header_rejected),
         ("Virtual hosting isolated roots", test_virtual_hosting_isolated_roots),
     ]
 

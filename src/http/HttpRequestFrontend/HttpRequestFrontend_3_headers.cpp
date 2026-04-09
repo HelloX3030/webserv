@@ -185,6 +185,19 @@ PhaseResult HttpRequestFrontend::parse_header_line()
         }
     }
 
+    /* Host in HTTP/1.1 must be a single header field.
+    duplicates create routing ambiguity and are rejected. */
+    if (name == "host")
+    {
+        auto it = request_.headers.find("host");
+        if (it != request_.headers.end())
+        {
+            error_code_ = 400;
+            phase_ = ParsePhase::ERROR;
+            return PhaseResult::Failed;
+        }
+    }
+
     /* general headers: comma-concat per RFC 9110 §5.3.
     multiple field lines with the same name are combined into
     1 field value, separated by ", ". */
