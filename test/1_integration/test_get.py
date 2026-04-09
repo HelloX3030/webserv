@@ -453,6 +453,38 @@ def test_get_path_traversal_backslash() -> None:
             )
 
 
+def test_get_path_traversal_prefix_collision() -> None:
+    sibling_dir = ROOT / "www/full/files_hack"
+    sibling_file = sibling_dir / "itest_get_prefix_collision.txt"
+
+    sibling_dir.mkdir(parents=True, exist_ok=True)
+    sibling_file.write_text("prefix-collision-leak\n", encoding="utf-8")
+
+    try:
+        with WebservRunner("config/valid/full.conf"):
+            req = http10_request_bytes(
+                method="GET",
+                target="/files/../files_hack/itest_get_prefix_collision.txt",
+                host="localhost",
+                headers={},
+                body=b"",
+            )
+
+            with open_client() as sock:
+                sock.sendall(req)
+                res = read_http_response(sock)
+
+            assert_true(
+                res.status_code in (403, 404),
+                f"Prefix-collision traversal should be blocked, got {res.status_code} with body {res.body_text!r}",
+            )
+    finally:
+        if sibling_file.exists():
+            sibling_file.unlink()
+        if sibling_dir.exists():
+            sibling_dir.rmdir()
+
+
 def test_get_excessive_slashes() -> None:
     target_file = ROOT / "www/full/files/itest_get_slashes.txt"
     target_file.write_text("slash-test\n", encoding="utf-8")
@@ -845,6 +877,7 @@ def main() -> int:
         ("GET null byte injection", test_get_null_byte_injection),
         ("GET double encoding", test_get_double_encoding),
         ("GET path traversal backslash", test_get_path_traversal_backslash),
+        ("GET path traversal prefix collision", test_get_path_traversal_prefix_collision),
         ("GET excessive slashes", test_get_excessive_slashes),
         ("GET hidden files", test_get_hidden_files),
         ("GET special chars filename", test_get_special_chars_filename),

@@ -16,7 +16,13 @@ std::optional<std::filesystem::path> resolve_path(const std::string &base, const
 
     fs::path normalized = combined.lexically_normal();
 
-    if (normalized.string().compare(0, base_path.string().size(), base_path.string()) != 0)
+    fs::path relative = normalized.lexically_relative(base_path);
+
+    if (relative.empty() || relative.is_absolute())
+        return std::nullopt; // unrelated path roots
+
+    fs::path::iterator it = relative.begin();
+    if (it != relative.end() && *it == "..")
         return std::nullopt; // escape attempt
 
     return normalized;
