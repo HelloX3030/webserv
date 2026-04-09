@@ -67,11 +67,33 @@ PhaseResult HttpRequestFrontend::parse_header_line()
         bool chunked = false;
         if (te != request_.headers.end())
         {
-            std::string encoding = te->second;
-            std::transform(encoding.begin(), encoding.end(), encoding.begin(),
-                           [](unsigned char c)
-                           { return std::tolower(c); });
-            chunked = (encoding == "chunked");
+            std::string_view encodings = te->second;
+            size_t start = 0;
+
+            while (start <= encodings.size())
+            {
+                size_t comma = encodings.find(',', start);
+                std::string_view raw_token =
+                    (comma == std::string_view::npos)
+                        ? encodings.substr(start)
+                        : encodings.substr(start, comma - start);
+
+                std::string token(trim_ows(raw_token));
+                std::transform(token.begin(), token.end(), token.begin(),
+                               [](unsigned char c)
+                               { return std::tolower(c); });
+
+                if (token == "chunked")
+                {
+                    chunked = true;
+                    break;
+                }
+
+                if (comma == std::string_view::npos)
+                    break;
+
+                start = comma + 1;
+            }
         }
 
         if (chunked)
