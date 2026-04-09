@@ -7,8 +7,37 @@ const responseStatus = document.getElementById("response-status");
 const responseHeaders = document.getElementById("response-headers");
 const responseBody = document.getElementById("response-body");
 const themeSelect = document.getElementById("theme-select");
+const presetSelect = document.getElementById("preset-select");
+const loadPresetButton = document.getElementById("load-preset-btn");
 const REQUEST_TIMEOUT_MS = 10000;
 const THEME_COOKIE_NAME = "theme";
+
+const REQUEST_PRESETS = {
+	"get-home": {
+		method: "GET",
+		path: "/",
+		headers: "Accept: text/html",
+		body: ""
+	},
+	"post-demo": {
+		method: "POST",
+		path: "/files/demo.txt",
+		headers: "Content-Type: text/plain",
+		body: "Hello from the HTTP tester.\n"
+	},
+	"get-demo": {
+		method: "GET",
+		path: "/files/demo.txt",
+		headers: "Accept: text/plain",
+		body: ""
+	},
+	"delete-demo": {
+		method: "DELETE",
+		path: "/files/demo.txt",
+		headers: "",
+		body: ""
+	}
+};
 
 const THEMES = {
 	terminal: {
@@ -127,7 +156,16 @@ function applyTheme(themeName) {
 	document.body.style.backgroundColor = theme.background;
 	document.body.style.color = theme.text;
 
-	const controls = [themeSelect, methodSelect, urlInput, headersInput, bodyInput, sendButton];
+	const controls = [
+		themeSelect,
+		methodSelect,
+		urlInput,
+		headersInput,
+		bodyInput,
+		presetSelect,
+		loadPresetButton,
+		sendButton
+	];
 	for (let i = 0; i < controls.length; i += 1) {
 		controls[i].style.backgroundColor = theme.background;
 		controls[i].style.color = theme.text;
@@ -140,6 +178,26 @@ function applyTheme(themeName) {
 	applySemanticStatusColor();
 }
 
+function getBaseUrl() {
+	if (window.location.origin && window.location.origin !== "null") {
+		return window.location.origin;
+	}
+
+	return "http://127.0.0.1:8080";
+}
+
+function loadPreset(presetName) {
+	const preset = REQUEST_PRESETS[presetName];
+	if (!preset) {
+		return;
+	}
+
+	methodSelect.value = preset.method;
+	urlInput.value = getBaseUrl() + preset.path;
+	headersInput.value = preset.headers;
+	bodyInput.value = preset.body;
+}
+
 themeSelect.addEventListener("change", () => {
 	const selectedTheme = getSafeThemeName(themeSelect.value);
 	applyTheme(selectedTheme);
@@ -150,6 +208,10 @@ const cookieTheme = getThemeCookie();
 const initialTheme = getSafeThemeName(cookieTheme || "terminal");
 themeSelect.value = initialTheme;
 applyTheme(initialTheme);
+
+loadPresetButton.addEventListener("click", () => {
+	loadPreset(presetSelect.value);
+});
 
 sendButton.addEventListener("click", async () => {
 	const method = methodSelect.value;

@@ -131,6 +131,24 @@
                 </div>
             </div>
 
+            <div class="row">
+                <div class="field">
+                    <label for="preset-select">Preset</label>
+                    <select id="preset-select">
+                        <option value="">Select preset...</option>
+                        <option value="get-home">GET /</option>
+                        <option value="post-demo">POST /files/demo.txt</option>
+                        <option value="get-demo">GET /files/demo.txt</option>
+                        <option value="delete-demo">DELETE /files/demo.txt</option>
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label for="load-preset-btn">Load</label>
+                    <button id="load-preset-btn" type="button">Load Preset</button>
+                </div>
+            </div>
+
             <button id="send-btn">Send</button>
         </section>
 
