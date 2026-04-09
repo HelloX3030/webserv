@@ -70,6 +70,12 @@ DEP_FILES := $(REL_OBJS:.o=.d) $(DBG_OBJS:.o=.d) $(LKS_OBJS:.o=.d)
 .PHONY:         all                  re         run
 .PHONY:         debug   debugclean   debugre    debugrun
 .PHONY:         leaks   leaksclean   leaksre    leaksrun
+.PHONY:         test test-integration \
+			test-get \
+			test-post \
+			test-delete \
+			test-cgi-keep-alive \
+			test-virtual-hosting
 
 # --- variant configuration ---
 # target-specific variables propagate to the entire subgraph
@@ -187,3 +193,29 @@ debugrun: $(DBG_NAME)
 leaksrun: $(LKS_NAME)
 	@valgrind --leak-check=full --track-fds=yes --show-leak-kinds=all \
 	  --error-exitcode=1 ./$(LKS_NAME)
+
+# --- integration tests ---
+
+test: test-integration
+
+test-integration: $(NAME) \
+	test-get \
+	test-post \
+	test-delete \
+	test-cgi-keep-alive \
+	test-virtual-hosting
+
+test-get: $(NAME)
+	@python3 test/1_integration/test_get.py
+
+test-post: $(NAME)
+	@python3 test/1_integration/test_post.py
+
+test-delete: $(NAME)
+	@python3 test/1_integration/test_delete.py
+
+test-cgi-keep-alive: $(NAME)
+	@python3 test/1_integration/test_cgi_keep_alive.py
+
+test-virtual-hosting: $(NAME)
+	@python3 test/1_integration/test_virtual_hosting.py

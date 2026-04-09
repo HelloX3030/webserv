@@ -29,3 +29,6 @@ www/uploads/files/*
 # runtime-generated files (full demo)
 www/full/uploads/files/*
 !www/full/uploads/files/README.md
+
+# python
+__pycache__/
