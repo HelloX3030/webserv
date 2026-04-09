@@ -46,7 +46,7 @@ CgiEnv build_cgi_env(
     env.push_back("CONTENT_LENGTH=" + std::to_string(body.size()));
 
     std::map<std::string, std::string>::const_iterator it =
-        headers.find("Content-Type");
+        headers.find("content-type");
 
     if (it != headers.end())
         env.push_back("CONTENT_TYPE=" + it->second);

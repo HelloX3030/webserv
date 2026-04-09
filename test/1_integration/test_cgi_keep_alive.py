@@ -119,6 +119,7 @@ def test_cgi_python_env_dump_post() -> None:
         assert_true("CGI env dump (python)" in res.body_text, f"Unexpected env dump: {res.body_text!r}")
         assert_true("REQUEST_METHOD=POST" in res.body_text, f"Missing POST method in env dump: {res.body_text!r}")
         assert_true(f"CONTENT_LENGTH={len(body)}" in res.body_text, f"Missing content length in env dump: {res.body_text!r}")
+        assert_true("CONTENT_TYPE=text/plain" in res.body_text, f"Missing content type in env dump: {res.body_text!r}")
 
 
 def test_cgi_bash_keep_alive_get_then_static() -> None:

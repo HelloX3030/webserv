@@ -1,5 +1,5 @@
-#include "http/HttpRequestFrontend.hpp"
 #include "HttpRequestFrontend_internal.hpp"
+#include "http/HttpRequestFrontend.hpp"
 
 #include <algorithm>
 #include <cassert>
@@ -42,7 +42,7 @@ PhaseResult HttpRequestFrontend::parse_header_line()
     if (header_bytes_ + line_bytes > MAX_HEADER_BYTES)
     {
         error_code_ = 431;
-        phase_      = ParsePhase::ERROR;
+        phase_ = ParsePhase::ERROR;
         return PhaseResult::Failed;
     }
     header_bytes_ += line_bytes;
@@ -59,7 +59,7 @@ PhaseResult HttpRequestFrontend::parse_header_line()
             request_.headers.find("host") == request_.headers.end())
         {
             error_code_ = 400;
-            phase_      = ParsePhase::ERROR;
+            phase_ = ParsePhase::ERROR;
             return PhaseResult::Failed;
         }
 
@@ -69,7 +69,8 @@ PhaseResult HttpRequestFrontend::parse_header_line()
         {
             std::string encoding = te->second;
             std::transform(encoding.begin(), encoding.end(), encoding.begin(),
-                           [](unsigned char c) { return std::tolower(c); });
+                           [](unsigned char c)
+                           { return std::tolower(c); });
             chunked = (encoding == "chunked");
         }
 
@@ -79,10 +80,10 @@ PhaseResult HttpRequestFrontend::parse_header_line()
             to CGI; CGI receives EOF-terminated plain stream.
             413 cannot be checked here — decoded size is unknown
             until chunks are accumulated. checked per-chunk in BODY. */
-            body_chunked_    = true;
+            body_chunked_ = true;
             chunk_remaining_ = 0;
-            chunk_phase_     = ChunkPhase::SIZE;
-            body_remaining_  = 0;
+            chunk_phase_ = ChunkPhase::SIZE;
+            body_remaining_ = 0;
             consume_line(crlf_pos);
             phase_ = ParsePhase::BODY;
 
@@ -95,28 +96,28 @@ PhaseResult HttpRequestFrontend::parse_header_line()
 
         /* Content-Length path. absent → 0 (no body). */
         size_t content_length = 0;
-        auto   cl = request_.headers.find("content-length");
+        auto cl = request_.headers.find("content-length");
         if (cl != request_.headers.end())
         {
             try
             {
                 size_t pos;
-                long   n = std::stol(cl->second, &pos);
+                long n = std::stol(cl->second, &pos);
                 /* pos must reach end of string: no trailing garbage.
                 stol stops at the first non-digit; if pos < size(),
                 the value is not a pure integer (e.g. "42abc"). */
                 if (pos != cl->second.size() || n < 0)
                 {
                     error_code_ = 400;
-                    phase_      = ParsePhase::ERROR;
+                    phase_ = ParsePhase::ERROR;
                     return PhaseResult::Failed;
                 }
                 content_length = static_cast<size_t>(n);
             }
-            catch (const std::exception&)
+            catch (const std::exception &)
             {
                 error_code_ = 400;
-                phase_      = ParsePhase::ERROR;
+                phase_ = ParsePhase::ERROR;
                 return PhaseResult::Failed;
             }
         }
@@ -124,11 +125,11 @@ PhaseResult HttpRequestFrontend::parse_header_line()
         if (content_length > max_body_size_)
         {
             error_code_ = 413;
-            phase_      = ParsePhase::ERROR;
+            phase_ = ParsePhase::ERROR;
             return PhaseResult::Failed;
         }
 
-        body_chunked_   = false;
+        body_chunked_ = false;
         body_remaining_ = content_length;
         consume_line(crlf_pos);
         phase_ = (body_remaining_ == 0) ? ParsePhase::COMPLETE
@@ -147,11 +148,11 @@ PhaseResult HttpRequestFrontend::parse_header_line()
     if (colon == std::string_view::npos || colon == 0)
     {
         error_code_ = 400;
-        phase_      = ParsePhase::ERROR;
+        phase_ = ParsePhase::ERROR;
         return PhaseResult::Failed;
     }
 
-    std::string_view raw_name  = line.substr(0, colon);
+    std::string_view raw_name = line.substr(0, colon);
     std::string_view raw_value = line.substr(colon + 1);
 
     /* normalise name to lowercase: quotient over the case-equivalence
@@ -159,7 +160,8 @@ PhaseResult HttpRequestFrontend::parse_header_line()
     operate on the quotient space, never the raw surface form. */
     std::string name(raw_name);
     std::transform(name.begin(), name.end(), name.begin(),
-                   [](unsigned char c) { return std::tolower(c); });
+                   [](unsigned char c)
+                   { return std::tolower(c); });
 
     std::string value(trim_ows(raw_value));
 
@@ -174,7 +176,7 @@ PhaseResult HttpRequestFrontend::parse_header_line()
             if (it->second != value)
             {
                 error_code_ = 400;
-                phase_      = ParsePhase::ERROR;
+                phase_ = ParsePhase::ERROR;
                 return PhaseResult::Failed;
             }
             /* same value — keep first, ignore duplicate */
