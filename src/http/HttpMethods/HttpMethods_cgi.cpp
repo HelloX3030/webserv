@@ -5,6 +5,7 @@
 #include <cctype>
 #include <fcntl.h>
 #include <filesystem>
+#include <iostream>
 #include <map>
 #include <string>
 #include <sys/types.h>
@@ -243,8 +244,17 @@ HttpResponseBuilder http_cgi(
     close(out_pipe[1]);
 
     // write body
-    if (!body.empty())
-        write(in_pipe[1], body.data(), body.size());
+    if (!body.empty()) {
+        ssize_t bytes_to_write = body.size();
+        ssize_t bytes_written = write(in_pipe[1], body.data(), bytes_to_write);
+
+        if (bytes_written == -1) {
+            perror("write to CGI pipe failed");
+        } else if (bytes_written < bytes_to_write) {
+            std::cerr << "CGI: partial write to pipe (wrote " << bytes_written
+                      << " of " << bytes_to_write << " bytes)\n";
+        }
+    }
 
     close(in_pipe[1]);
 

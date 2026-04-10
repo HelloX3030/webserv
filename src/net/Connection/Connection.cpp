@@ -90,7 +90,7 @@ int Connection::get_fd() const
 uint32_t Connection::get_events() const
 {
     if (state == ConnectionState::FAILED)
-        return (!write_buffer.empty() || !responses.empty()) ? EPOLLOUT : 0;
+        return (!write_buffer.empty() || !responses.empty()) ? EPOLLOUT : static_cast<uint32_t>(0);
 
     if (state == ConnectionState::CLOSE)
         return 0;
