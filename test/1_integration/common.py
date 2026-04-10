@@ -228,7 +228,7 @@ def run_test(name: str, fn) -> Tuple[int, Optional[str]]:
 
 class TestRunner:
     """Helper for running tests with nice progress output."""
-    
+
     def __init__(self, test_name: str, test_count: int):
         self.test_name = test_name
         self.test_count = test_count
@@ -236,12 +236,12 @@ class TestRunner:
         self.failed = 0
         self.failures: list[str] = []
         print(f"test {test_name}")
-    
+
     def run(self, test_name: str, test_fn) -> bool:
         """Run a test and update progress. Returns True if passed."""
         current = self.passed + self.failed + 1
         status, error = run_test(test_name, test_fn)
-        
+
         if status == 0:
             self.passed += 1
             result = "✓"
@@ -249,21 +249,21 @@ class TestRunner:
             self.failed += 1
             self.failures.append(error)
             result = "✗"
-        
+
         # Overwrite same line with progress
         print(f"\r  {result} {current:2d}/{self.test_count} tests", end="", flush=True)
         return status == 0
-    
+
     def summary(self) -> int:
         """Print summary and return exit code."""
         print()  # Newline after progress
-        
+
         if self.failed > 0:
             print(f"  ✗ Failed tests ({self.failed}):")
             for failure in self.failures:
                 print(f"    • {failure}")
             print(f"  Summary: {self.failed} failed, {self.passed} passed\n")
             return 1
-        
+
         print(f"  ✓ All {self.passed} {self.test_name} tests passed\n")
         return 0
