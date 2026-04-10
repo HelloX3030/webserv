@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from common import ROOT, WebservRunner, assert_true, http10_request_bytes, open_client, read_http_response, run_test
+from common import ROOT, WebservRunner, TestRunner, assert_true, http10_request_bytes, open_client, read_http_response
 
 
 def test_cgi_python_keep_alive_get_then_static() -> None:
@@ -221,21 +221,11 @@ def main() -> int:
         ("CGI bash POST echo keep-alive", test_cgi_bash_post_echo_keep_alive),
     ]
 
-    passed = 0
-    failed = 0
-
+    runner = TestRunner("CGI keep-alive", len(tests))
     for name, test_fn in tests:
-        if run_test(name, test_fn) == 0:
-            passed += 1
-        else:
-            failed += 1
+        runner.run(name, test_fn)
 
-    if failed > 0:
-        print(f"\n{failed} test(s) failed, {passed} passed")
-        return 1
-
-    print(f"\nAll {passed} CGI keep-alive tests passed")
-    return 0
+    return runner.summary()
 
 
 if __name__ == "__main__":

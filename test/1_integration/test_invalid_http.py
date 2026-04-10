@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from common import ROOT, WebservRunner, assert_true, open_client, read_http_response, run_test
+from common import ROOT, WebservRunner, TestRunner, assert_true, open_client, read_http_response
 
 
 def _send_raw_and_get_status(raw_request: bytes, config_rel_path: str = "config/valid/full.conf") -> int:
@@ -158,21 +158,11 @@ def main() -> int:
         ("Invalid chunked missing data CRLF", test_invalid_chunked_missing_data_crlf),
     ]
 
-    passed = 0
-    failed = 0
-
+    runner = TestRunner("Invalid HTTP", len(tests))
     for name, test_fn in tests:
-        if run_test(name, test_fn) == 0:
-            passed += 1
-        else:
-            failed += 1
+        runner.run(name, test_fn)
 
-    if failed > 0:
-        print(f"\n{failed} test(s) failed, {passed} passed")
-        return 1
-
-    print(f"\nAll {passed} invalid HTTP tests passed")
-    return 0
+    return runner.summary()
 
 
 if __name__ == "__main__":

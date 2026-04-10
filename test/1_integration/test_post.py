@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from common import ROOT, WebservRunner, assert_true, http10_request_bytes, open_client, read_http_response, run_test
+from common import ROOT, WebservRunner, TestRunner, assert_true, http10_request_bytes, open_client, read_http_response
 import socket
 
 
@@ -662,21 +662,11 @@ def main() -> int:
         ("POST special chars filename", test_post_special_chars_filename),
     ]
 
-    passed = 0
-    failed = 0
-
+    runner = TestRunner("POST", len(tests))
     for name, test_fn in tests:
-        if run_test(name, test_fn) == 0:
-            passed += 1
-        else:
-            failed += 1
+        runner.run(name, test_fn)
 
-    if failed > 0:
-        print(f"\n{failed} test(s) failed, {passed} passed")
-        return 1
-
-    print(f"\nAll {passed} POST tests passed")
-    return 0
+    return runner.summary()
 
 
 if __name__ == "__main__":

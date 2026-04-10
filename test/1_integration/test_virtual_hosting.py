@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from common import WebservRunner, assert_true, http10_request_bytes, open_client, read_http_response, run_test
+from common import WebservRunner, TestRunner, assert_true, http10_request_bytes, open_client, read_http_response
 
 
 def fetch_index_for_host(host_header: str | None, target: str = "/") -> str:
@@ -104,21 +104,11 @@ def main() -> int:
         ("Virtual hosting isolated roots", test_virtual_hosting_isolated_roots),
     ]
 
-    passed = 0
-    failed = 0
-
+    runner = TestRunner("Virtual hosting", len(tests))
     for name, test_fn in tests:
-        if run_test(name, test_fn) == 0:
-            passed += 1
-        else:
-            failed += 1
+        runner.run(name, test_fn)
 
-    if failed > 0:
-        print(f"\n{failed} test(s) failed, {passed} passed")
-        return 1
-
-    print(f"\nAll {passed} virtual hosting tests passed")
-    return 0
+    return runner.summary()
 
 
 if __name__ == "__main__":

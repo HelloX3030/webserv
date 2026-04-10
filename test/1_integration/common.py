@@ -2,15 +2,21 @@
 
 from __future__ import annotations
 
+import os
 import socket
 import subprocess
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict, List, Optional, Tuple
 
 ROOT = Path(__file__).resolve().parents[2]
-BINARY = ROOT / "webserv"
+
+# Check environment variable for custom binary path, otherwise use default
+_default_binary = ROOT / "webserv"
+BINARY = Path(os.environ.get("WEBSERV_BINARY", str(_default_binary)))
+USE_VALGRIND = os.environ.get("WEBSERV_VALGRIND", "0") == "1"
+
 HOST = "127.0.0.1"
 PORT = 8080
 
@@ -45,8 +51,21 @@ class WebservRunner:
         if not self.config_path.exists():
             raise RuntimeError(f"Config not found: {self.config_path}")
 
+        # Build command with optional valgrind wrapper
+        cmd: List[str] = []
+        if USE_VALGRIND:
+            cmd.extend([
+                "valgrind",
+                "--leak-check=full",
+                "--track-fds=yes",
+                "--show-leak-kinds=all",
+                "--error-exitcode=1",
+                "--log-file=/tmp/valgrind-%p.log",
+            ])
+        cmd.extend([str(BINARY), str(self.config_path)])
+
         self.process = subprocess.Popen(
-            [str(BINARY), str(self.config_path)],
+            cmd,
             cwd=str(ROOT),
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
@@ -94,6 +113,13 @@ def ensure_binary() -> None:
     if BINARY.exists():
         return
 
+    # If custom binary is specified and doesn't exist, that's an error
+    if os.environ.get("WEBSERV_BINARY"):
+        raise RuntimeError(
+            f"Custom binary specified but not found: {BINARY}"
+        )
+
+    # Otherwise, build the default binary
     result = subprocess.run(
         ["make", "all"],
         cwd=str(ROOT),
@@ -188,12 +214,56 @@ def read_http_response(sock: socket.socket) -> HttpResponse:
     )
 
 
-def run_test(name: str, fn) -> int:
-    print(f"[RUN] {name}")
+def run_test(name: str, fn) -> Tuple[int, Optional[str]]:
+    """
+    Run a single test and return (status_code, error_message_or_none).
+    Status: 0 = pass, 1 = fail
+    """
     try:
         fn()
+        return (0, None)
     except Exception as exc:
-        print(f"[FAIL] {name}: {exc}")
-        return 1
-    print(f"[PASS] {name}")
-    return 0
+        return (1, f"{name}: {str(exc)}")
+
+
+class TestRunner:
+    """Helper for running tests with nice progress output."""
+    
+    def __init__(self, test_name: str, test_count: int):
+        self.test_name = test_name
+        self.test_count = test_count
+        self.passed = 0
+        self.failed = 0
+        self.failures: list[str] = []
+        print(f"test {test_name}")
+    
+    def run(self, test_name: str, test_fn) -> bool:
+        """Run a test and update progress. Returns True if passed."""
+        current = self.passed + self.failed + 1
+        status, error = run_test(test_name, test_fn)
+        
+        if status == 0:
+            self.passed += 1
+            result = "✓"
+        else:
+            self.failed += 1
+            self.failures.append(error)
+            result = "✗"
+        
+        # Overwrite same line with progress
+        print(f"\r  {result} {current:2d}/{self.test_count} tests", end="", flush=True)
+        return status == 0
+    
+    def summary(self) -> int:
+        """Print summary and return exit code."""
+        print()  # Newline after progress
+        
+        if self.failed > 0:
+            print(f"  ✗ Failed tests ({self.failed}):")
+            for failure in self.failures:
+                print(f"    • {failure}")
+            print(f"  Summary: {self.failed} failed, {self.passed} passed\n")
+            return 1
+        
+        print(f"  ✓ All {self.passed} {self.test_name} tests passed\n")
+        return 0

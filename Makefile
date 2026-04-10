@@ -76,7 +76,14 @@ DEP_FILES := $(REL_OBJS:.o=.d) $(DBG_OBJS:.o=.d) $(LKS_OBJS:.o=.d)
 			test-delete \
 			test-cgi-keep-alive \
 			test-virtual-hosting \
-			test-invalid-http
+			test-invalid-http \
+			test-leaks test-leaks-integration \
+			test-leaks-get \
+			test-leaks-post \
+			test-leaks-delete \
+			test-leaks-cgi-keep-alive \
+			test-leaks-virtual-hosting \
+			test-leaks-invalid-http
 
 # --- variant configuration ---
 # target-specific variables propagate to the entire subgraph
@@ -224,3 +231,33 @@ test-virtual-hosting: $(NAME)
 
 test-invalid-http: $(NAME)
 	@python3 test/1_integration/test_invalid_http.py
+
+# --- integration tests with leak detection ---
+
+test-leaks: test-leaks-integration
+
+test-leaks-integration: $(LKS_NAME) \
+	test-leaks-get \
+	test-leaks-post \
+	test-leaks-delete \
+	test-leaks-cgi-keep-alive \
+	test-leaks-virtual-hosting \
+	test-leaks-invalid-http
+
+test-leaks-get: $(LKS_NAME)
+	@WEBSERV_BINARY=$(PWD)/$(LKS_NAME) WEBSERV_VALGRIND=1 python3 test/1_integration/test_get.py
+
+test-leaks-post: $(LKS_NAME)
+	@WEBSERV_BINARY=$(PWD)/$(LKS_NAME) WEBSERV_VALGRIND=1 python3 test/1_integration/test_post.py
+
+test-leaks-delete: $(LKS_NAME)
+	@WEBSERV_BINARY=$(PWD)/$(LKS_NAME) WEBSERV_VALGRIND=1 python3 test/1_integration/test_delete.py
+
+test-leaks-cgi-keep-alive: $(LKS_NAME)
+	@WEBSERV_BINARY=$(PWD)/$(LKS_NAME) WEBSERV_VALGRIND=1 python3 test/1_integration/test_cgi_keep_alive.py
+
+test-leaks-virtual-hosting: $(LKS_NAME)
+	@WEBSERV_BINARY=$(PWD)/$(LKS_NAME) WEBSERV_VALGRIND=1 python3 test/1_integration/test_virtual_hosting.py
+
+test-leaks-invalid-http: $(LKS_NAME)
+	@WEBSERV_BINARY=$(PWD)/$(LKS_NAME) WEBSERV_VALGRIND=1 python3 test/1_integration/test_invalid_http.py
