@@ -32,3 +32,4 @@ www/full/uploads/files/*
 
 # python
 __pycache__/
+test/1_integration/siege/results/

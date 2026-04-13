@@ -83,7 +83,19 @@ DEP_FILES := $(REL_OBJS:.o=.d) $(DBG_OBJS:.o=.d) $(LKS_OBJS:.o=.d)
 			test-leaks-delete \
 			test-leaks-cgi-keep-alive \
 			test-leaks-virtual-hosting \
-			test-leaks-invalid-http
+			test-leaks-invalid-http \
+			siege-test siege-baseline siege-medium siege-heavy siege-stress
+
+# --- siege defaults ---
+
+SIEGE_BIN          ?= siege
+SIEGE_URL_FILE     ?= ./test/1_integration/siege/urls.txt
+SIEGE_RESULTS_DIR  ?= ./test/1_integration/siege/results
+SIEGE_SERVER_CONFIG ?= ./config/valid/full.conf
+
+SIEGE_CONCURRENCY  ?= 50
+SIEGE_DURATION     ?= 2M
+SIEGE_DELAY        ?= 2
 
 # --- variant configuration ---
 # target-specific variables propagate to the entire subgraph
@@ -261,3 +273,46 @@ test-leaks-virtual-hosting: $(LKS_NAME)
 
 test-leaks-invalid-http: $(LKS_NAME)
 	@WEBSERV_BINARY=$(PWD)/$(LKS_NAME) WEBSERV_VALGRIND=1 python3 test/1_integration/test_invalid_http.py
+
+# --- siege load tests ---
+
+define RUN_SIEGE_TEST
+	@set -eu; \
+	if ! command -v $(SIEGE_BIN) >/dev/null 2>&1; then \
+		echo "Error: '$(SIEGE_BIN)' is not installed. Install it (e.g. sudo apt install siege) and retry."; \
+		exit 1; \
+	fi; \
+	if [ ! -s "$(SIEGE_URL_FILE)" ]; then \
+		echo "Error: URL file '$(SIEGE_URL_FILE)' is missing or empty."; \
+		exit 1; \
+	fi; \
+	mkdir -p "$(SIEGE_RESULTS_DIR)"; \
+	ts=$$(date +%Y%m%d-%H%M%S); \
+	result_file="$(SIEGE_RESULTS_DIR)/siege-$1-$$ts.log"; \
+	echo "Running siege $1 test..."; \
+	echo "Preflight: running integration smoke test (test-get)"; \
+	python3 test/1_integration/test_get.py; \
+	echo "Starting webserv with $(SIEGE_SERVER_CONFIG)"; \
+	./$(NAME) "$(SIEGE_SERVER_CONFIG)" >/tmp/webserv-siege-$$ts.log 2>&1 & \
+	ws_pid=$$!; \
+	trap 'kill -TERM $$ws_pid 2>/dev/null || true; wait $$ws_pid 2>/dev/null || true' EXIT INT TERM; \
+	sleep 1; \
+	echo "siege -c $2 -d $3 -t $4 -f $(SIEGE_URL_FILE)"; \
+	$(SIEGE_BIN) -c "$2" -d "$3" -t "$4" -f "$(SIEGE_URL_FILE)" | tee "$$result_file"; \
+	echo "Siege results saved to $$result_file";
+endef
+
+siege-test: $(NAME)
+	$(call RUN_SIEGE_TEST,default,$(SIEGE_CONCURRENCY),$(SIEGE_DELAY),$(SIEGE_DURATION))
+
+siege-baseline: $(NAME)
+	$(call RUN_SIEGE_TEST,baseline,10,$(SIEGE_DELAY),1M)
+
+siege-medium: $(NAME)
+	$(call RUN_SIEGE_TEST,medium,50,$(SIEGE_DELAY),2M)
+
+siege-heavy: $(NAME)
+	$(call RUN_SIEGE_TEST,heavy,100,$(SIEGE_DELAY),2M)
+
+siege-stress: $(NAME)
+	$(call RUN_SIEGE_TEST,stress,200,$(SIEGE_DELAY),2M)
