@@ -290,8 +290,6 @@ define RUN_SIEGE_TEST
 	ts=$$(date +%Y%m%d-%H%M%S); \
 	result_file="$(SIEGE_RESULTS_DIR)/siege-$1-$$ts.log"; \
 	echo "Running siege $1 test..."; \
-	echo "Preflight: running integration smoke test (test-get)"; \
-	python3 test/1_integration/test_get.py; \
 	echo "Starting webserv with $(SIEGE_SERVER_CONFIG)"; \
 	./$(NAME) "$(SIEGE_SERVER_CONFIG)" >/tmp/webserv-siege-$$ts.log 2>&1 & \
 	ws_pid=$$!; \
