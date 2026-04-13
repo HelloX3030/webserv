@@ -17,6 +17,10 @@ _default_binary = ROOT / "webserv"
 BINARY = Path(os.environ.get("WEBSERV_BINARY", str(_default_binary)))
 USE_VALGRIND = os.environ.get("WEBSERV_VALGRIND", "0") == "1"
 
+# Multiply timeouts when running with valgrind (adds significant overhead)
+# Valgrind can slow things down 10-30x depending on the operation
+TIMEOUT_MULTIPLIER = 50.0 if USE_VALGRIND else 1.0
+
 HOST = "127.0.0.1"
 PORT = 8080
 
@@ -72,7 +76,9 @@ class WebservRunner:
             text=True,
         )
 
-        deadline = time.time() + 5.0
+        # Increase startup deadline when running with valgrind
+        startup_timeout = 5.0 * TIMEOUT_MULTIPLIER
+        deadline = time.time() + startup_timeout
         while time.time() < deadline:
             if self.process.poll() is not None:
                 out, err = self.process.communicate(timeout=1)
@@ -152,8 +158,10 @@ def http10_request_bytes(method: str, target: str, host: str, headers: Dict[str,
 
 
 def open_client(timeout: float = 2.0) -> socket.socket:
-    sock = socket.create_connection((HOST, PORT), timeout=timeout)
-    sock.settimeout(timeout)
+    # Apply timeout multiplier when running with valgrind (5x slower)
+    adjusted_timeout = timeout * TIMEOUT_MULTIPLIER
+    sock = socket.create_connection((HOST, PORT), timeout=adjusted_timeout)
+    sock.settimeout(adjusted_timeout)
     return sock
 
 

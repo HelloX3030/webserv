@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from common import ROOT, WebservRunner, TestRunner, assert_true, http10_request_bytes, open_client, read_http_response
+from common import ROOT, WebservRunner, TestRunner, USE_VALGRIND, assert_true, http10_request_bytes, open_client, read_http_response
 
 
 def test_get_basic() -> None:
@@ -35,6 +35,8 @@ def test_get_basic() -> None:
 
 
 def test_get_large_file() -> None:
+    if USE_VALGRIND:
+        return  # Skip: too slow with valgrind overhead
     target_file = ROOT / "www/full/files/itest_get_large.bin"
     large_body = b"x" * (5 * 1024 * 1024)
     target_file.write_bytes(large_body)
@@ -277,6 +279,8 @@ def test_get_http11_connection_close_token_list() -> None:
 
 
 def test_get_binary_file() -> None:
+    if USE_VALGRIND:
+        return  # Skip: too slow with valgrind overhead
     target_file = ROOT / "www/full/files/itest_get_binary.bin"
     binary_content = bytes(range(256)) * 100
     target_file.write_bytes(binary_content)

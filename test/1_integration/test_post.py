@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from common import ROOT, WebservRunner, TestRunner, assert_true, http10_request_bytes, open_client, read_http_response
+from common import USE_VALGRIND
 import socket
 
 
@@ -45,6 +46,8 @@ def test_post_large_body() -> None:
 
     body = b"x" * (1 * 1024 * 1024)
 
+    if USE_VALGRIND:
+        return  # Skip: too slow with valgrind overhead
     with WebservRunner("config/valid/full.conf"):
         req = http10_request_bytes(
             method="POST",
@@ -145,6 +148,8 @@ def test_post_binary_data() -> None:
 
     body = bytes(range(256)) * 10
 
+    if USE_VALGRIND:
+        return  # Skip: too slow with valgrind overhead
     with WebservRunner("config/valid/full.conf"):
         req = http10_request_bytes(
             method="POST",
