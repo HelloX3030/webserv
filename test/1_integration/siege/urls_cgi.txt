@@ -1,0 +1,8 @@
+http://127.0.0.1:8080/cgi-python/hello.py?name=loadtest
+http://127.0.0.1:8080/cgi-python/env.py
+http://127.0.0.1:8080/cgi-bash/hello.sh?name=loadtest
+http://127.0.0.1:8080/cgi-bash/env.sh
+http://127.0.0.1:8080/cgi-python/hello.py?name=alpha
+http://127.0.0.1:8080/cgi-python/hello.py?name=beta
+http://127.0.0.1:8080/cgi-bash/hello.sh?name=alpha
+http://127.0.0.1:8080/cgi-bash/hello.sh?name=beta

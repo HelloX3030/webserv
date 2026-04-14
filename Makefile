@@ -84,18 +84,26 @@ DEP_FILES := $(REL_OBJS:.o=.d) $(DBG_OBJS:.o=.d) $(LKS_OBJS:.o=.d)
 			test-leaks-cgi-keep-alive \
 			test-leaks-virtual-hosting \
 			test-leaks-invalid-http \
-			siege-test siege-baseline siege-medium siege-heavy siege-stress
+			siege-test siege-baseline siege-medium siege-heavy siege-stress \
+			siege-static siege-cgi siege-diagnose
 
 # --- siege defaults ---
 
 SIEGE_BIN          ?= siege
 SIEGE_URL_FILE     ?= ./test/1_integration/siege/urls.txt
+SIEGE_STATIC_URL_FILE ?= ./test/1_integration/siege/urls_static.txt
+SIEGE_CGI_URL_FILE ?= ./test/1_integration/siege/urls_cgi.txt
 SIEGE_RESULTS_DIR  ?= ./test/1_integration/siege/results
 SIEGE_SERVER_CONFIG ?= ./config/valid/full.conf
+SIEGE_RC_FILE      ?= $(HOME)/.siege/siege.conf
 
 SIEGE_CONCURRENCY  ?= 50
 SIEGE_DURATION     ?= 2M
 SIEGE_DELAY        ?= 2
+SIEGE_TIMEOUT      ?= 5
+SIEGE_TIMEOUT_STATIC ?= 3
+SIEGE_TIMEOUT_CGI  ?= 10
+SIEGE_DIAG_DURATION ?= 30S
 
 # --- variant configuration ---
 # target-specific variables propagate to the entire subgraph
@@ -289,28 +297,62 @@ define RUN_SIEGE_TEST
 	mkdir -p "$(SIEGE_RESULTS_DIR)"; \
 	ts=$$(date +%Y%m%d-%H%M%S); \
 	result_file="$(SIEGE_RESULTS_DIR)/siege-$1-$$ts.log"; \
+	tmp_rc="/tmp/siege-$1-$$ts.conf"; \
+	rc_src="$(SIEGE_RC_FILE)"; \
+	if [ ! -f "$$rc_src" ]; then \
+		$(SIEGE_BIN) -C >/dev/null 2>&1 || true; \
+	fi; \
+	if [ ! -f "$$rc_src" ]; then \
+		echo "Error: siege rc file not found at $$rc_src"; \
+		exit 1; \
+	fi; \
+	cp "$$rc_src" "$$tmp_rc"; \
+	echo "timeout = $5" >> "$$tmp_rc"; \
 	echo "Running siege $1 test..."; \
 	echo "Starting webserv with $(SIEGE_SERVER_CONFIG)"; \
 	./$(NAME) "$(SIEGE_SERVER_CONFIG)" >/tmp/webserv-siege-$$ts.log 2>&1 & \
 	ws_pid=$$!; \
-	trap 'kill -TERM $$ws_pid 2>/dev/null || true; wait $$ws_pid 2>/dev/null || true' EXIT INT TERM; \
+	trap 'kill -TERM $$ws_pid 2>/dev/null || true; wait $$ws_pid 2>/dev/null || true; rm -f "$$tmp_rc"' EXIT INT TERM; \
 	sleep 1; \
-	echo "siege -c $2 -d $3 -t $4 -f $(SIEGE_URL_FILE)"; \
-	$(SIEGE_BIN) -c "$2" -d "$3" -t "$4" -f "$(SIEGE_URL_FILE)" | tee "$$result_file"; \
+	if [ "$2" -gt 255 ] 2>/dev/null; then \
+		echo "Warning: requested concurrency=$2, but siege may cap users at 255 (check ~/.siegerc limit)."; \
+	fi; \
+	echo "siege -c $2 -d $3 -t $4 -f $(SIEGE_URL_FILE) (timeout=$5s)"; \
+	$(SIEGE_BIN) -R "$$tmp_rc" -c "$2" -d "$3" -t "$4" -f "$(SIEGE_URL_FILE)" | tee "$$result_file"; \
+	fails=$$(grep -Eo '"failed_transactions":[[:space:]]*[0-9]+' "$$result_file" | awk -F: '{print $$2}' | tr -d ' ' | tail -n1 || true); \
+	if [ -n "$$fails" ] && [ "$$fails" -gt 0 ]; then \
+		echo "Issue detected: failed_transactions=$$fails (see $$result_file)"; \
+		exit 1; \
+	fi; \
+	longest=$$(grep -Eo '"longest_transaction":[[:space:]]*[0-9.]+' "$$result_file" | awk -F: '{print $$2}' | tr -d ' ' | tail -n1 || true); \
+	if [ -n "$$longest" ]; then \
+		echo "Longest transaction: $$longest s"; \
+	fi; \
 	echo "Siege results saved to $$result_file";
 endef
 
 siege-test: $(NAME)
-	$(call RUN_SIEGE_TEST,default,$(SIEGE_CONCURRENCY),$(SIEGE_DELAY),$(SIEGE_DURATION))
+	$(call RUN_SIEGE_TEST,default,$(SIEGE_CONCURRENCY),$(SIEGE_DELAY),$(SIEGE_DURATION),$(SIEGE_TIMEOUT))
 
 siege-baseline: $(NAME)
-	$(call RUN_SIEGE_TEST,baseline,10,$(SIEGE_DELAY),1M)
+	$(call RUN_SIEGE_TEST,baseline,10,$(SIEGE_DELAY),1M,$(SIEGE_TIMEOUT))
 
 siege-medium: $(NAME)
-	$(call RUN_SIEGE_TEST,medium,50,$(SIEGE_DELAY),2M)
+	$(call RUN_SIEGE_TEST,medium,50,$(SIEGE_DELAY),2M,$(SIEGE_TIMEOUT))
 
 siege-heavy: $(NAME)
-	$(call RUN_SIEGE_TEST,heavy,100,$(SIEGE_DELAY),2M)
+	$(call RUN_SIEGE_TEST,heavy,100,0,2M,$(SIEGE_TIMEOUT))
 
 siege-stress: $(NAME)
-	$(call RUN_SIEGE_TEST,stress,200,$(SIEGE_DELAY),2M)
+	$(call RUN_SIEGE_TEST,stress,200,0,2M,$(SIEGE_TIMEOUT))
+
+siege-static: $(NAME)
+	@$(MAKE) --no-print-directory siege-test SIEGE_URL_FILE=$(SIEGE_STATIC_URL_FILE) SIEGE_CONCURRENCY=200 SIEGE_DELAY=0 SIEGE_DURATION=2M SIEGE_TIMEOUT=$(SIEGE_TIMEOUT_STATIC)
+
+siege-cgi: $(NAME)
+	@$(MAKE) --no-print-directory siege-test SIEGE_URL_FILE=$(SIEGE_CGI_URL_FILE) SIEGE_CONCURRENCY=120 SIEGE_DELAY=0 SIEGE_DURATION=2M SIEGE_TIMEOUT=$(SIEGE_TIMEOUT_CGI)
+
+siege-diagnose: $(NAME)
+	@echo "Running siege diagnose suite (static then cgi)..."
+	@$(MAKE) --no-print-directory siege-test SIEGE_URL_FILE=$(SIEGE_STATIC_URL_FILE) SIEGE_CONCURRENCY=200 SIEGE_DELAY=0 SIEGE_DURATION=$(SIEGE_DIAG_DURATION) SIEGE_TIMEOUT=$(SIEGE_TIMEOUT_STATIC)
+	@$(MAKE) --no-print-directory siege-test SIEGE_URL_FILE=$(SIEGE_CGI_URL_FILE) SIEGE_CONCURRENCY=120 SIEGE_DELAY=0 SIEGE_DURATION=$(SIEGE_DIAG_DURATION) SIEGE_TIMEOUT=$(SIEGE_TIMEOUT_CGI)
