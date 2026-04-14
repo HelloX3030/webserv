@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from common import ROOT, WebservRunner, TestRunner, USE_VALGRIND, assert_true, http10_request_bytes, open_client, read_http_response
+from common import ROOT, WebservRunner, TestRunner, USE_VALGRIND, assert_true, http10_request_bytes, open_client, read_http_response, read_http_response_buffered
 
 
 def test_get_basic() -> None:
@@ -273,6 +273,46 @@ def test_get_http11_connection_close_token_list() -> None:
                     )
                 except (BrokenPipeError, ConnectionResetError):
                     assert_true(True, "Connection closed as expected")
+    finally:
+        if target_file.exists():
+            target_file.unlink()
+
+
+def test_get_http11_large_pipeline() -> None:
+    if USE_VALGRIND:
+        return  # Skip: too slow with valgrind overhead
+
+    target_file = ROOT / "www/full/files/itest_get_pipeline.txt"
+    target_file.write_text("pipeline-test\n", encoding="utf-8")
+
+    request_count = 128
+
+    try:
+        with WebservRunner("config/valid/full.conf"):
+            with open_client(timeout=10.0) as sock:
+                response_buffer = bytearray()
+                pipeline = b"".join(
+                    (
+                        b"GET /files/itest_get_pipeline.txt HTTP/1.1\r\n"
+                        b"Host: localhost\r\n"
+                        b"\r\n"
+                    )
+                    for _ in range(request_count)
+                )
+
+                sock.sendall(pipeline)
+
+                for i in range(request_count):
+                    res = read_http_response_buffered(sock, response_buffer)
+                    assert_true(
+                        res.status_code == 200,
+                        f"Pipelined GET {i} expected 200, got {res.status_code}",
+                    )
+                    assert_true(
+                        res.body_text == "pipeline-test\n",
+                        f"Pipelined GET {i} body mismatch: {res.body_text!r}",
+                    )
+                assert_true(True, "Pipelined GET sequence completed")
     finally:
         if target_file.exists():
             target_file.unlink()
@@ -974,6 +1014,7 @@ def main() -> int:
         ("GET keep-alive multiple requests", test_get_keep_alive_multiple_requests),
         ("GET HTTP/1.1 default keep-alive", test_get_http11_default_keep_alive_multiple_requests),
         ("GET HTTP/1.1 Connection token-list close", test_get_http11_connection_close_token_list),
+        ("GET HTTP/1.1 large pipeline", test_get_http11_large_pipeline),
         ("GET binary file", test_get_binary_file),
         ("GET with custom headers", test_get_custom_headers),
         ("GET JSON Content-Type", test_get_content_type_json),

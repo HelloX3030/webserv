@@ -222,6 +222,66 @@ def read_http_response(sock: socket.socket) -> HttpResponse:
     )
 
 
+def read_http_response_buffered(sock: socket.socket, buffer: bytearray) -> HttpResponse:
+    while b"\r\n\r\n" not in buffer:
+        chunk = sock.recv(4096)
+        if not chunk:
+            break
+        buffer.extend(chunk)
+
+    if b"\r\n\r\n" not in buffer:
+        raise AssertionError("Did not receive full HTTP header block")
+
+    head, remainder = bytes(buffer).split(b"\r\n\r\n", 1)
+    lines = head.decode("iso-8859-1").split("\r\n")
+
+    if not lines or not lines[0].startswith("HTTP/"):
+        raise AssertionError(f"Invalid status line: {lines[0] if lines else '<empty>'}")
+
+    status_parts = lines[0].split(" ", 2)
+    if len(status_parts) < 2:
+        raise AssertionError(f"Malformed status line: {lines[0]}")
+
+    status_code = int(status_parts[1])
+    reason = status_parts[2] if len(status_parts) > 2 else ""
+
+    headers: Dict[str, str] = {}
+    for line in lines[1:]:
+        if not line:
+            continue
+        if ":" not in line:
+            continue
+        key, value = line.split(":", 1)
+        headers[key.strip().lower()] = value.strip()
+
+    content_length = 0
+    if "content-length" in headers:
+        content_length = int(headers["content-length"])
+
+    body = bytearray(remainder)
+    while len(body) < content_length:
+        chunk = sock.recv(4096)
+        if not chunk:
+            break
+        body.extend(chunk)
+
+    if len(body) < content_length:
+        raise AssertionError(
+            f"Body too short: expected {content_length} bytes, got {len(body)}"
+        )
+
+    consumed = len(head) + 4 + content_length
+    del buffer[:consumed]
+
+    return HttpResponse(
+        status_line=lines[0],
+        status_code=status_code,
+        reason=reason,
+        headers=headers,
+        body=bytes(body[:content_length]),
+    )
+
+
 def run_test(name: str, fn) -> Tuple[int, Optional[str]]:
     """
     Run a single test and return (status_code, error_message_or_none).

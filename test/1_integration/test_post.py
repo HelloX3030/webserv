@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from common import ROOT, WebservRunner, TestRunner, assert_true, http10_request_bytes, open_client, read_http_response
+from common import ROOT, WebservRunner, TestRunner, assert_true, http10_request_bytes, open_client, read_http_response, read_http_response_buffered
 from common import USE_VALGRIND
 import socket
 
@@ -355,6 +355,58 @@ def test_post_keep_alive_multiple() -> None:
     for f in files:
         if f.exists():
             f.unlink()
+
+
+def test_post_http11_large_pipeline() -> None:
+    if USE_VALGRIND:
+        return  # Skip: too slow with valgrind overhead
+
+    files = []
+    request_count = 64
+
+    for i in range(request_count):
+        target_file = ROOT / f"www/full/files/itest_post_pipeline_{i}.txt"
+        files.append(target_file)
+        if target_file.exists():
+            target_file.unlink()
+
+    try:
+        with WebservRunner("config/valid/full.conf"):
+            with open_client(timeout=10.0) as sock:
+                response_buffer = bytearray()
+                pipeline = bytearray()
+
+                for i in range(request_count):
+                    body = f"pipeline post {i}\n".encode()
+                    pipeline.extend(
+                        (
+                            f"POST /files/itest_post_pipeline_{i}.txt HTTP/1.1\r\n".encode()
+                            + b"Host: localhost\r\n"
+                            + b"Content-Type: text/plain\r\n"
+                            + f"Content-Length: {len(body)}\r\n".encode()
+                            + b"\r\n"
+                            + body
+                        )
+                    )
+
+                sock.sendall(bytes(pipeline))
+
+                for i, target_file in enumerate(files):
+                    res = read_http_response_buffered(sock, response_buffer)
+                    assert_true(
+                        res.status_code in (200, 201),
+                        f"Pipelined POST {i} expected 200/201, got {res.status_code}",
+                    )
+                    assert_true(target_file.exists(), f"Pipelined POST {i} did not create file")
+                    assert_true(
+                        target_file.read_text(encoding="utf-8") == f"pipeline post {i}\n",
+                        f"Pipelined POST {i} body mismatch",
+                    )
+                assert_true(True, "Pipelined POST sequence completed")
+    finally:
+        for target_file in files:
+            if target_file.exists():
+                target_file.unlink()
 
 
 def test_post_with_custom_headers() -> None:
@@ -917,6 +969,7 @@ def main() -> int:
         ("POST path traversal attempt", test_post_path_traversal),
         ("POST multiple sequential requests", test_post_multiple_sequential),
         ("POST keep-alive multiple requests", test_post_keep_alive_multiple),
+        ("POST HTTP/1.1 large pipeline", test_post_http11_large_pipeline),
         ("POST with custom headers", test_post_with_custom_headers),
         ("POST various Content-Types", test_post_content_types),
         ("POST with query string", test_post_query_string),
