@@ -18,6 +18,49 @@ static std::string_view trim_ows(std::string_view s)
     return s.substr(start, end - start + 1);
 }
 
+/* validate header field name against RFC 9110 §5.1.
+field-name must be a token consisting only of tchar characters:
+  tchar = "!" / "#" / "$" / "%" / "&" / "'"
+        / "*" / "+" / "-" / "." / "^" / "_"
+        / "`" / "|" / "~" / DIGIT / ALPHA
+spaces, colons, control characters, etc. are forbidden. */
+static bool is_valid_header_name(std::string_view name)
+{
+    for (unsigned char c : name)
+    {
+        /* check if char is a tchar:
+        tchar = "!" | "#" | "$" | "%" | "&" | "'" | "*" | "+" | "-" | "."
+              | "^" | "_" | "`" | "|" | "~" | DIGIT | ALPHA */
+        if (!(
+            (c >= 0x21 && c <= 0x7E) &&  /* printable ASCII range */
+            c != ':' && c != ' ' && c != '\t' && /* forbidden chars */
+            c != '(' && c != ')' && c != '<' && c != '>' &&
+            c != '@' && c != ',' && c != ';' && c != '\\' &&
+            c != '"' && c != '/' && c != '[' && c != ']' && c != '?'
+        ))
+        {
+            return false;
+        }
+    }
+    return !name.empty();
+}
+
+/* validate header field value for forbidden control characters.
+RFC 9110 §5.5: field-value may contain visible (VCHAR) and space/tab (OWS),
+but not other control characters. */
+static bool is_valid_header_value(std::string_view value)
+{
+    for (unsigned char c : value)
+    {
+        /* allow VCHAR (0x21-0x7E), SP (0x20), HTAB (0x09) */
+        if ((c < 0x20 || c > 0x7E) && c != 0x09)
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
 /* header phase parser. called once per advance() loop iteration
 while phase_ == HEADERS.
 
@@ -176,6 +219,22 @@ PhaseResult HttpRequestFrontend::parse_header_line()
 
     std::string_view raw_name = line.substr(0, colon);
     std::string_view raw_value = line.substr(colon + 1);
+
+    /* validate header field name: must be a token per RFC 9110 §5.1 */
+    if (!is_valid_header_name(raw_name))
+    {
+        error_code_ = 400;
+        phase_ = ParsePhase::ERROR;
+        return PhaseResult::Failed;
+    }
+
+    /* validate header field value: no control chars (except SP/HTAB) */
+    if (!is_valid_header_value(raw_value))
+    {
+        error_code_ = 400;
+        phase_ = ParsePhase::ERROR;
+        return PhaseResult::Failed;
+    }
 
     /* normalise name to lowercase: quotient over the case-equivalence
     relation on field names (RFC 9110 §5.1). all consumers downstream
