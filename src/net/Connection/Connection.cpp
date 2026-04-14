@@ -5,6 +5,8 @@
 #include "base/utils.hpp"
 #include "http/HttpMethods.hpp"
 #include "net/Listener.hpp"
+
+#include <chrono>
 #include <algorithm>
 #include <cctype>
 #include <fstream>
@@ -77,7 +79,8 @@ Connection::Connection(Listener &listener, int fd)
       write_offset(0),
       listener(listener),
       keep_alive(false),
-      peer_closed(false)
+    peer_closed(false),
+    last_activity(std::chrono::steady_clock::now())
 {
 }
 
@@ -125,6 +128,7 @@ void Connection::handle_client_buffer(const char *buffer, ssize_t n)
             responses.push_back(response);
 
             keep_alive = request_keep_alive;
+            last_activity = std::chrono::steady_clock::now();
 
             // Once a request asks to close, stop consuming further pipelined input.
             // Remaining buffered bytes are ignored because the connection will close
@@ -185,6 +189,7 @@ void Connection::handle_event(uint32_t events)
 #endif
 
                 handle_client_buffer(buffer, n);
+                last_activity = std::chrono::steady_clock::now();
 
                 if (state == ConnectionState::FAILED)
                     break;
@@ -241,6 +246,7 @@ void Connection::handle_event(uint32_t events)
             if (n > 0)
             {
                 write_offset += n;
+                last_activity = std::chrono::steady_clock::now();
             }
             else
             {
@@ -288,6 +294,15 @@ void Connection::handle_event(uint32_t events)
 bool Connection::should_close() const
 {
     return state == ConnectionState::CLOSE;
+}
+
+bool Connection::has_timed_out(std::chrono::steady_clock::time_point now) const
+{
+    if (state == ConnectionState::CLOSE)
+        return false;
+
+    auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - last_activity);
+    return elapsed.count() >= static_cast<long long>(WebServ::CONNECTION_IDLE_TIMEOUT_MS);
 }
 
 std::string Connection::to_string() const

@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 
+import socket
+import time
 from pathlib import Path
 
-from common import ROOT, WebservRunner, TestRunner, assert_true, open_client, read_http_response
+from common import ROOT, USE_VALGRIND, WebservRunner, TestRunner, assert_true, open_client, read_http_response
 
 
 def _send_raw_and_get_status(raw_request: bytes, config_rel_path: str = "config/valid/full.conf") -> int:
@@ -250,6 +252,67 @@ def test_invalid_empty_request_line() -> None:
                 assert_true(True, "Empty request line correctly rejected")
 
 
+def test_invalid_slow_headers_timeout() -> None:
+    if USE_VALGRIND:
+        return
+
+    with WebservRunner("config/valid/full.conf"):
+        with open_client(timeout=1.0) as sock:
+            sock.sendall(
+                b"GET / HTTP/1.1\r\n"
+                b"Host: localhost\r\n"
+                b"X-Slow: "
+            )
+
+            time.sleep(3.0)
+
+            try:
+                sock.sendall(b"still-slow\r\n\r\n")
+                try:
+                    data = sock.recv(1)
+                    assert_true(len(data) == 0, "Slow header connection should have been closed")
+                except socket.timeout:
+                    assert_true(False, "Slow header connection should time out by server close")
+            except (BrokenPipeError, ConnectionResetError):
+                assert_true(True, "Slow header connection timed out and closed")
+
+
+def test_invalid_slow_body_timeout() -> None:
+    if USE_VALGRIND:
+        return
+
+    target_file = ROOT / "www/full/files/itest_invalid_http_slow_body.txt"
+    if target_file.exists():
+        target_file.unlink()
+
+    with WebservRunner("config/valid/full.conf"):
+        with open_client(timeout=1.0) as sock:
+            sock.sendall(
+                b"POST /files/itest_invalid_http_slow_body.txt HTTP/1.1\r\n"
+                b"Host: localhost\r\n"
+                b"Content-Type: text/plain\r\n"
+                b"Content-Length: 10\r\n"
+                b"Connection: close\r\n"
+                b"\r\n"
+                b"abc"
+            )
+
+            time.sleep(3.0)
+
+            try:
+                sock.sendall(b"defghij")
+                try:
+                    data = sock.recv(1)
+                    assert_true(len(data) == 0, "Slow body connection should have been closed")
+                except socket.timeout:
+                    assert_true(False, "Slow body connection should time out by server close")
+            except (BrokenPipeError, ConnectionResetError):
+                assert_true(True, "Slow body connection timed out and closed")
+
+    if target_file.exists():
+        target_file.unlink()
+
+
 def test_invalid_header_value_with_control_chars() -> None:
     req = (
         b"GET /files/test.txt HTTP/1.1\r\n"
@@ -342,6 +405,8 @@ def main() -> int:
         ("Invalid header field name with control chars", test_invalid_header_field_name_with_control_chars),
         ("Invalid request without CRLF only LF", test_invalid_request_without_crlf_only_lf),
         ("Invalid empty request line", test_invalid_empty_request_line),
+        ("Invalid slow headers timeout", test_invalid_slow_headers_timeout),
+        ("Invalid slow body timeout", test_invalid_slow_body_timeout),
         ("Invalid header value with control chars", test_invalid_header_value_with_control_chars),
         ("Invalid Content-Length exceeds limit", test_invalid_content_length_exceeds_limit),
         ("Invalid mixed HTTP versions pipelined", test_invalid_mixed_http_versions_pipelined),

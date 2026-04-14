@@ -21,9 +21,10 @@ namespace WebServ
 
 constexpr const char *HTTP_VERSION = "HTTP/1.0";
 constexpr const std::size_t EPOLL_MAX_EVENTS = 64;
-constexpr const int EPOLL_TIMEOUT = -1;
+constexpr const int EPOLL_TIMEOUT = 250;
 constexpr const std::size_t EPOLL_HANDLERS_BATCH_SIZE = 64;
 constexpr const std::size_t CONNECTION_READ_BUFFER_SIZE = 4096;
+constexpr const std::size_t CONNECTION_IDLE_TIMEOUT_MS = 2000;
 
 } // namespace WebServ
 

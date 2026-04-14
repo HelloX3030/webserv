@@ -3,7 +3,36 @@
 #include "base/errors.hpp"
 #include "base/logging.hpp"
 #include "core/signal.hpp"
+
+#include <chrono>
 #include <sys/epoll.h>
+
+namespace
+{
+
+void reap_timed_out_connections()
+{
+    const auto now = std::chrono::steady_clock::now();
+
+    std::vector<int> expired_fds;
+    expired_fds.reserve(WebServ::epoll_handlers.size());
+
+    for (std::size_t fd = 0; fd < WebServ::epoll_handlers.size(); ++fd)
+    {
+        EpollHandler *handler = WebServ::epoll_handlers[fd].get();
+        if (handler == nullptr)
+            continue;
+
+        Connection *connection = dynamic_cast<Connection *>(handler);
+        if (connection != nullptr && connection->has_timed_out(now))
+            expired_fds.push_back(static_cast<int>(fd));
+    }
+
+    for (int fd : expired_fds)
+        WebServ::remove_epoll_handler(fd);
+}
+
+} // namespace
 
 namespace WebServ
 {
@@ -43,6 +72,8 @@ void run()
                 remove_epoll_handler(handler->get_fd());
             }
         }
+
+        reap_timed_out_connections();
     }
 }
 

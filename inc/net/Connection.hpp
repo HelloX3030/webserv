@@ -6,6 +6,8 @@
 #include "http/HttpResponseBuilder.hpp"
 #include "net/EPollHandler.hpp"
 
+#include <chrono>
+
 // Forward Declarations
 class Listener;
 
@@ -30,6 +32,7 @@ class Connection final : public EpollHandler
     Listener &listener;
     bool keep_alive;
     bool peer_closed;
+    std::chrono::steady_clock::time_point last_activity;
 
     void handle_client_buffer(const char *buffer, ssize_t n);
 
@@ -48,6 +51,8 @@ class Connection final : public EpollHandler
     void handle_event(uint32_t events) override;
     bool should_close() const override;
     std::string to_string() const override;
+
+    [[nodiscard]] bool has_timed_out(std::chrono::steady_clock::time_point now) const;
 
     // Functions
     [[nodiscard]] const ServerConfig &get_default_server_config() const;
