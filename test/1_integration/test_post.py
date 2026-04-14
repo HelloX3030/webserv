@@ -644,6 +644,267 @@ def test_post_special_chars_filename() -> None:
         target_file.unlink()
 
 
+def test_post_body_at_limit() -> None:
+    """Test POST body exactly at the default limit (1 MB).
+    Default client_max_body_size is 1,048,576 bytes.
+    Should succeed."""
+    target_file = ROOT / "www/full/files/itest_post_at_limit.bin"
+    if target_file.exists():
+        target_file.unlink()
+
+    # Exactly 1 MB (the default limit)
+    body = b"x" * (1 * 1024 * 1024)
+
+    if USE_VALGRIND:
+        return  # Skip: too slow with valgrind overhead
+
+    with WebservRunner("config/valid/full.conf"):
+        req = http10_request_bytes(
+            method="POST",
+            target="/files/itest_post_at_limit.bin",
+            host="localhost",
+            headers={
+                "Content-Type": "application/octet-stream",
+                "Content-Length": str(len(body)),
+            },
+            body=body,
+        )
+
+        try:
+            with open_client(timeout=10.0) as sock:
+                sock.sendall(req)
+                res = read_http_response(sock)
+
+            assert_true(
+                res.status_code in (201, 200),
+                f"POST body at limit should succeed, got {res.status_code}"
+            )
+        except (ConnectionResetError, BrokenPipeError):
+            assert_true(False, "Server should not close on body at limit")
+
+    if target_file.exists():
+        target_file.unlink()
+
+
+def test_post_body_just_over_limit() -> None:
+    """Test POST body exceeding default limit by 1 byte.
+    Should return 413 (Payload Too Large)."""
+    target_file = ROOT / "www/full/files/itest_post_over_limit.bin"
+    if target_file.exists():
+        target_file.unlink()
+
+    # 1 MB + 1 byte (exceeds default limit)
+    body = b"x" * (1 * 1024 * 1024 + 1)
+
+    with WebservRunner("config/valid/full.conf"):
+        req = http10_request_bytes(
+            method="POST",
+            target="/files/itest_post_over_limit.bin",
+            host="localhost",
+            headers={
+                "Content-Type": "application/octet-stream",
+                "Content-Length": str(len(body)),
+            },
+            body=body,
+        )
+
+        try:
+            with open_client(timeout=10.0) as sock:
+                sock.sendall(req)
+                res = read_http_response(sock)
+
+            assert_true(
+                res.status_code == 413,
+                f"POST body over limit should return 413, got {res.status_code}"
+            )
+            assert_true(
+                not target_file.exists(),
+                "File should not be created when body exceeds limit"
+            )
+        except (ConnectionResetError, BrokenPipeError):
+            # Server may close immediately; also acceptable
+            assert_true(True, "Server correctly rejected oversized body")
+
+    if target_file.exists():
+        target_file.unlink()
+
+
+def test_post_body_significantly_over_limit() -> None:
+    """Test POST body significantly exceeding limit (10 MB).
+    Should return 413 (Payload Too Large)."""
+    target_file = ROOT / "www/full/files/itest_post_huge.bin"
+    if target_file.exists():
+        target_file.unlink()
+
+    if USE_VALGRIND:
+        return  # Skip: too slow with valgrind overhead
+
+    # 10 MB (way over default 1 MB limit)
+    body = b"y" * (10 * 1024 * 1024)
+
+    with WebservRunner("config/valid/full.conf"):
+        req = http10_request_bytes(
+            method="POST",
+            target="/files/itest_post_huge.bin",
+            host="localhost",
+            headers={
+                "Content-Type": "application/octet-stream",
+                "Content-Length": str(len(body)),
+            },
+            body=body,
+        )
+
+        try:
+            with open_client(timeout=15.0) as sock:
+                sock.sendall(req)
+                res = read_http_response(sock)
+
+            assert_true(
+                res.status_code == 413,
+                f"POST body significantly over limit should return 413, got {res.status_code}"
+            )
+        except (ConnectionResetError, BrokenPipeError):
+            # Server may close connection; also acceptable
+            assert_true(True, "Server correctly rejected huge body")
+
+    if target_file.exists():
+        target_file.unlink()
+
+
+def test_post_chunked_over_limit() -> None:
+    """Test chunked POST body exceeding limit.
+    Should return 413 when accumulated body size exceeds limit."""
+    target_file = ROOT / "www/full/files/itest_post_chunked_huge.bin"
+    if target_file.exists():
+        target_file.unlink()
+
+    with WebservRunner("config/valid/full.conf"):
+        # Send HTTP/1.1 with chunked encoding
+        # First chunk: 500KB, second chunk: 600KB (total = 1.1 MB, over 1 MB limit)
+        req = (
+            b"POST /files/itest_post_chunked_huge.bin HTTP/1.1\r\n"
+            b"Host: localhost\r\n"
+            b"Transfer-Encoding: chunked\r\n"
+            b"Content-Type: application/octet-stream\r\n"
+            b"Connection: close\r\n"
+            b"\r\n"
+            b"80000\r\n" +  # 524,288 bytes in hex
+            (b"a" * 524288) +
+            b"\r\n"
+            b"96000\r\n" +  # 614,400 bytes in hex
+            (b"b" * 614400) +
+            b"\r\n"
+            b"0\r\n"
+            b"\r\n"
+        )
+
+        try:
+            with open_client(timeout=10.0) as sock:
+                sock.sendall(req)
+                res = read_http_response(sock)
+
+            assert_true(
+                res.status_code == 413,
+                f"Chunked body over limit should return 413, got {res.status_code}"
+            )
+            assert_true(
+                not target_file.exists(),
+                "File should not be created when chunked body exceeds limit"
+            )
+        except (ConnectionResetError, BrokenPipeError):
+            assert_true(True, "Server correctly rejected oversized chunked body")
+
+    if target_file.exists():
+        target_file.unlink()
+
+
+def test_post_body_at_limit_with_uploads_config() -> None:
+    """Test POST body within uploads.conf limit (10 MB server-level).
+    Should succeed for body < 10 MB."""
+    target_file = ROOT / "www/uploads/files/itest_post_uploads_ok.bin"
+    if target_file.exists():
+        target_file.unlink()
+
+    # 3 MB (within the 10 MB server-level limit in uploads.conf)
+    body = b"z" * (3 * 1024 * 1024)
+
+    if USE_VALGRIND:
+        return  # Skip: too slow with valgrind overhead
+
+    with WebservRunner("config/valid/uploads.conf"):
+        req = http10_request_bytes(
+            method="POST",
+            target="/upload/itest_post_uploads_ok.bin",
+            host="localhost",
+            headers={
+                "Content-Type": "application/octet-stream",
+                "Content-Length": str(len(body)),
+            },
+            body=body,
+        )
+
+        try:
+            with open_client(timeout=15.0) as sock:
+                sock.sendall(req)
+                res = read_http_response(sock)
+
+            assert_true(
+                res.status_code in (201, 200),
+                f"POST within /upload/ limit should succeed, got {res.status_code}"
+            )
+        except (ConnectionResetError, BrokenPipeError):
+            assert_true(False, "Server should accept body within configured limit")
+
+    if target_file.exists():
+        target_file.unlink()
+
+
+def test_post_body_over_upload_limit() -> None:
+    """Test POST body exceeding uploads.conf limit (10 MB server-level).
+    Should return 413."""
+    target_file = ROOT / "www/uploads/files/itest_post_uploads_over.bin"
+    if target_file.exists():
+        target_file.unlink()
+
+    if USE_VALGRIND:
+        return  # Skip: too slow with valgrind overhead
+
+    # 11 MB (exceeds 10 MB limit in uploads.conf)
+    body = b"w" * (11 * 1024 * 1024)
+
+    with WebservRunner("config/valid/uploads.conf"):
+        req = http10_request_bytes(
+            method="POST",
+            target="/upload/itest_post_uploads_over.bin",
+            host="localhost",
+            headers={
+                "Content-Type": "application/octet-stream",
+                "Content-Length": str(len(body)),
+            },
+            body=body,
+        )
+
+        try:
+            with open_client(timeout=20.0) as sock:
+                sock.sendall(req)
+                res = read_http_response(sock)
+
+            assert_true(
+                res.status_code == 413,
+                f"POST over /upload/ limit should return 413, got {res.status_code}"
+            )
+            assert_true(
+                not target_file.exists(),
+                "File should not be created when exceeding limit"
+            )
+        except (ConnectionResetError, BrokenPipeError):
+            assert_true(True, "Server correctly rejected oversized upload")
+
+    if target_file.exists():
+        target_file.unlink()
+
+
+
 def main() -> int:
     tests = [
         ("POST basic file creation", test_post_basic),
@@ -665,6 +926,12 @@ def main() -> int:
         ("POST chunked Transfer-Encoding case-insensitive", test_post_chunked_transfer_encoding_case_insensitive),
         ("POST chunked Transfer-Encoding token-list", test_post_chunked_transfer_encoding_token_list),
         ("POST special chars filename", test_post_special_chars_filename),
+        ("POST body at limit", test_post_body_at_limit),
+        ("POST body just over limit", test_post_body_just_over_limit),
+        ("POST body significantly over limit", test_post_body_significantly_over_limit),
+        ("POST chunked exceeding limit", test_post_chunked_over_limit),
+        ("POST body within upload config limit", test_post_body_at_limit_with_uploads_config),
+        ("POST body exceeding upload config limit", test_post_body_over_upload_limit),
     ]
 
     runner = TestRunner("POST", len(tests))
