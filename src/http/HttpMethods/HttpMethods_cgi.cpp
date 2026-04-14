@@ -38,10 +38,14 @@ CgiEnv build_cgi_env(
 
     env.push_back("REQUEST_METHOD=" + to_string(method));
 
+    std::string path_only = target;
     std::string query;
     size_t qpos = target.find('?');
     if (qpos != std::string::npos)
+    {
+        path_only = target.substr(0, qpos);
         query = target.substr(qpos + 1);
+    }
 
     env.push_back("QUERY_STRING=" + query);
     env.push_back("CONTENT_LENGTH=" + std::to_string(body.size()));
@@ -52,9 +56,32 @@ CgiEnv build_cgi_env(
     if (it != headers.end())
         env.push_back("CONTENT_TYPE=" + it->second);
 
+    std::string server_name = "localhost";
+    std::string server_port = "8080";
+    auto host_it = headers.find("host");
+    if (host_it != headers.end() && !host_it->second.empty())
+    {
+        std::string host_value = host_it->second;
+        size_t colon = host_value.rfind(':');
+        if (colon != std::string::npos && colon + 1 < host_value.size())
+        {
+            server_name = host_value.substr(0, colon);
+            server_port = host_value.substr(colon + 1);
+        }
+        else
+        {
+            server_name = host_value;
+        }
+    }
+
     env.push_back("SCRIPT_FILENAME=" + script_path.string());
+    env.push_back("SCRIPT_NAME=" + path_only);
+    env.push_back("PATH_INFO=" + path_only);
+    env.push_back("REQUEST_URI=" + target);
     env.push_back("GATEWAY_INTERFACE=CGI/1.1");
     env.push_back("SERVER_PROTOCOL=HTTP/1.1");
+    env.push_back("SERVER_NAME=" + server_name);
+    env.push_back("SERVER_PORT=" + server_port);
 
     for (auto h = headers.begin(); h != headers.end(); ++h)
     {
@@ -243,16 +270,25 @@ HttpResponseBuilder http_cgi(
     close(in_pipe[0]);
     close(out_pipe[1]);
 
-    // write body
-    if (!body.empty()) {
-        ssize_t bytes_to_write = body.size();
-        ssize_t bytes_written = write(in_pipe[1], body.data(), bytes_to_write);
+    // write body (loop to handle partial writes for large payloads)
+    if (!body.empty())
+    {
+        size_t total_written = 0;
+        while (total_written < body.size())
+        {
+            ssize_t n = write(in_pipe[1], body.data() + total_written, body.size() - total_written);
+            if (n > 0)
+            {
+                total_written += static_cast<size_t>(n);
+                continue;
+            }
+            if (n == -1 && errno == EINTR)
+                continue;
 
-        if (bytes_written == -1) {
-            perror("write to CGI pipe failed");
-        } else if (bytes_written < bytes_to_write) {
-            std::cerr << "CGI: partial write to pipe (wrote " << bytes_written
-                      << " of " << bytes_to_write << " bytes)\n";
+            close(in_pipe[1]);
+            close(out_pipe[0]);
+            waitpid(pid, NULL, 0);
+            return HttpResponseBuilder(HttpStatus::InternalServerError);
         }
     }
 

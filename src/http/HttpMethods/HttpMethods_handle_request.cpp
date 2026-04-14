@@ -129,6 +129,11 @@ namespace WebServ
         return finalize_response(HttpResponseBuilder(HttpStatus::NotFound));
     }
 
+    // HEAD is parsed as a recognized HTTP token but not implemented by this server.
+    // Return 405 for matched locations to align with method restriction semantics.
+    if (request.method == "HEAD")
+        return finalize_response(HttpResponseBuilder(HttpStatus::MethodNotAllowed));
+
 #ifdef DEBUG
     logging::log(HANDLE_REQUEST, "Selected location prefix=\"" + match.prefix + "\" root=\"" + match.location->root + "\"");
 #endif

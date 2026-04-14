@@ -86,8 +86,8 @@ PhaseResult HttpRequestFrontend::parse_request_line()
 
     /* validate method.
     methods are case-sensitive (RFC 9110 section 9.1).
-    GET/POST/DELETE accepted; any other non-empty token → 501. */
-    if (method != "GET" && method != "POST" && method != "DELETE")
+    GET/HEAD/POST/DELETE accepted; any other non-empty token → 501. */
+    if (method != "GET" && method != "HEAD" && method != "POST" && method != "DELETE")
     {
         error_code_ = 501;
         phase_      = ParsePhase::ERROR;

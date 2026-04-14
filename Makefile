@@ -71,6 +71,9 @@ DEP_FILES := $(REL_OBJS:.o=.d) $(DBG_OBJS:.o=.d) $(LKS_OBJS:.o=.d)
 .PHONY:         debug   debugclean   debugre    debugrun
 .PHONY:         leaks   leaksclean   leaksre    leaksrun
 .PHONY:         test test-integration \
+			test-external \
+			test-tester \
+			test-cgi-tester-env \
 			test-get \
 			test-post \
 			test-delete \
@@ -106,6 +109,13 @@ SIEGE_TIMEOUT      ?= 5
 SIEGE_TIMEOUT_STATIC ?= 3
 SIEGE_TIMEOUT_CGI  ?= 10
 SIEGE_DIAG_DURATION ?= 30S
+
+# --- external tester binaries defaults ---
+
+TESTER_BIN      ?= ./tester
+CGI_TESTER_BIN  ?= ./cgi_tester
+TESTER_URL      ?= http://127.0.0.1:8080
+TESTER_SERVER_CONFIG ?= ./config/valid/tester.conf
 
 # --- variant configuration ---
 # target-specific variables propagate to the entire subgraph
@@ -256,6 +266,44 @@ test-invalid-http: $(NAME)
 
 test-slowloris: $(NAME)
 	@python3 test/1_integration/test_slowloris.py
+
+# --- external tester binaries ---
+
+test-external: test-tester test-cgi-tester-env
+
+test-tester: $(NAME)
+	@set -eu; \
+	if [ ! -f "$(TESTER_BIN)" ]; then \
+		echo "Error: tester binary not found at $(TESTER_BIN)"; \
+		exit 1; \
+	fi; \
+	chmod +x "$(TESTER_BIN)"; \
+	echo "Starting webserv with $(TESTER_SERVER_CONFIG)"; \
+	./$(NAME) "$(TESTER_SERVER_CONFIG)" >/tmp/webserv-tester.log 2>&1 & \
+	ws_pid=$$!; \
+	trap 'kill -TERM $$ws_pid 2>/dev/null || true; wait $$ws_pid 2>/dev/null || true' EXIT INT TERM; \
+	sleep 1; \
+	echo "Running $(TESTER_BIN) $(TESTER_URL)"; \
+	"$(TESTER_BIN)" "$(TESTER_URL)"
+
+test-cgi-tester-env:
+	@set -eu; \
+	if [ ! -f "$(CGI_TESTER_BIN)" ]; then \
+		echo "Error: CGI tester binary not found at $(CGI_TESTER_BIN)"; \
+		exit 1; \
+	fi; \
+	chmod +x "$(CGI_TESTER_BIN)"; \
+	echo "Running $(CGI_TESTER_BIN) with CGI environment"; \
+	REQUEST_METHOD=GET \
+	GATEWAY_INTERFACE=CGI/1.1 \
+	SERVER_PROTOCOL=HTTP/1.1 \
+	SCRIPT_NAME=/cgi_tester \
+	PATH_INFO=/cgi_tester \
+	QUERY_STRING= \
+	SERVER_NAME=localhost \
+	SERVER_PORT=8080 \
+	REMOTE_ADDR=127.0.0.1 \
+	"$(CGI_TESTER_BIN)"
 
 # --- integration tests with leak detection ---
 

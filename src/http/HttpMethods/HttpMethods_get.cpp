@@ -80,9 +80,9 @@ http_get(const std::filesystem::path &resolved_path,
         }
 
 #ifdef DEBUG
-        logging::log(HTTP_METHOD_GET, "Directory without index -> 403");
+    logging::log(HTTP_METHOD_GET, "Directory without index -> 404");
 #endif
-        return HttpResponseBuilder(HttpStatus::Forbidden);
+    return HttpResponseBuilder(HttpStatus::NotFound);
     }
 
 #ifdef DEBUG
