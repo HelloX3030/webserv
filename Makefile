@@ -77,6 +77,7 @@ DEP_FILES := $(REL_OBJS:.o=.d) $(DBG_OBJS:.o=.d) $(LKS_OBJS:.o=.d)
 			test-cgi-keep-alive \
 			test-virtual-hosting \
 			test-invalid-http \
+			test-slowloris \
 			test-leaks test-leaks-integration \
 			test-leaks-get \
 			test-leaks-post \
@@ -84,6 +85,7 @@ DEP_FILES := $(REL_OBJS:.o=.d) $(DBG_OBJS:.o=.d) $(LKS_OBJS:.o=.d)
 			test-leaks-cgi-keep-alive \
 			test-leaks-virtual-hosting \
 			test-leaks-invalid-http \
+			test-leaks-slowloris \
 			siege-test siege-baseline siege-medium siege-heavy siege-stress \
 			siege-static siege-cgi siege-diagnose
 
@@ -252,6 +254,9 @@ test-virtual-hosting: $(NAME)
 test-invalid-http: $(NAME)
 	@python3 test/1_integration/test_invalid_http.py
 
+test-slowloris: $(NAME)
+	@python3 test/1_integration/test_slowloris.py
+
 # --- integration tests with leak detection ---
 
 test-leaks: test-leaks-integration
@@ -281,6 +286,9 @@ test-leaks-virtual-hosting: $(LKS_NAME)
 
 test-leaks-invalid-http: $(LKS_NAME)
 	@WEBSERV_BINARY=$(PWD)/$(LKS_NAME) WEBSERV_VALGRIND=1 python3 test/1_integration/test_invalid_http.py
+
+test-leaks-slowloris: $(LKS_NAME)
+	@WEBSERV_BINARY=$(PWD)/$(LKS_NAME) WEBSERV_VALGRIND=1 python3 test/1_integration/test_slowloris.py
 
 # --- siege load tests ---
 
