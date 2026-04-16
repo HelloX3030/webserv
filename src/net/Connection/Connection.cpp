@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <cctype>
 #include <fstream>
+#include <sys/ioctl.h>
 #include <sstream>
 #include <sys/epoll.h>
 
@@ -122,6 +123,12 @@ void Connection::handle_client_buffer(const char *buffer, ssize_t n)
         {
             bool request_keep_alive = result.request.keepAlive();
 
+            // Under extreme large-upload load, forcing connection close after
+            // response avoids stale keep-alive reuse and reduces EOF failures.
+            long content_length = result.request.contentLength();
+            if (content_length > 1024 * 1024)
+                request_keep_alive = false;
+
             HttpResponseBuilder response = WebServ::http_handle_request(*this, result.request);
             response.set_header("Connection", request_keep_alive ? "keep-alive" : "close");
 
@@ -157,15 +164,16 @@ void Connection::handle_client_buffer(const char *buffer, ssize_t n)
 
 void Connection::handle_event(uint32_t events)
 {
-    // Error or Peer hang up
-    if (events & (EPOLLERR | EPOLLHUP))
+    // Hard socket error: connection is not recoverable.
+    if (events & EPOLLERR)
     {
         state = ConnectionState::CLOSE;
         return;
     }
 
-    // peer performed closed write
-    if (events & EPOLLRDHUP)
+    // Peer has closed (fully or write-half). Keep processing pending data/
+    // responses instead of aborting immediately, otherwise clients can see EOF.
+    if (events & (EPOLLRDHUP | EPOLLHUP))
     {
         peer_closed = true;
     }
@@ -301,8 +309,27 @@ bool Connection::has_timed_out(std::chrono::steady_clock::time_point now) const
     if (state == ConnectionState::CLOSE)
         return false;
 
+    // If the kernel socket receive queue already has unread bytes,
+    // this connection is making progress and must not be treated as idle.
+    int pending = 0;
+    if (::ioctl(fd.get(), FIONREAD, &pending) == 0 && pending > 0)
+        return false;
+
+    long long timeout_ms = static_cast<long long>(WebServ::CONNECTION_IDLE_TIMEOUT_MS);
+
+    // Large uploads can legitimately pause while the single-threaded loop
+    // handles other expensive requests (for example, CGI). Keep strict timeout
+    // for small requests, but allow longer idle windows for large in-flight bodies.
+    static const size_t LARGE_UPLOAD_THRESHOLD_BYTES = 1024 * 1024; // 1 MiB
+    static const long long LARGE_UPLOAD_IDLE_TIMEOUT_MS = 180000;    // 180 s
+    if (http_request_frontend.is_body_in_progress() &&
+        http_request_frontend.expected_body_size() >= LARGE_UPLOAD_THRESHOLD_BYTES)
+    {
+        timeout_ms = LARGE_UPLOAD_IDLE_TIMEOUT_MS;
+    }
+
     auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - last_activity);
-    return elapsed.count() >= static_cast<long long>(WebServ::CONNECTION_IDLE_TIMEOUT_MS);
+    return elapsed.count() >= timeout_ms;
 }
 
 std::string Connection::to_string() const

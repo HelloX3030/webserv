@@ -7,7 +7,7 @@ max_body_size from server configuration — constant for connection lifetime.
 all other fields initialised to their pre-parse state.
 see state machine doc invariants 1–8. */
 HttpRequestFrontend::HttpRequestFrontend(size_t max_body_size)
-    : 
+    :
     max_body_size_(max_body_size),
     phase_(ParsePhase::REQUEST_LINE),
     error_code_(0),
@@ -118,4 +118,14 @@ void HttpRequestFrontend::reset()
 
     assert(phase_ == ParsePhase::REQUEST_LINE);
     assert(error_code_ == 0);
+}
+
+bool HttpRequestFrontend::is_body_in_progress() const
+{
+    return phase_ == ParsePhase::BODY;
+}
+
+size_t HttpRequestFrontend::expected_body_size() const
+{
+    return request_.body.size() + body_remaining_;
 }

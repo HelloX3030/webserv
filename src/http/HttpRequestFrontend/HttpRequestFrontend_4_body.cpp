@@ -65,14 +65,20 @@ PhaseResult HttpRequestFrontend::consume_body()
     {
         assert(body_remaining_ <= max_body_size_);
 
-        if (buffer_.size() < body_remaining_)
+        if (buffer_.empty())
             return PhaseResult::NeedMore;
 
-        /* invariant: buffer_ may contain more than body_remaining_
-        (pipelined requests). extract exactly body_remaining_,
-        leave the rest for the next request after reset(). */
-        request_.body.append(buffer_, 0, body_remaining_);
-        buffer_.erase(0, body_remaining_);
+        /* Incrementally drain bytes from parser buffer into request body.
+        This avoids accumulating the full body in buffer_ before copying,
+        which significantly lowers peak memory during large uploads. */
+        size_t to_take = std::min(buffer_.size(), body_remaining_);
+        request_.body.append(buffer_, 0, to_take);
+        buffer_.erase(0, to_take);
+        body_remaining_ -= to_take;
+
+        if (body_remaining_ != 0)
+            return PhaseResult::NeedMore;
+
         phase_ = ParsePhase::COMPLETE;
 
         assert(phase_ == ParsePhase::COMPLETE);

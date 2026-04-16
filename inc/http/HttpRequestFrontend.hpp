@@ -60,6 +60,10 @@ struct HttpRequestFrontend
     buffer is not cleared — may contain bytes from pipelined next request. */
     void        reset();
 
+    // Introspection helpers for connection timeout policy.
+    bool   is_body_in_progress() const;
+    size_t expected_body_size() const;
+
 private: // --- INTERNAL: implementation detail
 
     // configuration (injected, constant)
@@ -86,7 +90,7 @@ private: // --- INTERNAL: implementation detail
     ChunkPhase chunk_phase_;
     size_t     chunk_remaining_;
 
-    
+
     // -- phase parsers --
     PhaseResult parse_request_line();
     PhaseResult parse_header_line();
