@@ -196,6 +196,8 @@ PhaseResult HttpRequestFrontend::parse_header_line()
 
         body_chunked_ = false;
         body_remaining_ = content_length;
+        if (body_remaining_ > 0)
+            request_.body.reserve(body_remaining_);
         consume_line(crlf_pos);
         phase_ = (body_remaining_ == 0) ? ParsePhase::COMPLETE
                                         : ParsePhase::BODY;

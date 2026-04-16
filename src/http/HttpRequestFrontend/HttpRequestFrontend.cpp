@@ -88,7 +88,7 @@ ParseResult HttpRequestFrontend::advance(const char* data, size_t len)
 
             case ParsePhase::COMPLETE:
                 assert(error_code_ == 0);
-                return {ParseStatus::Complete, request_, 0};
+                return {ParseStatus::Complete, std::move(request_), 0};
 
             case ParsePhase::ERROR:
                 assert(false && "unreachable: ERROR phase at loop entry");

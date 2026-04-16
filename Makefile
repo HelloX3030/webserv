@@ -73,6 +73,8 @@ DEP_FILES := $(REL_OBJS:.o=.d) $(DBG_OBJS:.o=.d) $(LKS_OBJS:.o=.d)
 .PHONY:         test test-integration \
 			test-external \
 			test-tester \
+			test-tester-resources \
+			test-tester-stress \
 			test-cgi-tester-env \
 			test-get \
 			test-post \
@@ -116,6 +118,11 @@ TESTER_BIN      ?= ./tester
 CGI_TESTER_BIN  ?= ./cgi_tester
 TESTER_URL      ?= http://127.0.0.1:8080
 TESTER_SERVER_CONFIG ?= ./config/valid/tester.conf
+TESTER_RESOURCE_SAMPLE_INTERVAL ?= 1
+TESTER_STRESS_WORKERS ?= 20
+TESTER_STRESS_ITERATIONS ?= 5
+TESTER_STRESS_BODY_SIZE ?= 100000000
+TESTER_STRESS_PATH ?= /directory/youpi.bla
 
 # --- variant configuration ---
 # target-specific variables propagate to the entire subgraph
@@ -285,6 +292,60 @@ test-tester: $(NAME)
 	sleep 1; \
 	echo "Running $(TESTER_BIN) $(TESTER_URL)"; \
 	"$(TESTER_BIN)" "$(TESTER_URL)"
+
+test-tester-resources: $(NAME)
+	@set -eu; \
+	if [ ! -f "$(TESTER_BIN)" ]; then \
+		echo "Error: tester binary not found at $(TESTER_BIN)"; \
+		exit 1; \
+	fi; \
+	chmod +x "$(TESTER_BIN)"; \
+	echo "Starting webserv with $(TESTER_SERVER_CONFIG)"; \
+	./$(NAME) "$(TESTER_SERVER_CONFIG)" >/tmp/webserv-tester.log 2>&1 & \
+	ws_pid=$$!; \
+	trap 'kill -TERM $$ws_pid 2>/dev/null || true; wait $$ws_pid 2>/dev/null || true' EXIT INT TERM; \
+	sleep 1; \
+	( \
+		while kill -0 $$ws_pid 2>/dev/null; do \
+			rss=$$(ps -o rss= -p $$ws_pid 2>/dev/null | tr -d ' '); \
+			fd_count=$$(ls /proc/$$ws_pid/fd 2>/dev/null | wc -l | tr -d ' '); \
+			cgi_count=$$(pgrep -af cgi_tester 2>/dev/null | wc -l | tr -d ' '); \
+			printf '[resource] rss_kb=%s open_fds=%s cgi_procs=%s\n' "$$rss" "$$fd_count" "$$cgi_count"; \
+			sleep $(TESTER_RESOURCE_SAMPLE_INTERVAL); \
+		done \
+	) & \
+	monitor_pid=$$!; \
+	trap 'kill -TERM $$monitor_pid 2>/dev/null || true; kill -TERM $$ws_pid 2>/dev/null || true; wait $$monitor_pid 2>/dev/null || true; wait $$ws_pid 2>/dev/null || true' EXIT INT TERM; \
+	echo "Running $(TESTER_BIN) $(TESTER_URL)"; \
+	"$(TESTER_BIN)" "$(TESTER_URL)"; \
+	kill -TERM $$monitor_pid 2>/dev/null || true; \
+	wait $$monitor_pid 2>/dev/null || true
+
+test-tester-stress: $(NAME)
+	@set -eu; \
+	if [ ! -f "test/1_integration/test_tester_stress.py" ]; then \
+		echo "Error: stress script not found at test/1_integration/test_tester_stress.py"; \
+		exit 1; \
+	fi; \
+	echo "Starting webserv with $(TESTER_SERVER_CONFIG)"; \
+	./$(NAME) "$(TESTER_SERVER_CONFIG)" >/tmp/webserv-tester-stress.log 2>&1 & \
+	ws_pid=$$!; \
+	trap 'kill -TERM $$ws_pid 2>/dev/null || true; wait $$ws_pid 2>/dev/null || true' EXIT INT TERM; \
+	sleep 1; \
+	( \
+		while kill -0 $$ws_pid 2>/dev/null; do \
+			rss=$$(ps -o rss= -p $$ws_pid 2>/dev/null | tr -d ' '); \
+			fd_count=$$(ls /proc/$$ws_pid/fd 2>/dev/null | wc -l | tr -d ' '); \
+			cgi_count=$$(pgrep -af cgi_tester 2>/dev/null | wc -l | tr -d ' '); \
+			printf '[resource] rss_kb=%s open_fds=%s cgi_procs=%s\n' "$$rss" "$$fd_count" "$$cgi_count"; \
+			sleep $(TESTER_RESOURCE_SAMPLE_INTERVAL); \
+		done \
+	) & \
+	monitor_pid=$$!; \
+	trap 'kill -TERM $$monitor_pid 2>/dev/null || true; kill -TERM $$ws_pid 2>/dev/null || true; wait $$monitor_pid 2>/dev/null || true; wait $$ws_pid 2>/dev/null || true' EXIT INT TERM; \
+	python3 test/1_integration/test_tester_stress.py; \
+	kill -TERM $$monitor_pid 2>/dev/null || true; \
+	wait $$monitor_pid 2>/dev/null || true
 
 test-cgi-tester-env:
 	@set -eu; \
