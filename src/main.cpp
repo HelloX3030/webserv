@@ -11,6 +11,7 @@ int main(int argc, char **argv)
     // Signals Handling
     signal(SIGINT, handle_sigint);
     signal(SIGPIPE, SIG_IGN);
+    signal(SIGCHLD, handle_sigchld);
 
     // Parse
     try

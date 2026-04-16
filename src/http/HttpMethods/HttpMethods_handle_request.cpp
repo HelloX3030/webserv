@@ -205,6 +205,11 @@ namespace WebServ
     if (!relative.empty() && relative[0] == '/')
         relative = relative.substr(1);
 
+    // POST to a location root (e.g. /post_body) can target a concrete file
+    // via that location's first index entry when configured.
+    if (method == HttpMethod::POST && relative.empty() && !match.location->index_files.empty())
+        relative = match.location->index_files.front();
+
 #ifdef DEBUG
     logging::log(HANDLE_REQUEST, "Relative path=\"" + relative + "\"");
 #endif

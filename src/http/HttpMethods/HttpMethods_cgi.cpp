@@ -3,10 +3,12 @@
 #include "http/HttpMethods.hpp"
 
 #include <cctype>
+#include <cerrno>
 #include <fcntl.h>
 #include <filesystem>
 #include <iostream>
 #include <map>
+#include <poll.h>
 #include <string>
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -270,39 +272,154 @@ HttpResponseBuilder http_cgi(
     close(in_pipe[0]);
     close(out_pipe[1]);
 
-    // write body (loop to handle partial writes for large payloads)
-    if (!body.empty())
+    // Stream request body to CGI stdin while simultaneously draining CGI stdout.
+    // This avoids deadlocks for scripts that write output while still reading input.
+    int in_flags = fcntl(in_pipe[1], F_GETFL, 0);
+    int out_flags = fcntl(out_pipe[0], F_GETFL, 0);
+    if (in_flags == -1 || out_flags == -1 ||
+        fcntl(in_pipe[1], F_SETFL, in_flags | O_NONBLOCK) == -1 ||
+        fcntl(out_pipe[0], F_SETFL, out_flags | O_NONBLOCK) == -1)
     {
-        size_t total_written = 0;
-        while (total_written < body.size())
-        {
-            ssize_t n = write(in_pipe[1], body.data() + total_written, body.size() - total_written);
-            if (n > 0)
-            {
-                total_written += static_cast<size_t>(n);
-                continue;
-            }
-            if (n == -1 && errno == EINTR)
-                continue;
+        close(in_pipe[1]);
+        close(out_pipe[0]);
+        waitpid(pid, NULL, 0);
+        return HttpResponseBuilder(HttpStatus::InternalServerError);
+    }
 
+    // Try to increase pipe buffer size for better throughput with large bodies
+    int pipe_size = 1024 * 1024;  // 1MB
+    fcntl(in_pipe[1], F_SETPIPE_SZ, pipe_size);
+    fcntl(out_pipe[0], F_SETPIPE_SZ, pipe_size);
+
+    size_t write_off = 0;
+    bool stdin_open = true;
+    bool stdout_open = true;
+
+    if (body.empty())
+    {
+        close(in_pipe[1]);
+        stdin_open = false;
+    }
+
+    std::string output;
+    char buffer[4096];
+
+    while (stdin_open || stdout_open)
+    {
+        struct pollfd fds[2];
+        nfds_t nfds = 0;
+
+        int in_idx = -1;
+        int out_idx = -1;
+
+        if (stdin_open)
+        {
+            in_idx = static_cast<int>(nfds);
+            fds[nfds].fd = in_pipe[1];
+            fds[nfds].events = (write_off < body.size()) ? POLLOUT : 0;
+            fds[nfds].revents = 0;
+            ++nfds;
+        }
+
+        if (stdout_open)
+        {
+            out_idx = static_cast<int>(nfds);
+            fds[nfds].fd = out_pipe[0];
+            fds[nfds].events = POLLIN | POLLHUP | POLLERR;
+            fds[nfds].revents = 0;
+            ++nfds;
+        }
+
+        if (poll(fds, nfds, -1) < 0)
+        {
+            if (errno == EINTR)
+                continue;
             close(in_pipe[1]);
             close(out_pipe[0]);
             waitpid(pid, NULL, 0);
             return HttpResponseBuilder(HttpStatus::InternalServerError);
         }
+
+        if (stdin_open && in_idx >= 0)
+        {
+            if (write_off >= body.size())
+            {
+                close(in_pipe[1]);
+                stdin_open = false;
+            }
+            else if (fds[in_idx].revents & (POLLOUT | POLLERR | POLLHUP))
+            {
+                // Write in a loop while the pipe remains writable
+                while (write_off < body.size())
+                {
+                    ssize_t n = write(in_pipe[1], body.data() + write_off, body.size() - write_off);
+                    if (n > 0)
+                    {
+                        write_off += static_cast<size_t>(n);
+                    }
+                    else if (n == -1 && (errno == EAGAIN || errno == EWOULDBLOCK))
+                    {
+                        // Pipe buffer full, wait for next poll
+                        break;
+                    }
+                    else if (n == -1 && errno == EINTR)
+                    {
+                        // Interrupted, retry
+                        continue;
+                    }
+                    else
+                    {
+                        // Error
+                        close(in_pipe[1]);
+                        close(out_pipe[0]);
+                        waitpid(pid, NULL, 0);
+                        return HttpResponseBuilder(HttpStatus::InternalServerError);
+                    }
+                }
+
+                if (write_off >= body.size())
+                {
+                    close(in_pipe[1]);
+                    stdin_open = false;
+                }
+            }
+        }
+
+        if (stdout_open && out_idx >= 0)
+        {
+            if (fds[out_idx].revents & (POLLIN | POLLHUP | POLLERR))
+            {
+                while (true)
+                {
+                    ssize_t n = read(out_pipe[0], buffer, sizeof(buffer));
+                    if (n > 0)
+                        output.append(buffer, n);
+                    else if (n == 0)
+                    {
+                        close(out_pipe[0]);
+                        stdout_open = false;
+                        break;
+                    }
+                    else if (errno == EAGAIN || errno == EWOULDBLOCK)
+                    {
+                        break;
+                    }
+                    else if (errno == EINTR)
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        close(out_pipe[0]);
+                        if (stdin_open)
+                            close(in_pipe[1]);
+                        waitpid(pid, NULL, 0);
+                        return HttpResponseBuilder(HttpStatus::InternalServerError);
+                    }
+                }
+            }
+        }
     }
-
-    close(in_pipe[1]);
-
-    // read output
-    std::string output;
-    char buffer[4096];
-
-    ssize_t n;
-    while ((n = read(out_pipe[0], buffer, sizeof(buffer))) > 0)
-        output.append(buffer, n);
-
-    close(out_pipe[0]);
 
     int status;
     waitpid(pid, &status, 0);
