@@ -607,14 +607,19 @@ def test_post_very_long_header() -> None:
 
 
 def test_post_chunked_transfer_encoding_case_insensitive() -> None:
+    target_file = ROOT / "www/full/files/itest_post_chunked_case.txt"
+    if target_file.exists():
+        target_file.unlink()
+
     with WebservRunner("config/valid/full.conf"):
         chunked_body = b"4\r\nTEST\r\n0\r\n\r\n"
 
         req = (
-            b"POST /cgi-python/echo.py?name=chunked-case HTTP/1.0\r\n"
+            b"POST /files/itest_post_chunked_case.txt HTTP/1.1\r\n"
             b"Host: localhost\r\n"
             b"Transfer-Encoding: Chunked\r\n"
             b"Content-Type: text/plain\r\n"
+            b"Connection: close\r\n"
             b"\r\n"
             + chunked_body
         )
@@ -623,23 +628,27 @@ def test_post_chunked_transfer_encoding_case_insensitive() -> None:
             sock.sendall(req)
             res = read_http_response(sock)
 
-        assert_true(res.status_code == 200, f"Chunked POST expected 200, got {res.status_code}")
+        assert_true(res.status_code in (201, 200), f"Chunked POST expected 201 or 200, got {res.status_code}")
+        assert_true(target_file.exists(), f"Expected file to exist: {target_file}")
         assert_true(
-            "content_length = 4" in res.body_text.lower(),
-            f"Expected CGI to receive a 4-byte chunked body, got: {res.body_text!r}",
+            target_file.read_bytes() == b"TEST",
+            "File content mismatch after chunked POST",
         )
-        assert_true(
-            "test" in res.body_text.lower(),
-            f"Expected CGI to echo chunked payload, got: {res.body_text!r}",
-        )
+
+    if target_file.exists():
+        target_file.unlink()
 
 
 def test_post_chunked_transfer_encoding_token_list() -> None:
+    target_file = ROOT / "www/full/files/itest_post_chunked_token.txt"
+    if target_file.exists():
+        target_file.unlink()
+
     with WebservRunner("config/valid/full.conf"):
         chunked_body = b"4\r\nTEST\r\n0\r\n\r\n"
 
         req = (
-            b"POST /cgi-python/echo.py?name=chunked-token-list HTTP/1.1\r\n"
+            b"POST /files/itest_post_chunked_token.txt HTTP/1.1\r\n"
             b"Host: localhost\r\n"
             b"Transfer-Encoding: chunked, chunked\r\n"
             b"Content-Type: text/plain\r\n"
@@ -652,15 +661,15 @@ def test_post_chunked_transfer_encoding_token_list() -> None:
             sock.sendall(req)
             res = read_http_response(sock)
 
-        assert_true(res.status_code == 200, f"Chunked token-list POST expected 200, got {res.status_code}")
+        assert_true(res.status_code in (201, 200), f"Chunked token-list POST expected 201 or 200, got {res.status_code}")
+        assert_true(target_file.exists(), f"Expected file to exist: {target_file}")
         assert_true(
-            "content_length = 4" in res.body_text.lower(),
-            f"Expected CGI to receive a 4-byte chunked body from token-list TE, got: {res.body_text!r}",
+            target_file.read_bytes() == b"TEST",
+            "File content mismatch after chunked token-list POST",
         )
-        assert_true(
-            "test" in res.body_text.lower(),
-            f"Expected CGI to echo chunked payload from token-list TE, got: {res.body_text!r}",
-        )
+
+    if target_file.exists():
+        target_file.unlink()
 
 
 def test_post_special_chars_filename() -> None:
