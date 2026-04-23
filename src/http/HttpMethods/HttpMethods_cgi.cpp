@@ -421,8 +421,16 @@ HttpResponseBuilder http_cgi(
         }
     }
 
-    int status;
-    waitpid(pid, &status, 0);
+    int status = 0;
+    while (true)
+    {
+        pid_t w = waitpid(pid, &status, 0);
+        if (w == pid)
+            break;
+        if (w == -1 && errno == EINTR)
+            continue;
+        return HttpResponseBuilder(HttpStatus::InternalServerError);
+    }
 
     // ---- child failed ----
     if (!WIFEXITED(status) || WEXITSTATUS(status) != 0)

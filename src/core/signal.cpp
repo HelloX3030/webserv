@@ -6,6 +6,7 @@
 
 volatile sig_atomic_t g_running = 1;
 volatile sig_atomic_t g_sigint_count = 0;
+volatile sig_atomic_t g_sigchld_pending = 0;
 
 void handle_sigint(int)
 {
@@ -27,7 +28,8 @@ void handle_sigint(int)
 
 void handle_sigchld(int)
 {
-    // Reap all zombie child processes
-    while (waitpid(-1, NULL, WNOHANG) > 0)
-        ;
+    // Mark that at least one child changed state.
+    // Reaping is done in the main loop to avoid racing with code
+    // that uses synchronous waitpid(pid, ...) (e.g. CGI).
+    g_sigchld_pending = 1;
 }

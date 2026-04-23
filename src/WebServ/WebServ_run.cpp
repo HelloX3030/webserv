@@ -5,10 +5,28 @@
 #include "core/signal.hpp"
 
 #include <chrono>
+#include <cerrno>
+#include <sys/wait.h>
 #include <sys/epoll.h>
 
 namespace
 {
+
+void reap_terminated_children()
+{
+    int status = 0;
+    while (true)
+    {
+        pid_t pid = waitpid(-1, &status, WNOHANG);
+        if (pid > 0)
+            continue;
+        if (pid == 0)
+            return;
+        if (pid == -1 && errno == EINTR)
+            continue;
+        return;
+    }
+}
 
 void reap_timed_out_connections()
 {
@@ -71,6 +89,12 @@ void run()
             {
                 remove_epoll_handler(handler->get_fd());
             }
+        }
+
+        if (g_sigchld_pending)
+        {
+            g_sigchld_pending = 0;
+            reap_terminated_children();
         }
 
         reap_timed_out_connections();
