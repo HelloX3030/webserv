@@ -144,6 +144,10 @@ def test_cgi_bash_keep_alive_get_then_static() -> None:
                 f"Unexpected first body: {res1.body_text!r}",
             )
             assert_true(
+                "query_string=name=keepalive" in res1.body_text.lower(),
+                f"Expected QUERY_STRING to include name=keepalive, got {res1.body_text!r}",
+            )
+            assert_true(
                 res1.headers.get("connection", "").lower() == "keep-alive",
                 f"Expected keep-alive on first response, got {res1.headers.get('connection')}",
             )

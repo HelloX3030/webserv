@@ -240,7 +240,7 @@ namespace WebServ
 #ifdef DEBUG
         logging::log(HANDLE_REQUEST, "Dispatching to CGI");
 #endif
-        return finalize_response(http_cgi(*safe, match.location->cgi_path, method, path, request.headers, request.body));
+        return finalize_response(http_cgi(*safe, match.location->cgi_path, method, request.uri, request.headers, request.body));
     }
 
     // dispatch by method
