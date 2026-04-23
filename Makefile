@@ -94,6 +94,14 @@ DEP_FILES := $(REL_OBJS:.o=.d) $(DBG_OBJS:.o=.d) $(LKS_OBJS:.o=.d)
 			siege-test siege-baseline siege-medium siege-heavy siege-stress \
 			siege-static siege-cgi siege-diagnose
 
+# --- python test discovery ---
+# `make test` should run all *normal* Python integration tests.
+# Exclude scripts that are driven by the external tester/stress harness.
+
+PY_INTEGRATION_TESTS := $(sort $(filter-out \
+	test/1_integration/test_tester_stress.py,\
+	$(wildcard test/1_integration/test_*.py)))
+
 # --- siege defaults ---
 
 SIEGE_BIN          ?= siege
@@ -243,7 +251,14 @@ leaksrun: $(LKS_NAME)
 
 # --- integration tests ---
 
-test: test-integration
+test: test-python
+
+test-python: $(NAME)
+	@set -eu; \
+	for t in $(PY_INTEGRATION_TESTS); do \
+		python3 "$$t"; \
+		echo; \
+	done
 
 test-integration: $(NAME) \
 	test-get \
@@ -251,7 +266,8 @@ test-integration: $(NAME) \
 	test-delete \
 	test-cgi-keep-alive \
 	test-virtual-hosting \
-	test-invalid-http
+	test-invalid-http \
+	test-slowloris
 
 test-get: $(NAME)
 	@python3 test/1_integration/test_get.py
