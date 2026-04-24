@@ -1,2 +1,0 @@
-see:
-HttpRequestFrontend/doc/

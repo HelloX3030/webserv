@@ -1,25 +1,22 @@
-*this project has been created as part of the 42 curriculum by <lukas_login>, ghr*
+*this project has been created as part of the 42 curriculum by lseeger, ghr*
 
 
 ## description
 
-`webserv` is an HTTP/1.1 server written in C++, configured via an
-NGINX-inspired configuration file. it serves static content, accepts
-file uploads, and executes CGI scripts.
+`webserv` is an HTTP/1.1 server written in C++, configured via an NGINX-inspired configuration
+file. it serves static content, accepts file uploads, and executes CGI scripts.
 
-a single `epoll` loop multiplexes all socket I/O. every socket, pipe,
-and CGI stdio descriptor is non-blocking; no operation ever blocks the
-process. the server remains available under stress, invalid input,
-and client misbehaviour.
+a single `epoll` loop multiplexes all socket I/O. every socket, pipe, and CGI stdio descriptor
+is non-blocking; no operation ever blocks the process. the server remains available under
+stress, invalid input, and client misbehaviour.
 
-architecturally, the program is a pipeline of clearly separated
-frontends and actors:
+architecturally, the program is a pipeline of clearly separated frontends and actors:
 
-    config frontend  →  ServerConfig[]
-    ServerConfig[]   →  Listeners bound to ports
-    epoll loop       →  accepts Connections, drives I/O readiness
+    config frontend      →  ServerConfig[]
+    ServerConfig[]       →  Listeners bound to ports
+    epoll loop           →  accepts Connections, drives I/O readiness
     HttpRequestFrontend  →  parses bytes into HttpRequest
-    HttpMethods      →  dispatches GET / POST / DELETE / CGI
+    HttpMethods          →  dispatches GET / POST / DELETE / CGI
     HttpResponseBuilder  →  serialises HttpResponse to bytes
 
 
@@ -35,21 +32,20 @@ frontends and actors:
     make leaks       # instrumented for valgrind / leak checking
     make re          # rebuild from clean
 
-the Makefile produces `./webserv` in the repository root. compilation
-uses `c++ -Wall -Wextra -Werror -std=c++17`.
+the Makefile produces `./webserv` in the repository root. compilation uses
+`c++ -Wall -Wextra -Werror -std=c++17`.
 
 ### run
 
     ./webserv                         # uses default config
     ./webserv config/valid/full.conf  # explicit config path
 
-the configuration file argument is optional. if omitted, the server
-loads an implementation-defined default configuration.
+the configuration file argument is optional. if omitted, the server loads an
+implementation-defined default configuration.
 
 ### configuration examples
 
-`config/valid/` contains configurations demonstrating all mandatory
-features plus the bonuses:
+`config/valid/` contains configurations demonstrating all mandatory features plus the bonuses:
 
     default.conf        minimal working server
     full.conf           all directives, all features exercised
@@ -79,7 +75,7 @@ individual test targets are listed under `.PHONY` in the Makefile.
 
 - RFC 7230 — HTTP/1.1: message syntax and routing
 - RFC 7231 — HTTP/1.1: semantics and content
-- RFC 3875 — The Common Gateway Interface (CGI) version 1.1
+- RFC 3875 — the Common Gateway Interface (CGI) version 1.1
 
 ### references
 
@@ -90,4 +86,19 @@ individual test targets are listed under `.PHONY` in the Makefile.
 
 ### AI usage
 
-Claude (Anthropic) was used throughout development as a collaborative thinking partner. Use included protocol clarification (chunked transfer encoding, header normalisation, CRLF handling), reasoning through the grammar-vs-validator boundary in the config frontend, architectural review (reactor pattern, event loop, descriptor ownership), documentation drafting, and targeted code generation. all AI contributions were actively reviewed, critiqued, and frequently rewritten by hand against primary sources — RFCs, NGINX behaviour, reference texts, and first-principles reasoning.
+#### lseeger
+
+ChatGPT was used primarily to understand the project scope and how to approach it, and more
+intensively for the development of the test suite.
+
+#### ghr
+
+Claude (Anthropic) was used throughout development as a collaborative thinking partner. use
+included protocol clarification (chunked transfer encoding, header normalisation, CRLF
+handling), reasoning through the grammar-vs-validator boundary in the config frontend,
+architectural review (reactor pattern, event loop, descriptor ownership), documentation
+drafting, and targeted code generation.
+
+all AI contributions were actively reviewed, critiqued, and frequently rewritten by hand
+against primary sources — RFCs, NGINX behaviour, reference texts, and first-principles
+reasoning.
