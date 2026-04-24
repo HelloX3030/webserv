@@ -24,6 +24,7 @@ www/uploads/files/*
 # keep dir struct in repo
 !www/uploads/files/README.md
 www/full/files/*
+!www/full/files/.gitkeep
 
 # runtime-generated files (full demo)
 www/full/uploads/files/*
