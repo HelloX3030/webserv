@@ -1,4 +1,4 @@
-*this project has been created as part of the 42 curriculum by lseeger, ghr*
+*this project has been created as part of the 42 curriculum by lseeger, go-donne*
 
 
 ## description
@@ -57,6 +57,10 @@ implementation-defined default configuration.
     cookies.conf        cookies and session tracking (bonus)
     tester.conf         configuration for the 42 webserv tester
 
+the `valid/` subdirectory reflects a development-time distinction: a parallel `invalid/`
+subdirectory held deliberately malformed configuration files used to test the config frontend's
+rejection paths. only the valid configurations are retained for submission.
+
 ### testing
 
     make test                # full Python integration suite
@@ -69,20 +73,23 @@ individual test targets are listed under `.PHONY` in the Makefile.
 ---
 
 
-## resources
+## sources
 
 ### specifications
 
+- 42 `webserv` subject and evaluation sheet (primary specification and source of truth)
 - RFC 7230 — HTTP/1.1: message syntax and routing
 - RFC 7231 — HTTP/1.1: semantics and content
 - RFC 3875 — the Common Gateway Interface (CGI) version 1.1
+
+the RFCs served as reference during implementation — consulted to resolve specific ambiguities
+in header handling, body framing, and CGI I/O — rather than as documents read in full.
 
 ### references
 
 - NGINX source and documentation (behavioural reference for edge cases)
 - Beej's Guide to Network Programming (socket API)
 - `man 7 epoll`, `man 2 epoll_ctl`, `man 2 epoll_wait`
-- 42 `webserv` subject and evaluation sheet
 
 ### AI usage
 
@@ -91,13 +98,12 @@ individual test targets are listed under `.PHONY` in the Makefile.
 ChatGPT was used primarily to understand the project scope and how to approach it, and more
 intensively for the development of the test suite.
 
-#### ghr
+#### go-donne
 
 Claude (Anthropic) was used throughout development as a collaborative thinking partner. use
 included protocol clarification (chunked transfer encoding, header normalisation, CRLF
 handling), reasoning through the grammar-vs-validator boundary in the config frontend,
-architectural review (reactor pattern, event loop, descriptor ownership), documentation
-drafting, and targeted code generation.
+documentation drafting, and targeted code generation.
 
 all AI contributions were actively reviewed, critiqued, and frequently rewritten by hand
 against primary sources — RFCs, NGINX behaviour, reference texts, and first-principles
