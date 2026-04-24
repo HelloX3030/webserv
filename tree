@@ -1,0 +1,250 @@
+.
+├── config
+│   └── valid
+│       ├── cgi-bash.conf
+│       ├── cgi-python.conf
+│       ├── cookies.conf
+│       ├── default.conf
+│       ├── doc
+│       │   ├── cgi.md
+│       │   ├── default.md
+│       │   ├── full.md
+│       │   ├── multi-server.md
+│       │   ├── redirect.md
+│       │   └── uploads.md
+│       ├── full.conf
+│       ├── multi-server.conf
+│       ├── redirect.conf
+│       ├── tester.conf
+│       └── uploads.conf
+├── inc
+│   ├── base
+│   │   ├── defines.hpp
+│   │   ├── errors.hpp
+│   │   ├── Fd.hpp
+│   │   ├── format.hpp
+│   │   ├── logging.hpp
+│   │   └── utils.hpp
+│   ├── config
+│   │   ├── ConfigFrontend.hpp
+│   │   └── Config.hpp
+│   ├── core
+│   │   ├── Server.hpp
+│   │   └── signal.hpp
+│   ├── http
+│   │   ├── HttpMethods.hpp
+│   │   ├── HttpRequestFrontend.hpp
+│   │   ├── HttpRequest.hpp
+│   │   ├── HttpResponseBuilder.hpp
+│   │   └── HttpStatus.hpp
+│   ├── net
+│   │   ├── Connection.hpp
+│   │   ├── EPollHandler.hpp
+│   │   └── Listener.hpp
+│   └── WebServ.hpp
+├── Makefile
+├── README.md
+├── src
+│   ├── base
+│   │   ├── Fd.cpp
+│   │   ├── format.cpp
+│   │   ├── logging.cpp
+│   │   └── utils.cpp
+│   ├── config
+│   │   ├── Config
+│   │   │   └── Config.cpp
+│   │   └── ConfigFrontend
+│   │       ├── ConfigFrontend_0_read.inc
+│   │       ├── ConfigFrontend_1_tokenise.inc
+│   │       ├── ConfigFrontend_2a_parse_navigate.inc
+│   │       ├── ConfigFrontend_2b_parse_blocks.inc
+│   │       ├── ConfigFrontend_2c_parse_server.inc
+│   │       ├── ConfigFrontend_2d_parse_location.inc
+│   │       ├── ConfigFrontend_2e_interpret.inc
+│   │       ├── ConfigFrontend_3_validate.inc
+│   │       ├── ConfigFrontend.cpp
+│   │       └── doc
+│   │           ├── 0b_components_flow.md
+│   │           ├── 0_overview.md
+│   │           ├── 1b_structural-tokens.md
+│   │           └── 1_grammar.md
+│   ├── core
+│   │   ├── Server
+│   │   │   ├── operational-continuity.md
+│   │   │   └── Server.cpp
+│   │   └── signal.cpp
+│   ├── http
+│   │   ├── HttpMethods
+│   │   │   ├── HttpMethods_cgi.cpp
+│   │   │   ├── HttpMethods_delete.cpp
+│   │   │   ├── HttpMethods_get.cpp
+│   │   │   ├── HttpMethods_handle_request.cpp
+│   │   │   └── HttpMethods_post.cpp
+│   │   ├── HttpRequest
+│   │   │   ├── doc.md
+│   │   │   └── HttpRequest.cpp
+│   │   ├── HttpRequestFrontend
+│   │   │   ├── doc
+│   │   │   │   ├── 0_design
+│   │   │   │   │   ├── 0_essence.md
+│   │   │   │   │   ├── 1_grammar.md
+│   │   │   │   │   ├── 2_state-machine.md
+│   │   │   │   │   ├── 3_product-vs-process.md
+│   │   │   │   │   ├── content-length.md
+│   │   │   │   │   ├── implementation-notes.md
+│   │   │   │   │   └── response-envelope.md
+│   │   │   │   ├── 1_decisions
+│   │   │   │   │   ├── 0_type-encoding
+│   │   │   │   │   │   ├── 0_parse-result-encoding.md
+│   │   │   │   │   │   └── 1_explicit-constructor.md
+│   │   │   │   │   ├── 1_http-subset
+│   │   │   │   │   │   ├── 0_vs-support.md
+│   │   │   │   │   │   ├── 1_chunked-transfer-encoding.md
+│   │   │   │   │   │   ├── 2_crlf-lf.md
+│   │   │   │   │   │   ├── 3_header-normalisation.md
+│   │   │   │   │   │   ├── 4_host-enforcement.md
+│   │   │   │   │   │   ├── 5_method-subset.md
+│   │   │   │   │   │   ├── 6_uri-form.md
+│   │   │   │   │   │   ├── 7_header-duplication.md
+│   │   │   │   │   │   └── _meta.md
+│   │   │   │   │   ├── 2_input-bounds
+│   │   │   │   │   │   ├── _meta.md
+│   │   │   │   │   │   └── size-limits.md
+│   │   │   │   │   ├── 3_failure
+│   │   │   │   │   │   ├── 0_contract.md
+│   │   │   │   │   │   ├── 1_protocol.md
+│   │   │   │   │   │   ├── 2_invariants.md
+│   │   │   │   │   │   └── 3_error-codes.md
+│   │   │   │   │   ├── 4_lang-processing
+│   │   │   │   │   │   ├── 0_lexical-analysis.md
+│   │   │   │   │   │   ├── 1_syntactic-analysis.md
+│   │   │   │   │   │   ├── 2_representation.md
+│   │   │   │   │   │   └── _meta.md
+│   │   │   │   │   ├── 5_src-code-organisation
+│   │   │   │   │   │   ├── 0_tus.md
+│   │   │   │   │   │   ├── 1_free-vs-members-fns.md
+│   │   │   │   │   │   └── _meta.md
+│   │   │   │   │   └── _meta.md
+│   │   │   │   └── 2_integration
+│   │   │   │       └── 0_overview.md
+│   │   │   ├── HttpRequestFrontend_1_buffer.cpp
+│   │   │   ├── HttpRequestFrontend_2_request_line.cpp
+│   │   │   ├── HttpRequestFrontend_3_headers.cpp
+│   │   │   ├── HttpRequestFrontend_4_body.cpp
+│   │   │   ├── HttpRequestFrontend.cpp
+│   │   │   └── HttpRequestFrontend_internal.hpp
+│   │   ├── HttpResponseBuilder
+│   │   │   └── HttpResponseBuilder.cpp
+│   │   └── HttpStatus
+│   │       └── HttpStatus.cpp
+│   ├── main.cpp
+│   ├── net
+│   │   ├── Connection
+│   │   │   ├── client-disconnection.md
+│   │   │   ├── Connection.cpp
+│   │   │   └── tcp-connection-termination.md
+│   │   ├── EPollHandler
+│   │   │   ├── EPollHandler.cpp
+│   │   │   └── IO-multiplexing.md
+│   │   └── Listener
+│   │       ├── bind.md
+│   │       ├── Listener.cpp
+│   │       ├── port.md
+│   │       └── socket.md
+│   └── WebServ
+│       ├── WebServ.cpp
+│       ├── WebServ_display.cpp
+│       ├── WebServ_init.cpp
+│       ├── WebServ_load_config.cpp
+│       ├── WebServ_quit.cpp
+│       └── WebServ_run.cpp
+├── test
+│   ├── 0_unit
+│   │   ├── config-frontend
+│   │   │   ├── Makefile
+│   │   │   ├── README.md
+│   │   │   └── test_config.cpp
+│   │   └── http-request-frontend
+│   │       ├── main.cpp
+│   │       ├── Makefile
+│   │       ├── README.md
+│   │       ├── test_body.cpp
+│   │       ├── test_harness.hpp
+│   │       ├── test_headers.cpp
+│   │       ├── test_helpers.hpp
+│   │       └── test_request_line.cpp
+│   └── 1_integration
+│       ├── common.py
+│       ├── siege
+│       │   ├── urls_cgi.txt
+│       │   ├── urls_static.txt
+│       │   └── urls.txt
+│       ├── test_cgi_keep_alive.py
+│       ├── test_delete.py
+│       ├── test_get.py
+│       ├── test_invalid_http.py
+│       ├── test_post.py
+│       ├── test_slowloris.py
+│       ├── test_tester_stress.py
+│       └── test_virtual_hosting.py
+├── tree
+├── www
+│   ├── cgi-bash
+│   │   ├── cgi-bin
+│   │   │   ├── echo.sh
+│   │   │   ├── hello.sh
+│   │   │   └── test-bash.sh
+│   │   └── index.html
+│   ├── cgi-python
+│   │   ├── cgi-bin
+│   │   │   ├── echo.py
+│   │   │   ├── hello.py
+│   │   │   └── test-python.py
+│   │   └── index.html
+│   ├── cookies
+│   │   ├── cgi-bin
+│   │   │   ├── set-cookies.py
+│   │   │   └── show-cookies.py
+│   │   └── index.html
+│   ├── default
+│   │   ├── errors
+│   │   │   ├── 404.html
+│   │   │   └── 500.html
+│   │   ├── index.html
+│   │   └── tester_post_body.txt
+│   ├── full
+│   │   ├── cgi-bash
+│   │   │   ├── echo.sh
+│   │   │   ├── env.sh
+│   │   │   └── hello.sh
+│   │   ├── cgi-python
+│   │   │   ├── echo.py
+│   │   │   ├── env.py
+│   │   │   └── hello.py
+│   │   ├── files
+│   │   │   ├── readme.md
+│   │   │   └── sample.json
+│   │   ├── index.html
+│   │   └── script.js
+│   ├── multi-server
+│   │   ├── alpha
+│   │   │   └── index.html
+│   │   └── beta
+│   │       └── index.html
+│   ├── redirect
+│   │   └── index.html
+│   └── uploads
+│       ├── files
+│       │   └── README.md
+│       └── upload.html
+└── YoupiBanane
+    ├── nop
+    │   ├── other.pouic
+    │   └── youpi.bad_extension
+    ├── Yeah
+    │   └── not_happy.bad_extension
+    ├── youpi.bad_extension
+    ├── youpi.bla
+    └── youpla.bla
+
+67 directories, 181 files
