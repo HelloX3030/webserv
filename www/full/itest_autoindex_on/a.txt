@@ -1,1 +1,0 @@
-hello from autoindex demo (a.txt)

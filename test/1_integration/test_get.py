@@ -496,8 +496,8 @@ def test_get_path_traversal_dotdot() -> None:
                 res = read_http_response(sock)
 
             assert_true(
-                res.status_code in (403, 404),
-                f"Path traversal {path} should return 403 or 404, got {res.status_code}",
+                res.status_code in (400, 403, 404),
+                f"Path traversal {path} should return 400, 403 or 404, got {res.status_code}",
             )
 
 
@@ -523,8 +523,8 @@ def test_get_path_traversal_absolute() -> None:
                 res = read_http_response(sock)
 
             assert_true(
-                res.status_code in (403, 404),
-                f"Path {path} should return 403 or 404, got {res.status_code}",
+                res.status_code in (400, 403, 404),
+                f"Path {path} should return 400, 403 or 404, got {res.status_code}",
             )
 
 
@@ -1046,6 +1046,20 @@ def test_get_autoindex_on_lists_directory() -> None:
             assert_true("space name.txt" in body, "Expected listing to contain 'space name.txt'")
             assert_true("space%20name.txt" in body, "Expected href to URL-encode spaces")
             assert_true("../" in body, "Expected listing to contain parent link")
+
+            # Also verify that the URL-encoded link resolves to the actual filename.
+            req2 = http10_request_bytes(
+                method="GET",
+                target="/auto_on/space%20name.txt",
+                host="localhost",
+                headers={},
+                body=b"",
+            )
+            with open_client() as sock:
+                sock.sendall(req2)
+                res2 = read_http_response(sock)
+            assert_true(res2.status_code == 200, f"Expected 200, got {res2.status_code}")
+            assert_true("b" in res2.body_text, "Expected served file content")
     finally:
         _rmtree_if_exists(root_dir)
 

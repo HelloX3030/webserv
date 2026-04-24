@@ -8,9 +8,54 @@
 #include "net/Connection.hpp"
 #include <fstream>
 #include <sstream>
+#include <cctype>
 
 namespace
 {
+
+bool decode_percent_encoded_path(const std::string &in, std::string &out)
+{
+    out.clear();
+    out.reserve(in.size());
+
+    auto hex_val = [](unsigned char c) -> int {
+        if (c >= '0' && c <= '9') return c - '0';
+        if (c >= 'a' && c <= 'f') return 10 + (c - 'a');
+        if (c >= 'A' && c <= 'F') return 10 + (c - 'A');
+        return -1;
+    };
+
+    for (std::size_t i = 0; i < in.size(); ++i)
+    {
+        unsigned char c = static_cast<unsigned char>(in[i]);
+        if (c != '%')
+        {
+            out.push_back(static_cast<char>(c));
+            continue;
+        }
+
+        if (i + 2 >= in.size())
+            return false;
+
+        int hi = hex_val(static_cast<unsigned char>(in[i + 1]));
+        int lo = hex_val(static_cast<unsigned char>(in[i + 2]));
+        if (hi < 0 || lo < 0)
+            return false;
+
+        unsigned char decoded = static_cast<unsigned char>((hi << 4) | lo);
+        i += 2;
+
+        // Reject NUL and control chars, and disallow encoded path separators.
+        if (decoded == 0 || decoded < 0x20 || decoded == 0x7f)
+            return false;
+        if (decoded == '/' || decoded == '\\')
+            return false;
+
+        out.push_back(static_cast<char>(decoded));
+    }
+
+    return true;
+}
 
 void apply_error_page_if_configured(const ServerConfig &config, HttpResponseBuilder &response)
 {
@@ -209,6 +254,16 @@ namespace WebServ
     // via that location's first index entry when configured.
     if (method == HttpMethod::POST && relative.empty() && !match.location->index_files.empty())
         relative = match.location->index_files.front();
+
+      // Decode percent-encoded path bytes (e.g. %20) so URLs map to real filenames.
+      // Malformed or unsafe encodings yield 400.
+      if (!relative.empty())
+      {
+          std::string decoded;
+          if (!decode_percent_encoded_path(relative, decoded))
+              return finalize_response(HttpResponseBuilder(HttpStatus::BadRequest));
+          relative.swap(decoded);
+      }
 
 #ifdef DEBUG
     logging::log(HANDLE_REQUEST, "Relative path=\"" + relative + "\"");
