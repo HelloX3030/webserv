@@ -42,8 +42,7 @@ when absent, parser assigns default host "0.0.0.0".
 
 `port` type:
 must contain full TCP port space [0, 65535].
-    2^8 = 256 < 65535
-    2^16 = 65536 > 65535
+2^8 = 256 < 65535, 2^16 = 65536 > 65535,
 ∴ uint16_t chosen (unsigned integer type w/ width 16 bits)
 as minimal std width.
 
@@ -82,10 +81,6 @@ A sentinel value (e.g. 0) would conflate "not set" with "set to 0".
 
 allowed_methods default: {GET, POST, DELETE} — all methods permitted
 unless explicitly restricted. absent directive = no restriction.
-alternative considered: default {GET} (silence means GET only).
-rejected: too restrictive for an evaluation server where the evaluator
-expects all methods unless explicitly limited. explicit restriction
-via allowed_methods directive is the opt-in.
 
 `cgi_extension` and `cgi_path` are semantically coupled:
 either both set or both absent. Validator enforces.
