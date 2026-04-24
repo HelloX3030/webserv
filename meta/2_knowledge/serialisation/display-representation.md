@@ -1,1 +1,0 @@
-to_string, operator<<, Show/Debug/Display across languages (maybe)

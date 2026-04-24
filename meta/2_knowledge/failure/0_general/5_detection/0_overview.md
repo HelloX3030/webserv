@@ -1,1 +1,0 @@
-detection mechanisms, observer problem
