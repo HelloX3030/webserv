@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>WebServ autoindex_test.conf</title>
+    <style>
+      body {
+        margin: 2rem;
+        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+        line-height: 1.45;
+      }
+      code { background: #f2f2f2; padding: 0.1rem 0.35rem; border-radius: 4px; }
+      .card { border: 1px solid #ddd; border-radius: 10px; padding: 1rem; margin-top: 1rem; }
+      a { color: #0b62d6; }
+    </style>
+  </head>
+  <body>
+    <h1>autoindex_test.conf landing page</h1>
+    <p>
+      You started <code>config/valid/autoindex_test.conf</code>.
+      This config is primarily for integration tests.
+    </p>
+
+    <div class="card">
+      <h2>Routes in this config</h2>
+      <ul>
+        <li><a href="/auto_on/">/auto_on/</a> → <code>autoindex on</code></li>
+        <li><a href="/auto_off/">/auto_off/</a> → <code>autoindex off</code>, no index → <code>404</code></li>
+        <li><a href="/auto_off_index/">/auto_off_index/</a> → <code>autoindex off</code> + <code>index index.html</code></li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>Important</h2>
+      <p>
+        These routes point to temporary test directories under <code>www/full/itest_autoindex_*</code>.
+        If tests have not created those directories/files yet, some routes will return <code>404</code>.
+      </p>
+      <p>
+        For a stable always-populated demo, use
+        <code>config/valid/autoindex.conf</code> instead.
+      </p>
+    </div>
+  </body>
+</html>
