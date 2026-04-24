@@ -250,7 +250,7 @@ namespace WebServ
 #ifdef DEBUG
         logging::log(HANDLE_REQUEST, "Calling http_get");
 #endif
-        return finalize_response(http_get(*safe, match.location->index_files));
+        return finalize_response(http_get(*safe, match.location->index_files, match.location->autoindex, path));
 
     case HttpMethod::POST:
 #ifdef DEBUG
