@@ -216,9 +216,9 @@ http_get(const std::filesystem::path &resolved_path,
             if (!autoindex)
             {
         #ifdef DEBUG
-                logging::log(HTTP_METHOD_GET, "Directory without index and autoindex off -> 403");
+                logging::log(HTTP_METHOD_GET, "Directory without index and autoindex off -> 404");
         #endif
-                return HttpResponseBuilder(HttpStatus::Forbidden);
+                return HttpResponseBuilder(HttpStatus::NotFound);
             }
 
         #ifdef DEBUG

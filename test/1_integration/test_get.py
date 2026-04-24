@@ -1085,7 +1085,7 @@ def test_get_autoindex_off_directory_forbidden() -> None:
                 sock.sendall(req)
                 res = read_http_response(sock)
 
-            assert_true(res.status_code == 403, f"Expected 403, got {res.status_code}")
+                assert_true(res.status_code == 404, f"Expected 404, got {res.status_code}")
     finally:
         _rmtree_if_exists(root_dir)
 

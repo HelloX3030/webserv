@@ -95,10 +95,10 @@
         <section class="card">
           <h2><a href="/auto_off/">/auto_off/</a></h2>
           <p>
-            <code>autoindex off</code>. If no index file exists, directory access is forbidden.
+            <code>autoindex off</code>. If no index file exists, the server returns <code>404 Not Found</code> (no directory listing).
           </p>
           <ul>
-            <li>Expected: <code>403 Forbidden</code></li>
+            <li>Expected: <code>404 Not Found</code></li>
           </ul>
         </section>
 
