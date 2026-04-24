@@ -1022,7 +1022,7 @@ def test_get_autoindex_on_lists_directory() -> None:
         (root_dir / "space name.txt").write_text("b\n", encoding="utf-8")
         (root_dir / "subdir" / "nested.txt").write_text("c\n", encoding="utf-8")
 
-        with WebservRunner("config/valid/autoindex.conf"):
+        with WebservRunner("config/valid/autoindex_test.conf"):
             req = http10_request_bytes(
                 method="GET",
                 target="/auto_on/",
@@ -1072,7 +1072,7 @@ def test_get_autoindex_off_directory_forbidden() -> None:
         root_dir.mkdir(parents=True)
         (root_dir / "should_not_list.txt").write_text("nope\n", encoding="utf-8")
 
-        with WebservRunner("config/valid/autoindex.conf"):
+        with WebservRunner("config/valid/autoindex_test.conf"):
             req = http10_request_bytes(
                 method="GET",
                 target="/auto_off/",
@@ -1099,7 +1099,7 @@ def test_get_autoindex_off_serves_index_file() -> None:
         root_dir.mkdir(parents=True)
         index_file.write_text("<html>index-ok</html>\n", encoding="utf-8")
 
-        with WebservRunner("config/valid/autoindex.conf"):
+        with WebservRunner("config/valid/autoindex_test.conf"):
             req = http10_request_bytes(
                 method="GET",
                 target="/auto_off_index/",
