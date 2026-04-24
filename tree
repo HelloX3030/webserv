@@ -5,13 +5,6 @@
 │       ├── cgi-python.conf
 │       ├── cookies.conf
 │       ├── default.conf
-│       ├── doc
-│       │   ├── cgi.md
-│       │   ├── default.md
-│       │   ├── full.md
-│       │   ├── multi-server.md
-│       │   ├── redirect.md
-│       │   └── uploads.md
 │       ├── full.conf
 │       ├── multi-server.conf
 │       ├── redirect.conf
@@ -159,20 +152,6 @@
 │       ├── WebServ_quit.cpp
 │       └── WebServ_run.cpp
 ├── test
-│   ├── 0_unit
-│   │   ├── config-frontend
-│   │   │   ├── Makefile
-│   │   │   ├── README.md
-│   │   │   └── test_config.cpp
-│   │   └── http-request-frontend
-│   │       ├── main.cpp
-│   │       ├── Makefile
-│   │       ├── README.md
-│   │       ├── test_body.cpp
-│   │       ├── test_harness.hpp
-│   │       ├── test_headers.cpp
-│   │       ├── test_helpers.hpp
-│   │       └── test_request_line.cpp
 │   └── 1_integration
 │       ├── common.py
 │       ├── siege
@@ -247,4 +226,4 @@
     ├── youpi.bla
     └── youpla.bla
 
-67 directories, 181 files
+63 directories, 164 files
