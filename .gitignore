@@ -5,8 +5,6 @@
 compile_commands.json
 .cache/
 # .clang-format
-# .clang-tidy
-# .clangd
 
 # editor UI
 # .vscode/
