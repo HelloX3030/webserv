@@ -32,15 +32,40 @@ DBG_OBJ_DIR := obj_debug
 LKS_OBJ_DIR := obj_leaks
 
 # --- src collection ---
-# rwildcard: recursive wildcard traversal.
-# used for SRC_FILES only — H_FILES is eliminated;
-# header dependencies are derived per-TU by -MMD.
+# Explicit list (no wildcards): keep this in sync when adding/removing .cpp files.
 
-rwildcard = $(foreach d,$(wildcard $1*),\
-              $(call rwildcard,$d/,$2)\
-              $(filter $(subst *,%,$2),$d))
-
-SRC_FILES := $(call rwildcard,$(SRC_DIR)/,*.cpp)
+SRC_FILES := \
+	$(SRC_DIR)/main.cpp \
+	$(SRC_DIR)/base/Fd.cpp \
+	$(SRC_DIR)/base/format.cpp \
+	$(SRC_DIR)/base/logging.cpp \
+	$(SRC_DIR)/base/utils.cpp \
+	$(SRC_DIR)/config/Config/Config.cpp \
+	$(SRC_DIR)/config/ConfigFrontend/ConfigFrontend.cpp \
+	$(SRC_DIR)/core/Server/Server.cpp \
+	$(SRC_DIR)/core/signal.cpp \
+	$(SRC_DIR)/http/HttpMethods/HttpMethods_cgi.cpp \
+	$(SRC_DIR)/http/HttpMethods/HttpMethods_delete.cpp \
+	$(SRC_DIR)/http/HttpMethods/HttpMethods_get.cpp \
+	$(SRC_DIR)/http/HttpMethods/HttpMethods_handle_request.cpp \
+	$(SRC_DIR)/http/HttpMethods/HttpMethods_post.cpp \
+	$(SRC_DIR)/http/HttpRequest/HttpRequest.cpp \
+	$(SRC_DIR)/http/HttpRequestFrontend/HttpRequestFrontend.cpp \
+	$(SRC_DIR)/http/HttpRequestFrontend/HttpRequestFrontend_1_buffer.cpp \
+	$(SRC_DIR)/http/HttpRequestFrontend/HttpRequestFrontend_2_request_line.cpp \
+	$(SRC_DIR)/http/HttpRequestFrontend/HttpRequestFrontend_3_headers.cpp \
+	$(SRC_DIR)/http/HttpRequestFrontend/HttpRequestFrontend_4_body.cpp \
+	$(SRC_DIR)/http/HttpResponseBuilder/HttpResponseBuilder.cpp \
+	$(SRC_DIR)/http/HttpStatus/HttpStatus.cpp \
+	$(SRC_DIR)/net/Connection/Connection.cpp \
+	$(SRC_DIR)/net/EPollHandler/EPollHandler.cpp \
+	$(SRC_DIR)/net/Listener/Listener.cpp \
+	$(SRC_DIR)/WebServ/WebServ.cpp \
+	$(SRC_DIR)/WebServ/WebServ_display.cpp \
+	$(SRC_DIR)/WebServ/WebServ_init.cpp \
+	$(SRC_DIR)/WebServ/WebServ_load_config.cpp \
+	$(SRC_DIR)/WebServ/WebServ_quit.cpp \
+	$(SRC_DIR)/WebServ/WebServ_run.cpp
 
 # --- precondition guard ---
 # fail at parse time if no sources found — prevents a silent
