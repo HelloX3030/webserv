@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+import shutil
+
 from common import ROOT, WebservRunner, TestRunner, USE_VALGRIND, assert_true, http10_request_bytes, open_client, read_http_response, read_http_response_buffered
 
 
@@ -1005,6 +1007,103 @@ def test_get_very_long_header() -> None:
         target_file.unlink()
 
 
+def _rmtree_if_exists(path) -> None:
+    if path.exists():
+        shutil.rmtree(path)
+
+
+def test_get_autoindex_on_lists_directory() -> None:
+    root_dir = ROOT / "www/full/itest_autoindex_on"
+
+    try:
+        _rmtree_if_exists(root_dir)
+        (root_dir / "subdir").mkdir(parents=True)
+        (root_dir / "a.txt").write_text("a\n", encoding="utf-8")
+        (root_dir / "space name.txt").write_text("b\n", encoding="utf-8")
+        (root_dir / "subdir" / "nested.txt").write_text("c\n", encoding="utf-8")
+
+        with WebservRunner("config/valid/autoindex.conf"):
+            req = http10_request_bytes(
+                method="GET",
+                target="/auto_on/",
+                host="localhost",
+                headers={},
+                body=b"",
+            )
+
+            with open_client() as sock:
+                sock.sendall(req)
+                res = read_http_response(sock)
+
+            assert_true(res.status_code == 200, f"Expected 200, got {res.status_code}")
+            assert_true(
+                res.headers.get("content-type", "").lower().startswith("text/html"),
+                f"Expected text/html listing, got Content-Type: {res.headers.get('content-type')}",
+            )
+            body = res.body_text
+            assert_true("a.txt" in body, "Expected listing to contain a.txt")
+            assert_true("subdir/" in body, "Expected listing to contain subdir/")
+            assert_true("space name.txt" in body, "Expected listing to contain 'space name.txt'")
+            assert_true("space%20name.txt" in body, "Expected href to URL-encode spaces")
+            assert_true("../" in body, "Expected listing to contain parent link")
+    finally:
+        _rmtree_if_exists(root_dir)
+
+
+def test_get_autoindex_off_directory_forbidden() -> None:
+    root_dir = ROOT / "www/full/itest_autoindex_off"
+
+    try:
+        _rmtree_if_exists(root_dir)
+        root_dir.mkdir(parents=True)
+        (root_dir / "should_not_list.txt").write_text("nope\n", encoding="utf-8")
+
+        with WebservRunner("config/valid/autoindex.conf"):
+            req = http10_request_bytes(
+                method="GET",
+                target="/auto_off/",
+                host="localhost",
+                headers={},
+                body=b"",
+            )
+
+            with open_client() as sock:
+                sock.sendall(req)
+                res = read_http_response(sock)
+
+            assert_true(res.status_code == 403, f"Expected 403, got {res.status_code}")
+    finally:
+        _rmtree_if_exists(root_dir)
+
+
+def test_get_autoindex_off_serves_index_file() -> None:
+    root_dir = ROOT / "www/full/itest_autoindex_off_index"
+    index_file = root_dir / "index.html"
+
+    try:
+        _rmtree_if_exists(root_dir)
+        root_dir.mkdir(parents=True)
+        index_file.write_text("<html>index-ok</html>\n", encoding="utf-8")
+
+        with WebservRunner("config/valid/autoindex.conf"):
+            req = http10_request_bytes(
+                method="GET",
+                target="/auto_off_index/",
+                host="localhost",
+                headers={},
+                body=b"",
+            )
+
+            with open_client() as sock:
+                sock.sendall(req)
+                res = read_http_response(sock)
+
+            assert_true(res.status_code == 200, f"Expected 200, got {res.status_code}")
+            assert_true("index-ok" in res.body_text, "Expected to serve index.html")
+    finally:
+        _rmtree_if_exists(root_dir)
+
+
 def main() -> int:
     tests = [
         ("GET basic file", test_get_basic),
@@ -1038,6 +1137,9 @@ def main() -> int:
         ("GET malformed CRLF", test_get_malformed_crlf),
         ("GET invalid HTTP version", test_get_invalid_http_version),
         ("GET very long header", test_get_very_long_header),
+        ("GET autoindex on lists directory", test_get_autoindex_on_lists_directory),
+        ("GET autoindex off forbids directory", test_get_autoindex_off_directory_forbidden),
+        ("GET autoindex off serves index", test_get_autoindex_off_serves_index_file),
     ]
 
     runner = TestRunner("GET", len(tests))

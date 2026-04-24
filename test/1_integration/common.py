@@ -51,6 +51,17 @@ class WebservRunner:
         self.stop()
 
     def start(self) -> None:
+        # Fail fast if some other process is already listening.
+        # Otherwise tests may accidentally talk to the wrong server.
+        try:
+            with socket.create_connection((HOST, PORT), timeout=0.2):
+                raise RuntimeError(
+                    f"Port {HOST}:{PORT} is already in use. "
+                    "Stop the running server before executing integration tests."
+                )
+        except OSError:
+            pass
+
         ensure_binary()
         if not self.config_path.exists():
             raise RuntimeError(f"Config not found: {self.config_path}")
