@@ -34,7 +34,7 @@ enum class HttpMethod
     DELETE
 };
 bool is_http_method(const std::string &str);
-HttpMethod http_methode_from_string(const std::string &str);
+HttpMethod http_method_from_string(const std::string &str);
 
 /* derived from the host_port grammar production.
 host is optional — bare port (`listen 8080;`) is valid.

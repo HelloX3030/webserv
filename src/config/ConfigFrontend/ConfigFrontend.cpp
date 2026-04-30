@@ -9,30 +9,21 @@
 namespace
 {
 
-/*
-TokenType — structural character classes of the config lexer.
-
-STRING:    any byte sequence not a delimiter or whitespace.
-LBRACE:    {
-RBRACE:    }
-SEMICOLON: ;
-END:       see 1_tokenise
-*/
+/* TokenType — structural character classes of the config lexer */
 enum class TokenType
 {
-    STRING,
-    LBRACE,
-    RBRACE,
-    SEMICOLON,
-    END
+    STRING,     // any byte sequence not a delimiter or whitespace
+    LBRACE,     // {
+    RBRACE,     // }
+    SEMICOLON,  // ;
+    END         // see 1_tokenise
 };
 
 struct Token
 {
     TokenType type;
     std::string value;
-    size_t line; // src line at emission — sole carrier of
-                 // location information for parse-time errors.
+    size_t line; // src line at emission — sole carrier of location information for parse-time errs
 };
 
 /*

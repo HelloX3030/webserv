@@ -11,7 +11,7 @@ bool is_http_method(const std::string &str)
            str == "DELETE";
 }
 
-HttpMethod http_methode_from_string(const std::string &str)
+HttpMethod http_method_from_string(const std::string &str)
 {
     if (str == "GET")
         return HttpMethod::GET;

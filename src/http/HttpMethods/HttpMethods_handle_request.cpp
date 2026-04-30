@@ -110,7 +110,7 @@ namespace WebServ
     std::cout << format::header("http_handle_request") << std::endl;
 #endif
 
-    HttpMethod method = http_methode_from_string(request.method);
+    HttpMethod method = http_method_from_string(request.method);
 
     // select server config
     const ServerConfig *config = &connection.get_default_server_config();
