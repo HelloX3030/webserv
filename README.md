@@ -10,14 +10,19 @@ a single `epoll` loop multiplexes all socket I/O. every socket, pipe, and CGI st
 is non-blocking; no operation ever blocks the process. the server remains available under
 stress, invalid input, and client misbehaviour.
 
+the server targets Linux. I/O multiplexing uses epoll(7), a Linux-specific kernel facility;
+the program does not build on kernels lacking it (BSD, macOS, illumos).
+
 architecturally, the program is a pipeline of clearly separated frontends and actors:
 
     config frontend      →  ServerConfig[]
-    ServerConfig[]       →  Listeners bound to ports
-    epoll loop           →  accepts Connections, drives I/O readiness
-    HttpRequestFrontend  →  parses bytes into HttpRequest
-    HttpMethods          →  dispatches GET / POST / DELETE / CGI
-    HttpResponseBuilder  →  serialises HttpResponse to bytes
+    Listener             →  binds, accepts → Connection
+    epoll loop           →  drives Connection I/O readiness
+    HttpRequestFrontend  →  bytes → HttpRequest
+    Router               →  (HttpRequest, ServerConfig[]) → (Server, Location)
+    HttpMethods          →  dispatches GET / POST / DELETE; routes CGI-targeted
+                            requests through the CGI handler
+    HttpResponseBuilder  →  HttpResponse → bytes
 
 
 ---
@@ -70,6 +75,16 @@ rejection paths. only the valid configurations are retained for submission.
 individual test targets are listed under `.PHONY` in the Makefile.
 
 
+`siege` is a command-line HTTP load-testing utility — it opens many concurrent connections
+to a target server, issues requests at a chosen rate or pattern, and reports throughput,
+response times, and failure rates. it is generally used for sustained-pressure testing:
+verifying that a server handles concurrent traffic without crashing, leaking, deadlocking,
+or returning malformed responses. for webserv, siege exercises the epoll loop and connection
+lifecycle under load, surfacing failure modes that single-request integration tests cannot.
+correctness of HTTP semantics and adversarial-input handling are tested separately by the
+Python integration suite; siege's role is purely behaviour under concurrent load.
+
+
 ---
 
 
@@ -95,16 +110,13 @@ in header handling, body framing, and CGI I/O — rather than as documents read 
 
 #### lseeger
 
-ChatGPT was used primarily to understand the project scope and how to approach it, and more
+ChatGPT (OpenAI) was used primarily to understand the project scope and how to approach it, and more
 intensively for the development of the test suite.
 
 #### go-donne
 
-Claude (Anthropic) was used throughout development as a collaborative thinking partner. use
-included protocol clarification (chunked transfer encoding, header normalisation, CRLF
-handling), reasoning through the grammar-vs-validator boundary in the config frontend,
-documentation drafting, and targeted code generation.
-
+Claude (Anthropic) was used throughout development as a collaborative thinking partner.
+use included protocol clarification, refining understanding of language processing within
+config and http request frontends, documentation drafting, and targeted code generation.
 all AI contributions were actively reviewed, critiqued, and frequently rewritten by hand
-against primary sources — RFCs, NGINX behaviour, reference texts, and first-principles
-reasoning.
+against primary sources — RFCs, NGINX behaviour, reference texts, and first-principles reasoning.
