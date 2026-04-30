@@ -33,11 +33,10 @@ enum class ParseStatus : int
 };
 // mutually exclusive & jointly exhaustive
 
-// --- INTERNAL (implementation detail): do not depend on ---
+// --- INTERNAL : implementation detail - do not depend on ---
 
 struct HttpRequestFrontend
 {
-    // --- nested types first ---
     enum class ParsePhase : int
     {
         REQUEST_LINE,
@@ -79,7 +78,8 @@ private: // --- INTERNAL: implementation detail
     // output (built incrementally)
     HttpRequest request_;
 
-    // request-line / headers tracking
+    // total bytes consumed in request-line and header section,
+    // for HTTP 431 / 414 size-limit enforcement
     size_t header_bytes_;
 
     // body tracking (Content-Length path)
@@ -89,7 +89,6 @@ private: // --- INTERNAL: implementation detail
     bool       body_chunked_;
     ChunkPhase chunk_phase_;
     size_t     chunk_remaining_;
-
 
     // -- phase parsers --
     PhaseResult parse_request_line();
