@@ -13,14 +13,7 @@
 constexpr size_t DEFAULT_CLIENT_MAX_BODY_SIZE = 1024 * 1024; // 1 MiB
 constexpr std::string_view DEFAULT_LISTEN_HOST = "0.0.0.0";
 
-/* Config.hpp — pure data types produced by the config parser.
-No methods, no behaviour. Describes operator intent as extracted from
-the config file. All other components consume these types;
-none are depended upon here.
-
-Does not include `base/base.hpp`, which pulls in sockets, signals, POSIX I/O
-— none of which belong in a data type definition.
-dependencies: Server.hpp → Config.hpp → stdlib only. */
+/* Config.hpp — pure data types produced by the config parser. */
 
 /*
 The grammar's methods_dir terminals form a closed set: GET, POST, DELETE.
