@@ -3,8 +3,8 @@
 
 ## description
 
-`webserv` is an HTTP/1.1 server written in C++, configured via an NGINX-inspired configuration
-file. it serves static content, accepts file uploads, and executes CGI scripts.
+`webserv` is an HTTP/1.1 server written in C++, configured via an NGINX-inspired configuration file. 
+it serves static content, accepts file uploads, and executes CGI scripts.
 
 a single `epoll` loop multiplexes all socket I/O. every socket, pipe, and CGI stdio descriptor
 is non-blocking; no operation ever blocks the process. the server remains available under
@@ -37,8 +37,8 @@ architecturally, the program is a pipeline of clearly separated frontends and ac
     make leaks       # instrumented for valgrind / leak checking
     make re          # rebuild from clean
 
-the Makefile produces `./webserv` in the repository root. compilation uses
-`c++ -Wall -Wextra -Werror -std=c++17`.
+the Makefile produces `./webserv` in the repository root. 
+compilation uses `c++ -Wall -Wextra -Werror -std=c++17`.
 
 ### run
 
