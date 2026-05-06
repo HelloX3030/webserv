@@ -1,0 +1,191 @@
+.
+├── config
+│   └── valid
+│       ├── autoindex.conf
+│       ├── autoindex_test.conf
+│       ├── cgi-bash.conf
+│       ├── cgi-python.conf
+│       ├── cookies.conf
+│       ├── default.conf
+│       ├── full.conf
+│       ├── multi-server.conf
+│       ├── redirect.conf
+│       ├── tester.conf
+│       └── uploads.conf
+├── inc
+│   ├── base
+│   │   ├── defines.hpp
+│   │   ├── errors.hpp
+│   │   ├── Fd.hpp
+│   │   ├── format.hpp
+│   │   ├── logging.hpp
+│   │   └── utils.hpp
+│   ├── config
+│   │   ├── ConfigFrontend.hpp
+│   │   └── Config.hpp
+│   ├── core
+│   │   ├── Server.hpp
+│   │   └── signal.hpp
+│   ├── http
+│   │   ├── HttpMethods.hpp
+│   │   ├── HttpRequestFrontend.hpp
+│   │   ├── HttpRequest.hpp
+│   │   ├── HttpResponseBuilder.hpp
+│   │   └── HttpStatus.hpp
+│   ├── net
+│   │   ├── Connection.hpp
+│   │   ├── EPollHandler.hpp
+│   │   └── Listener.hpp
+│   └── WebServ.hpp
+├── Makefile
+├── README.md
+├── src
+│   ├── base
+│   │   ├── Fd.cpp
+│   │   ├── format.cpp
+│   │   ├── logging.cpp
+│   │   └── utils.cpp
+│   ├── config
+│   │   ├── Config
+│   │   │   └── Config.cpp
+│   │   └── ConfigFrontend
+│   │       ├── ConfigFrontend_0_read.inc
+│   │       ├── ConfigFrontend_1_tokenise.inc
+│   │       ├── ConfigFrontend_2a_parse_navigate.inc
+│   │       ├── ConfigFrontend_2b_parse_blocks.inc
+│   │       ├── ConfigFrontend_2c_parse_server.inc
+│   │       ├── ConfigFrontend_2d_parse_location.inc
+│   │       ├── ConfigFrontend_2e_interpret.inc
+│   │       ├── ConfigFrontend_3_validate.inc
+│   │       └── ConfigFrontend.cpp
+│   ├── core
+│   │   ├── Server
+│   │   │   └── Server.cpp
+│   │   └── signal.cpp
+│   ├── http
+│   │   ├── HttpMethods
+│   │   │   ├── HttpMethods_cgi.cpp
+│   │   │   ├── HttpMethods_delete.cpp
+│   │   │   ├── HttpMethods_get.cpp
+│   │   │   ├── HttpMethods_handle_request.cpp
+│   │   │   └── HttpMethods_post.cpp
+│   │   ├── HttpRequest
+│   │   │   └── HttpRequest.cpp
+│   │   ├── HttpRequestFrontend
+│   │   │   ├── HttpRequestFrontend_1_buffer.cpp
+│   │   │   ├── HttpRequestFrontend_2_request_line.cpp
+│   │   │   ├── HttpRequestFrontend_3_headers.cpp
+│   │   │   ├── HttpRequestFrontend_4_body.cpp
+│   │   │   ├── HttpRequestFrontend.cpp
+│   │   │   └── HttpRequestFrontend_internal.hpp
+│   │   ├── HttpResponseBuilder
+│   │   │   └── HttpResponseBuilder.cpp
+│   │   └── HttpStatus
+│   │       └── HttpStatus.cpp
+│   ├── main.cpp
+│   ├── net
+│   │   ├── Connection
+│   │   │   └── Connection.cpp
+│   │   ├── EPollHandler
+│   │   │   └── EPollHandler.cpp
+│   │   └── Listener
+│   │       └── Listener.cpp
+│   └── WebServ
+│       ├── WebServ.cpp
+│       ├── WebServ_display.cpp
+│       ├── WebServ_init.cpp
+│       ├── WebServ_load_config.cpp
+│       ├── WebServ_quit.cpp
+│       └── WebServ_run.cpp
+├── test
+│   └── 1_integration
+│       ├── common.py
+│       ├── siege
+│       │   ├── urls_cgi.txt
+│       │   ├── urls_static.txt
+│       │   └── urls.txt
+│       ├── test_cgi_keep_alive.py
+│       ├── test_delete.py
+│       ├── test_get.py
+│       ├── test_invalid_http.py
+│       ├── test_post.py
+│       ├── test_slowloris.py
+│       ├── test_tester_stress.py
+│       └── test_virtual_hosting.py
+├── tree
+├── www
+│   ├── autoindex
+│   │   ├── demo_off
+│   │   │   └── should_not_list.txt
+│   │   ├── demo_off_index
+│   │   │   └── index.html
+│   │   ├── demo_on
+│   │   │   ├── a.txt
+│   │   │   ├── space name.txt
+│   │   │   └── subdir
+│   │   │       └── nested.txt
+│   │   ├── errors
+│   │   │   ├── 403.html
+│   │   │   └── 404.html
+│   │   └── index.html
+│   ├── autoindex_test
+│   │   └── index.html
+│   ├── cgi-bash
+│   │   ├── cgi-bin
+│   │   │   ├── echo.sh
+│   │   │   ├── hello.sh
+│   │   │   └── test-bash.sh
+│   │   └── index.html
+│   ├── cgi-python
+│   │   ├── cgi-bin
+│   │   │   ├── echo.py
+│   │   │   ├── hello.py
+│   │   │   └── test-python.py
+│   │   └── index.html
+│   ├── cookies
+│   │   ├── cgi-bin
+│   │   │   ├── set-cookies.py
+│   │   │   └── show-cookies.py
+│   │   └── index.html
+│   ├── default
+│   │   ├── errors
+│   │   │   ├── 404.html
+│   │   │   └── 500.html
+│   │   ├── index.html
+│   │   └── tester_post_body.txt
+│   ├── full
+│   │   ├── cgi-bash
+│   │   │   ├── echo.sh
+│   │   │   ├── env.sh
+│   │   │   └── hello.sh
+│   │   ├── cgi-python
+│   │   │   ├── echo.py
+│   │   │   ├── env.py
+│   │   │   └── hello.py
+│   │   ├── files
+│   │   │   ├── readme.md
+│   │   │   └── sample.json
+│   │   ├── index.html
+│   │   └── script.js
+│   ├── multi-server
+│   │   ├── alpha
+│   │   │   └── index.html
+│   │   └── beta
+│   │       └── index.html
+│   ├── redirect
+│   │   └── index.html
+│   └── uploads
+│       ├── files
+│       │   └── README.md
+│       └── upload.html
+└── YoupiBanane
+    ├── nop
+    │   ├── other.pouic
+    │   └── youpi.bad_extension
+    ├── Yeah
+    │   └── not_happy.bad_extension
+    ├── youpi.bad_extension
+    ├── youpi.bla
+    └── youpla.bla
+
+59 directories, 130 files
